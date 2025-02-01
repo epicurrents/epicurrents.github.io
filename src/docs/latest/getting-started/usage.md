@@ -1,0 +1,3 @@
+[[toc]]
+
+## Supported platforms
