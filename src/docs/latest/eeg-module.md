@@ -19,7 +19,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
 
 ### Basic settings
 
-Before browsing EEG recordings, it may be necessary to check that some basic settings are correct. You can find these from the `Settings > User preferences` menu. It is recommendable to at least verify that [the signal scaling setting](/#/docs/user-interface/settings#signal-scaling) is correct.
+Before browsing EEG recordings, it may be necessary to check that some basic settings are correct. You can find these from the `Settings > User preferences` menu. It is recommendable to at least verify that [the signal scaling setting](docs/user-interface/settings#signal-scaling) is correct.
 
 ### Module settings
 

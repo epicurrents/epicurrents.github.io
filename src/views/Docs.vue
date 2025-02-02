@@ -40,13 +40,19 @@ const isLoading = ref(true)
  * @param path - Path to the document as an array of folder/file names.
  */
 const loadDoc = async (path: string[]) => {
-    console.log(route.meta.prev, route.meta.next, route.meta.subitems)
-    const docPath = path[0] === route.meta.version
+    const isVersioned = path[0] === route.meta.version
+    const docPath = isVersioned
                   ? `../docs/${path.join('/')}.md`
                   : `../docs/${route.meta.version}/${path.join('/')}.md`
     if (docPath in docs) {
-        const doc = await (await fetch(new URL(docPath, import.meta.url))).text()
-        content.value = md.render(doc)
+        const docMd = await (await fetch(new URL(docPath, import.meta.url))).text()
+        // Handle docs links.
+        const docFinal = docMd.replace(
+            /\(docs\//g,
+            isVersioned ? `(/#/docs/${route.meta.version}/`
+                        : `(/#/docs/`
+        )
+        content.value = md.render(docFinal)
         isLoading.value = false
     } else {
         content.value = `<h2>Not found</h2><p>The requested document could not be found.</p>`
