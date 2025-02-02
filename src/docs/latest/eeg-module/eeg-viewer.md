@@ -4,6 +4,9 @@
 
 ### General controls
 
+![eeg-controls](/img/eeg-controls.png)
+_EEG controls row above the EEG viewer._
+
 The controls toolbar above the signals apply general settings on the recording level or to preconfigured channel types. Controls include:
 - **Montage**: A list of preconfigured montages to display the signals in.
 - **Sensitivity**: Signals selsitivity in uV/cm units; larger values will attenuate signal amplitudes and smaller values will increase them.
@@ -18,9 +21,14 @@ Channel names are displayed on labels on the left side of the signals. Right-cli
 
 ### Cursor line
 
+Cursor line is a vertical red line that shows the current video position (if video is present). By default it is at the start of the visible page, but can be dragged with the mouse.
+
 ### Navigator
 
 The EEG view includes a navigator displaying the whole record span, including data gaps and annotations. The navigator is placed on the bottom of the viewport, but would be relatively simple to move above the trace display, if so desired.
+
+![eeg-navigator](/img/eeg-navigator.png)
+_The red area is the visible page, blue bars on top are annotations._
 
 The time displayed on the left side of the navigator shows the time position of the **cursor line**. Depending on the setting, the cursor either displays time elapsed from the start of the recording or the actual time at that point of the recording, provided the EEG source file contains the recording start time. The same applies to the time intervals displayed below the navigator bar.
 
