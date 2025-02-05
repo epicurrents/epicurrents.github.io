@@ -189,9 +189,17 @@ if (window.matchMedia) {
                 </div>
             </div>
             <div class="right">
+                <wa-input type="search" placeholder="Search" disabled>
+                    <wa-icon name="search" slot="prefix"></wa-icon>
+                </wa-input>
                 <div class="mode">
                     <div>Mode</div>
-                    <wa-radio-group name="mode" value="system" @wa-change="mode = $event.target.value">
+                    <wa-radio-group
+                        name="mode"
+                        orientation="horizontal"
+                        value="system"
+                        @input="mode = $event.target.value"
+                    >
                         <wa-radio-button value="light">
                             <wa-icon id="mode-light" name="sun" variant="regular"></wa-icon>
                             <wa-tooltip for="mode-light">Light</wa-tooltip>
@@ -206,9 +214,6 @@ if (window.matchMedia) {
                         </wa-radio-button>
                     </wa-radio-group>
                 </div>
-                <wa-input type="search" placeholder="Search">
-                    <wa-icon name="search" slot="prefix"></wa-icon>
-                </wa-input>
             </div>
         </header>
         <nav slot="subheader">
@@ -265,7 +270,7 @@ if (window.matchMedia) {
                     </a>
                 </li>
                 <li>
-                    <a href="https://alpha.epicurrents.io/open/" target="_blank">
+                    <a href="https://alpha.epicurrents.io/" target="_blank">
                         <wa-icon name="desktop" variant="light"></wa-icon>
                         Demo
                     </a>
@@ -357,18 +362,23 @@ wa-page[view='mobile']::part(navigation-toggle) {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-    [slot='header'] .right .mode {
+    [slot='header'] .right {
         display: flex;
-        justify-content: flex-end;
+        /* Without this, the mode button tooltips will be placed behind the serach bar. */
+        flex-direction: column-reverse;
     }
-        [slot='header'] .right .mode div {
-            height: 2.75rem;
-            line-height: 2.75rem;
-            margin-right: 1rem;
+        [slot='header'] .right .mode {
+            display: flex;
+            justify-content: flex-end;
         }
-    [slot='header'] .right wa-input[type='search'] {
-        margin-top: 0.5rem;
-    }
+            [slot='header'] .right .mode div {
+                height: 2.75rem;
+                line-height: 2.75rem;
+                margin-right: 1rem;
+            }
+        [slot='header'] .right wa-input[type='search'] {
+            margin-top: 0.5rem;
+        }
 [slot*='header'] a {
     font-weight: var(--wa-font-weight-action);
 }

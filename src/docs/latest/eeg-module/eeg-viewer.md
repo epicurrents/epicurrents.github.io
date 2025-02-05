@@ -17,7 +17,9 @@ On the right end of the controls bar is a button for the annotation display that
 
 ### Channel labels
 
-Channel names are displayed on labels on the left side of the signals. Right-clicking on a channel name will open a context menu that contains individual settings for filters and sensitivity.
+Channel names are displayed on labels on the left side of the signals. Right-clicking [`[[icon:mouse]]`] on a channel name will open a context menu that contains individual settings for filters and sensitivity. Settings for multiple channels can be changed at the same time by selecting the channels by left-clicking and then right-clicking [`[[icon:mouse]]`] any of these selected channels (or the final unselected channel).
+
+![eeg-channel-properties](/img/eeg-channel-properties.png)
 
 ### Cursor line
 
@@ -32,7 +34,7 @@ _The red area is the visible page, blue bars on top are annotations._
 
 The time displayed on the left side of the navigator shows the time position of the **cursor line**. Depending on the setting, the cursor either displays time elapsed from the start of the recording or the actual time at that point of the recording, provided the EEG source file contains the recording start time. The same applies to the time intervals displayed below the navigator bar.
 
-Double-clicking on the navigator will browse to that point in the recording, attempting to position the exact time in the middle of the screen.
+Double-clicking [`[[icon:mouse]]`] on the navigator will browse to that point in the recording, attempting to position the exact time in the middle of the screen.
 
 ## Browsing an EEG
 
@@ -41,5 +43,5 @@ There are five means to browse an EEG:
 1. Using the arrow keys `←` and `→`, or `Page up` and `Page down`. Arrow keys move the view by one second and page up/down keys by up to 10 seconds, limited by how much can fit on your screen. If you don't have page up/down keys on your keyboard, holding down the `Shift` key while pressing an arrow key will have the same effect.
 2. Rolling the mouse wheel will scroll the EEG by up to 10 seconds at a time (roll down to move forward and up to move backward).
 3. Swiping left or right over the EEG traces on a touch screen.
-4. Double clicking on the navigation bar below the EEG display will move to that location.
-5. If the recording has annotations, clicking on an annotion will jump to that location (annotations can be viewed by pressing A).
+4. Double-clicking [`[[icon:mouse]]`] on the navigation bar below the EEG display will move to that location.
+5. If the recording has annotations, clicking on an annotion will jump to that location (annotations can be viewed by pressing `A`).

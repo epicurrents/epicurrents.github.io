@@ -4,6 +4,10 @@
 
 Epicurrents is an open-source library for reading, processing and displaying neurophysiological signal data in the web browser. It is modular in design and can be extended with additional file formats and study types. Optional services make it possible to extend the application's functionality with Python and machine learning capabilities, for example.
 
+## Purpose
+
+Epicurrents is intended for educational and scientific use. It is not a medical device and should not be used for clincial purposes.
+
 ## Getting started
 
 To get started quickly, check out the [getting started](docs/getting-started) section. It details the different ways of accessing and using the library from an end-user's perspective.

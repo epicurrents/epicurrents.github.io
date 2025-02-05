@@ -46,13 +46,20 @@ const loadDoc = async (path: string[]) => {
                   : `../docs/${route.meta.version}/${path.join('/')}.md`
     if (docPath in docs) {
         const docMd = await (await fetch(new URL(docPath, import.meta.url))).text()
-        // Handle docs links.
+        // Perform custom formatting.
+            // Docs links versioning.
         const docFinal = docMd.replace(
-            /\(docs\//g,
-            isVersioned ? `(/#/docs/${route.meta.version}/`
-                        : `(/#/docs/`
-        )
-        content.value = md.render(docFinal)
+                /\(docs\//g,
+                isVersioned ? `(/#/docs/${route.meta.version}/`
+                            : `(/#/docs/`
+            )
+        const rendered = md.render(docFinal)
+        content.value = rendered
+            // Add inline SVG icons.
+            .replace(
+                /\[\[icon:([^\]]+)\]\]/g,
+                `<wa-icon name="$1" variant="regular"></wa-icon>`
+            )
         isLoading.value = false
     } else {
         content.value = `<h2>Not found</h2><p>The requested document could not be found.</p>`
@@ -80,7 +87,7 @@ onMounted(async () => {
                 </li>
             </ul>
         </wa-details>
-        <div v-html="content"></div>
+        <div class="doc" v-html="content"></div>
         <div class="nav">
             <router-link v-if="route.meta.prev" :to="route.meta.prev.path" class="prev">
                 ← {{ route.meta.prev.name }}
@@ -116,6 +123,11 @@ h1 wa-spinner {
     list-style-type: none;
     padding: 0;
     margin-bottom: 0.5rem;
+}
+.doc :deep(wa-icon) {
+    position: relative;
+    top: 0.125em;
+    margin-inline-end: 0;
 }
 .nav {
     display: flex;
