@@ -209,7 +209,7 @@ if (window.matchMedia) {
                             <wa-tooltip for="mode-dark">Dark</wa-tooltip>
                         </wa-radio-button>
                         <wa-radio-button value="system">
-                            <wa-icon id="mode-system" name="lightbulb-gear" variant="regular"></wa-icon>
+                            <wa-icon id="mode-system" name="circle-half-stroke" variant="regular"></wa-icon>
                             <wa-tooltip for="mode-system">System</wa-tooltip>
                         </wa-radio-button>
                     </wa-radio-group>
@@ -219,7 +219,7 @@ if (window.matchMedia) {
         <nav slot="subheader">
             <wa-breadcrumb>
                 <wa-breadcrumb-item v-for="(item, idx) in routePath" :key="`breadcrumb-${idx}`">
-                    <router-link :to="route.path.startsWith('/docs/') ? docPathFromPath(item.path) : item.path">
+                    <router-link :to="idx && route.path.startsWith('/docs/') ? docPathFromPath(item.path) : item.path">
                         <wa-icon v-if="item.icon" :name="item.icon" family="duotone"></wa-icon>
                         <span v-else>{{ item.name }}</span>
                     </router-link>

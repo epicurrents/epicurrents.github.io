@@ -9,7 +9,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
   * Double banana (longitudinal bipolar).
   * Laplacian (source density).
   * Transverse bipolar.
-- Viewing select polygraphic channels (ECG, EMG, EOG, respiration) *if* they are correctly labeled in the source file.
+- Viewing select polygraphic channels (EKG, EMG, EOG, respiration) *if* they are correctly labeled in the source file.
 - Adjusting signal sensitivity for all channels or each channel individually.
 - Adjusting signal filters (high-pass, low-pass and notch) for all channels or each channel individually.
 - Adjusting signal colors based on signal type (polygraphic signals) or side of the body (for EEG signals).

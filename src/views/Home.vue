@@ -21,7 +21,7 @@
             </li>
             <li>
                 <wa-icon name="user-graduate" family="duotone" variant="light" fixed-width></wa-icon>
-                Emulate professional review software for educational examples
+                Emulate a professional review process for educational examples
             </li>
             <li>
                 <wa-icon name="magnifying-glass" family="duotone" variant="light" fixed-width></wa-icon>
@@ -43,7 +43,7 @@
         </p>
         <h2>License</h2>
         <code class="license">
-            <p>Copyright 2019-2024 Sampsa Lohi & Epicurrents contributors</p>
+            <p>Copyright 2019-2025 Sampsa Lohi & Epicurrents contributors</p>
             <p>
                 Licensed under the Apache License, Version 2.0 (the "License");
                 you may not use the files in this repository except in compliance
