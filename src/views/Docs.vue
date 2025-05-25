@@ -3,12 +3,17 @@ import { ref, watch, type PropType } from 'vue'
 import { onMounted } from 'vue'
 import markdownit from 'markdown-it'
 import anchor from 'markdown-it-anchor'
+import footnote from 'markdown-it-footnote'
 import toc from 'markdown-it-table-of-contents'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const md = markdownit()
 md.use(anchor)
+md.use(footnote, {
+    // Enable footnotes in the documentation.
+    inline: true,
+})
 md.use(toc, {
     // We don't use first level header in the MD files, that is reserved for the page title.
     includeLevel: [2, 3],

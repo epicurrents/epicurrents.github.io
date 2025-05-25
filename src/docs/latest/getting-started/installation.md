@@ -2,11 +2,7 @@
 
 ## Requirements
 
-The base Epicurrents library and its core modules can be run in most modern web browsers. Some features, most notably the SharedArrayBuffer-dependent memory management option and FileSystem API for opening files from the local file system have only been tested in Google Chrome and MS Edge, and full functionality is currently only supported in Chromium-based browsers.
-
-Even though the Epicurrents as an application is platform-agnostic, many of the features of the default library require either the use of a mouse and keyboard or a touch-screen.
-
-Lack of available memory may limit the availability of features or cause instability. Recommended RAM for tabletop and laptop computers is 8 Gb or higher.
+The base Epicurrents library and its core modules can be run in most modern web browsers (please see [supported platforms](docs/getting-started/usage#supported-platforms)).
 
 ## Progressive web application
 

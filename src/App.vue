@@ -480,7 +480,7 @@ h1, h2, h3, h4, h5, h6 {
 li wa-icon {
     margin-inline-end: 0.5rem;
 }
-li a {
+nav li a {
     display: block;
 }
 li.title {

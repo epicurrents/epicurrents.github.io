@@ -7,13 +7,20 @@
 ![eeg-controls](/img/eeg-controls.png)
 _EEG controls row above the EEG viewer._
 
+The first three icons on the bar belong to the dataset navigator:
+- `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
+- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
+- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
+
 The controls toolbar above the signals apply general settings on the recording level or to preconfigured channel types. Controls include:
 - **Montage**: A list of preconfigured montages to display the signals in.
 - **Sensitivity**: Signals selsitivity in uV/cm units; larger values will attenuate signal amplitudes and smaller values will increase them.
 - **Timescale**: Controls the amount of time displayed on the screen. The dynamic 3cm/second is recommended for general EEG viewing, but a list of static number of seconds per screen is also provided.
 - **Filters**: Settings for high-pass, low-pass and band-reject filters can be chosen from a predefined list of options. The `Low` option applies to the lower (highpass) filter, the `High` to the higher (lowpass) filter, and `Notch` to the band-reject filter (either 50 Hz or 60 Hz to filter AC artifact).
 
-On the right end of the controls bar is a button for the annotation display that opens on the right end of the viewer. Optionally, the `A` key can be used to toggle the drawer.
+On the right end of the controls bar is a set of tool buttons:
+- The `[[icon:magnifying-glass]]` **inspection tool** allows selecting (by `[[icon:mouse]]` dragging) an EEG signal segment for closer inspection in the [EEG analysis window](docs/eeg-module/analysis-tools). Alternatively, the `I` key can be used to toggle the inspection tool.
+- The `[[icon:message-dots]]` opens the **annotation display** on the right end of the viewer. Optionally, the `A` key can be used to toggle the drawer.
 
 ### Channel labels
 
@@ -34,7 +41,12 @@ _The red area is the visible page, blue bars on top are annotations._
 
 The time displayed on the left side of the navigator shows the time position of the **cursor line**. Depending on the setting, the cursor either displays time elapsed from the start of the recording or the actual time at that point of the recording, provided the EEG source file contains the recording start time. The same applies to the time intervals displayed below the navigator bar.
 
-Double-clicking [`[[icon:mouse]]`] on the navigator will browse to that point in the recording, attempting to position the exact time in the middle of the screen.
+Sometimes EEG recordings may have gaps (i.e. missing segments) in the data. These gaps are shown as gray areas in the navigator.
+
+![eeg-navigator-with-gaps](/img/eeg-navigator-gaps.png)
+_An EEG file with two longer gaps._
+
+Double-clicking [`[[icon:mouse]]`] on the navigator will browse to that point in the recording, attempting to position the clicked point in time in the middle of the screen.
 
 ## Browsing an EEG
 
