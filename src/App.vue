@@ -483,6 +483,9 @@ li wa-icon {
 nav li a {
     display: block;
 }
+nav li a {
+    display: block;
+}
 li.title {
     font-weight: 700;
     color: var(--wa-color-brand-on-normal);
@@ -525,12 +528,21 @@ li.title {
     color: var(--wa-color-text-normal);
     border: solid 1px var(--wa-color-neutral-border-normal);
     border-radius: 0.5em;
-    padding: 1rem;
+    padding: 1rem 0;
     margin-top: 1.5rem;
 }
     .content > div > div.table-of-contents > ul a {
         color: var(--wa-color-text-normal);
     }
+    .content > div > div.table-of-contents > ul > li > a {
+        display: block;
+        padding: 0 1rem;
+        margin: 0.25rem 0;
+    }
+        .content > div > div.table-of-contents > ul > li > a:hover,
+        .content > div > div.table-of-contents > ul ul > li:hover {
+            background-color: var(--wa-color-neutral-fill-quiet);
+        }
     .content > div > div.table-of-contents > ul::before {
         content: 'Table of contents';
         position: absolute;
@@ -544,9 +556,16 @@ li.title {
     }
     .content .table-of-contents ul ul {
         /* Nested TOC */
-        padding-left: 1.5rem;
+        padding: 0;
     }
     .content .table-of-contents ul ul li {
-       padding-left: 0.25rem;
+        display: block;
+        padding-left: 2.25rem;
+    }
+    .content .table-of-contents ul ul li::before {
+        content: '⚬';
+        position: absolute;
+        left: 1.25rem;
+        color: var(--wa-color-text-quiet);
     }
 </style>
