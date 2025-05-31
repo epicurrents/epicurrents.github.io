@@ -60,9 +60,9 @@ _Voltage topogram of the vertex sharp wave._
 
 ### Power spectrum analysis tool
 
-Python integration includes a power spectrum tool that computes the frequency characteristics of every channel on the currently visible display. This tool can be useful for visualizing hemispheric asymmetries and a set of basic indices on the right side of the graph.
+Python integration includes a power spectrum tool that computes the frequency characteristics of every channel on the currently visible display. This tool can be useful for visualizing hemispheric asymmetries and includes a set of basic indices on the right side of the graph.
 
 Channels on the right hemisphere are colored blue, channels on the left are red, and midline channels are green.
 
 ![signal-power-spectrum-tool](/img/signal-power-spectrum-tool.png)
-_Power spectrum of a photic stimulation page._
+_Power spectrum of a photic stimulation run._
