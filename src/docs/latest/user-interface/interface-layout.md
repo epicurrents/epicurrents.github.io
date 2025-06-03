@@ -10,7 +10,16 @@ The interface is composed of four main main components:
 
 ## The viewport component
 
-TBA
+The viewport is responsible for displaying the actual data of the opened study. Its capabilities depend on the study type.
+
+### Viewport controls
+
+All vieports have a `controls` bar on the top. Like the viewport itself, the content of the controls bar depend on the type of the stydy.
+
+Common to all vieports are a set of three icons at the left end of the controls bar that provide quick actions for the current `dataset`:
+- `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
+- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
+- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
 
 ## The menubar component
 
@@ -42,10 +51,19 @@ The three-dot menu `[[icon:ellipsis]]` at the right edge of the menu bar contain
 
 ## The dataset component
 
-The quick actions that are always displayed at the right edge of the controls bar are:
-- `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
-- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
-- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
+The dataset component three parts from top to bottom: the dataset selector, the dataset inspector, and the dataset footer.
+
+### Dataset selector
+
+The dataset selector contains currently available datasets and an options to create a new dataset. Only resources from the currently active dataset are displayed in the inspector below.
+
+### Dataset inspector
+
+Resources from the active dataset are listed in the dataset inspector. In addition to the name of the resource, the inspector shows basic information about each resource (such as the length of the recording and number of electrodes). Clicking on a resource toggles it, i.e. sets it active is it was inactive before and vice versa. Only one resource can be active at a time (for now).
+
+### Dataset footer
+
+The dataset footer is a part of both the `dataset` and the `footer` components, so it is only visible if both of those resources are visible. It displays basic information regarding the dataset and ongoing processes, as well as a toggle for a system menu.
 
 ## The footer component
 

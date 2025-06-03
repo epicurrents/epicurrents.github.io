@@ -560,12 +560,12 @@ li.title {
     }
     .content .table-of-contents ul ul li {
         display: block;
-        padding-left: 2.25rem;
+        padding-left: 2.75rem;
     }
     .content .table-of-contents ul ul li::before {
         content: '⚬';
         position: absolute;
-        left: 1.25rem;
+        left: 1.5rem;
         color: var(--wa-color-text-quiet);
     }
 </style>
