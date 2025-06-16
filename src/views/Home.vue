@@ -9,6 +9,16 @@
             Epicurrents is an open-source, modular and extensible library for reading, processing and displaying
             neurophysiological signal data in the web browser.
         </blockquote>
+        <blockquote class="note">
+            <div class="icon">
+                <wa-icon name="info-circle" variant="regular" fixed-width></wa-icon>
+                <strong>Note</strong>
+            </div>
+            <div class="text">
+                This is an initial release of the documentation and is constantly updated to cover
+                more features of the library.
+            </div>
+        </blockquote>
         <h2>Core features</h2>
         <ul class="features">
             <li>
@@ -41,9 +51,32 @@
             The documentation is organized into sections that describe the library's features and how to use them.
             Each section is accessible from the navigation menu on the left side of the page.
         </p>
+        <p>
+            <router-link to="docs/introduction">Introduction</router-link>
+            details some of the main aspects of the library and quick access to more detailed documentation.
+        </p>
+        <p>
+            <router-link to="docs/getting-started">Getting started</router-link>
+            is a good place to start if you need information on how to get access to the application.
+            This section contains information on installation and basic requirements of running the application.
+        </p>
+        <p>
+            The <router-link to="docs/introduction">user interface</router-link> section
+            has a more complete breakdown on the default application interface and its features.
+        </p>
+        <h3>Study modules</h3>
+        <p>
+            This section contains documentation on the study modules that are included in the library. Included modules
+            determine which study modalities can be processend and viewed in the application.
+        </p>
+        <h3>File readers</h3>
+        <p>
+            File readers for different general-purpose and vendor-specific open file formats can be found under this
+            section.
+        </p>
         <h2>License</h2>
         <code class="license">
-            <p>Copyright 2019-2025 Sampsa Lohi & Epicurrents contributors</p>
+            <p>Copyright 2019- Sampsa Lohi</p>
             <p>
                 Licensed under the Apache License, Version 2.0 (the "License");
                 you may not use the files in this repository except in compliance
@@ -74,13 +107,23 @@
         padding-left: 1.8em;
         text-indent: -1.8em;
     }
-    .features wa-icon {
+    .content wa-icon {
         position: relative;
         top: 0.25em;
         vertical-align: top;
         margin-inline-end: 0.5em;
         color: var(--wa-color-brand-on-normal);
     }
+    .note {
+        display: flex;
+    }
+        .note .icon {
+            flex: 0 0 auto;
+            margin-right: 0.5em;
+        }
+        .note .text {
+            flex: 1 1 auto;
+        }
     .license {
         font-size: 0.8em;
     }

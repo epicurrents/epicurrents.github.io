@@ -35,6 +35,10 @@ router.beforeEach((to, _from, next) => {
         const docPath = to.path.replace(pathVersion ? `/docs/${docVersion}/` : '/docs/', '')
         // Construct route path for breadcrumbs.
         for (const item of documentation) {
+            if (!item.path) {
+                // Skip headers.
+                continue
+            }
             if (docPath.startsWith(item.path)) {
                 routePath.value.push({ ...item})
                 if (docPath === item.path) {
@@ -127,7 +131,6 @@ const isDocParent = (path: string) => {
 }
 
 const loadDocs = (path: string) => {
-    console.log('path', path)
     router.push(path)
 }
 
@@ -232,8 +235,11 @@ if (window.matchMedia) {
         <nav slot="navigation">
             <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
                 <template v-for="(item, idx) in documentation" :key="`nav-${idx}`">
-                    <wa-divider v-if="idx && !item.subitems"></wa-divider>
-                    <wa-tree-item
+                    <wa-divider v-if="idx && !item.path"></wa-divider>
+                    <wa-menu-label v-if="!item.path" :key="`nav-label-${idx}`">
+                        {{ item.name }}
+                    </wa-menu-label>
+                    <wa-tree-item v-else :key="`nav-${idx}`"
                         :expanded="isDocParent(item.path) ? true : undefined"
                         :selected="isDocPath(item.path) ? true : undefined"
                         :data-path="docPathFromPath(item.path)"
@@ -292,7 +298,7 @@ if (window.matchMedia) {
             </ul>
         </aside>
         <footer slot="footer">
-            <p>&copy; 2024 Epicurrents</p>
+            <p>&copy; 2025 Epicurrents</p>
         </footer>
     </wa-page>
 </template>
@@ -403,10 +409,15 @@ wa-page[view='mobile']::part(navigation-toggle) {
         vertical-align: middle;
     }
 [slot='navigation'] {
-    padding: 1rem 0;
+    padding: 0.5rem 0;
 }
 [slot='navigation'] wa-divider {
     margin: 0.5rem 0;
+}
+[slot='navigation'] wa-menu-label::part(base) {
+    padding-left: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
 }
 [slot='navigation-footer'] {
     border-block-start: var(--wa-border-width-s) var(--wa-border-style) var(--wa-color-surface-border);

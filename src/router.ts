@@ -24,6 +24,9 @@ export type NavigationItem = {
  */
 export const documentation = [
     {
+        name: 'Basic use', path: ''
+    },
+    {
         name: 'Introduction',
         path: 'introduction',
 
@@ -61,6 +64,9 @@ export const documentation = [
         ],
     },
     {
+        name: 'Study modules', path: ''
+    },
+    {
         name: 'EEG module',
         path: 'eeg-module',
         subitems: [
@@ -77,6 +83,17 @@ export const documentation = [
                 path: 'eeg-module/analysis-tools',
             },
         ],
+    },
+    {
+        name: 'File readers', path: ''
+    },
+    {
+        name: 'EDF reader',
+        path: 'edf-reader',
+
+    },
+    {
+        name: 'Advanced topics', path: ''
     },
     {
         name: 'Implementation',
@@ -104,6 +121,9 @@ export const documentation = [
                 path: 'library-structure/services',
             },
         ],
+    },
+    {
+        name: 'For developers', path: ''
     },
     {
         name: 'Development',
