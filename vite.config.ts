@@ -20,10 +20,12 @@ export default defineConfig({
             structured: true,
             targets: [
                 {
-                    dest: '/',
+                    dest: 'docs',
                     rename: (_name, _ext, path) => {
                         // Get the docs path from the full file path.
-                        return '../../../../' + path.substring(path.indexOf('/src/docs/') + 5)
+                        const docsPath = path.substring(path.indexOf('/src/docs/') + 10)
+                        const recurseLvls = new Array(docsPath.split('/').length - 1).fill('..').join('/')
+                        return '../../' + recurseLvls + '/' + docsPath
                     },
                     src: 'src/docs/**/*.md',
                 },
