@@ -38,8 +38,8 @@
             Epicurrents are not responsible for any damages or losses resulting from the use of the software.
         </p>
         <p>
-            Epicurrents is not a medical device and should not be used for medical purposes. The software is intended
-            for research and educational purposes only.
+            Epicurrents is not a medical device and should not be used in clinical work. The software is intended
+            for investigational and educational purposes only.
         </p>
     </div>
 </template>

@@ -12,13 +12,21 @@ Epicurrents is intended for educational and scientific use. It is not a medical 
 
 To get started quickly, check out the [getting started](docs/getting-started) section. It details the different ways of accessing and using the library from an end-user's perspective.
 
-### User interface
+## User interface
 
 The [user interface](docs/user-interface) section contains all the information needed to use the default application UI. The default interface is designed for larger displays, but it is possible to develop dedicated interfaces for mobile devices or speific use cases.
 
-## EEG module
+## Study modules
+
+### EEG module
 
 Instructions on using EEG module, including supported file types, record browsing and available analysis tools can be found under the [EEG module](docs/eeg-module) heading.
+
+## File readers
+
+### EDF reader
+
+Instructions on using the EDF/BDF file reader can be found in the [EDF reader](docs/edf-reader) section.
 
 ## Implementing the library
 

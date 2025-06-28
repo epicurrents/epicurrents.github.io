@@ -414,7 +414,7 @@ wa-page[view='mobile']::part(navigation-toggle) {
 [slot='navigation'] wa-divider {
     margin: 0.5rem 0;
 }
-[slot='navigation'] wa-menu-label::part(base) {
+[slot='navigation'] wa-menu-label {
     padding-left: 1rem;
     font-size: 1rem;
     font-weight: 700;
@@ -519,7 +519,7 @@ li.title {
     font-size: 1.125em;
     border-left: solid 0.25em var(--wa-color-brand-on-quiet);
     background-color: var(--wa-color-brand-fill-quiet);
-    border-radius: 0 0.5em 0.5em 0;
+    border-radius: 0.2rem 0.5em 0.5em 0.2rem;
 }
 .content code:not(.license) {
     display: inline-block;

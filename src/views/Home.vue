@@ -11,7 +11,7 @@
         </blockquote>
         <blockquote class="note">
             <div class="icon">
-                <wa-icon name="info-circle" variant="regular" fixed-width></wa-icon>
+                <wa-icon name="info-circle" variant="light" fixed-width></wa-icon>
                 <strong>Note</strong>
             </div>
             <div class="text">
@@ -38,7 +38,7 @@
                 Inspect and annotate signal datasets
             </li>
             <li>
-                <wa-icon name="code" family="duotone" variant="light" fixed-width></wa-icon>
+                <wa-icon name="code" family="duotone" variant="solid" fixed-width></wa-icon>
                 Process signal data with native JavaScript and Python
             </li>
             <li>
@@ -61,8 +61,8 @@
             This section contains information on installation and basic requirements of running the application.
         </p>
         <p>
-            The <router-link to="docs/introduction">user interface</router-link> section
-            has a more complete breakdown on the default application interface and its features.
+            The <router-link to="docs/user-interface">user interface</router-link> section
+            has a more complete breakdown of the default application interface and its features.
         </p>
         <h3>Study modules</h3>
         <p>
