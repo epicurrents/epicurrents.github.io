@@ -91,6 +91,9 @@
                 limitations under the License.
             </p>
         </code>
+        <p>
+            Epicurrents logo &copy; 2025 Sampsa Lohi, all rights reserved.
+        </p>
     </div>
 </template>
 

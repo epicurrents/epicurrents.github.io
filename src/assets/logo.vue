@@ -12,44 +12,59 @@ defineProps({
 </script>
 
 <template>
-<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1">
-
- <g class="layer">
-  <title>Layer 1</title>
-  <g id="layer2">
-   <path d="m64.36,117.77c87.22,-103.03 267.73,-101.54 357.81,-37.92c65.12,45.9 63.6,99.47 54.66,133.3c-8.54,25.63 -29.61,39.88 -56.36,41.88" fill="none" fill-opacity="0.5" id="path8840" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <path d="m411.61,268.63c24.99,38.44 -2.41,90.32 -68.77,77.72" fill="none" fill-opacity="0.5" id="path9259" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <path d="m47.43,144.46c-11.7,22.84 -31.27,106.33 30.72,145.13m28.38,10.24c28.7,8.51 64.31,9.13 88.45,5.69m23.05,12.88c0,0 11.77,21.02 20.73,28.71c14.41,12.36 39.76,12.04 49.35,28.42c7.56,12.91 4.38,43.1 4.38,43.1" fill="none" fill-opacity="0.5" id="path9261" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <path d="m349.32,397.2l-0.49,51.35" fill="none" fill-opacity="0.5" id="path9263" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <path d="m290.61,224.52c73.5,-21.84 73.59,-71.68 66.28,-108.62" fill="none" fill-opacity="0.5" id="path9267-2" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m418.88,128.43c45.28,34.99 19.31,102.18 -23.61,83.63" fill="none" fill-opacity="0.5" id="path9269" stroke="#0057af" stroke-width="20"/>
-   <path d="m220.21,110.24c-17.68,26.59 -22.78,91.14 -11.57,125.53" fill="none" fill-opacity="0.5" id="path9273" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m285,84.48c-10.51,-6.29 -34.48,-3.05 -46.21,5.86" fill="none" fill-opacity="0.5" id="path9273-7" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m139.58,255.26c-15.83,7.5 -53.16,7.08 -63.84,-33.69c-10.68,-40.77 13.42,-102.89 72.22,-124.06" fill="none" fill-opacity="0.5" id="path9275" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m144.26,181.57c-24.46,8.68 -44.04,8.3 -66.91,0.75" fill="none" fill-opacity="0.5" id="path9275-3" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m312.11,287.28l26.96,-13.05" fill="none" fill-opacity="0.5" id="path9279" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="57.68" cy="131.22" fill="#007fff" fill-opacity="0.5" id="path9333" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="161.19" cy="96.06" fill="#007fff" id="path9333-0" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="228.53" cy="99.18" fill="#007fff" id="path9333-0-5" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="152.23" cy="252.26" fill="#007fff" id="path9333-0-7" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="211.15" cy="249.65" fill="#007fff" id="path9333-0-45" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="408.79" cy="119.79" fill="#007fff" id="path9333-0-1" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="355.6" cy="102.41" fill="#007fff" id="path9333-0-1-7" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="383.26" cy="209.46" fill="#007fff" id="path9333-0-72" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="404.25" cy="255.33" fill="#007fff" fill-opacity="0.5" id="path9333-0-55" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="299.03" cy="294.22" fill="#007fff" fill-opacity="0.5" id="path9333-0-08" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="353.77" cy="265.86" fill="#007fff" fill-opacity="0.5" id="path9333-0-3" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="327.89" cy="341.86" fill="#007fff" fill-opacity="0.5" id="path9333-0-64" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="349.83" cy="383.23" fill="#007fff" fill-opacity="0.5" id="path9333-0-43" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="347.83" cy="463" fill="#007fff" fill-opacity="0.5" id="path9333-0-89" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="291.99" cy="435.08" fill="#007fff" fill-opacity="0.5" id="path9333-0-65" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="92.08" cy="295.99" fill="#007fff" fill-opacity="0.5" id="path9333-0-79" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="210.05" cy="305.09" fill="#007fff" fill-opacity="0.5" id="path9333-0-01" r="15" :stroke="strokeColor" :stroke-width="strokeWidth"/>
-   <circle cx="277.77" cy="228.52" fill="#007fff" id="path9333-0-48" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="155.34" cy="176.6" fill="#007fff" id="path9333-0-7-4" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <path d="m240.65,173.25c36.14,6.31 102.02,-26.58 66.72,-71.92" fill="none" fill-opacity="0.5" id="path9273-70" stroke="#0057af" stroke-width="20" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-   <circle cx="297.88" cy="90.99" fill="#007fff" id="svg_1" r="15" :stroke="strokeColor" :stroke-width="strokeWidth" transform="matrix(1, 0, 0, 1, 0, 0)"/>
-  </g>
- </g>
-</svg>
+  <svg version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <metadata>
+      <rdf:RDF xmlns:cc="http://web.resource.org/cc/"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+        <cc:work rdf:about="">
+        <cc:license>
+          <cc:prohibits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+          <cc:prohibits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        </cc:license>
+        </cc:work>
+      </rdf:RDF>
+    </metadata>
+    <g class="layer">
+      <title>Layer 1</title>
+      <g fill="none" fill-opacity=".5">
+      <g :stroke="strokeColor" :stroke-width="strokeWidth">
+        <path d="m58.128 114.12c65.13-92.727 204.64-91.46 270.89-79.359 181.55 33.16 195.19 182.89 92.317 231.26"/>
+        <path d="m408.41 287.31c0.31355 41.613-13.349 52.65-63.14 59.087m50.501-66.758c-22.245 8.9941-32.078 12.891-57.404 16.091"/>
+        <path d="m45.685 140.97c-11.7 22.84-31.021 103.84 30.969 142.64m23.893 13.73c34.682 14.492 97.426 18.602 124.56 13.667m15.186 9.7605s6.4626 27.161 28.236 40.106c14.421 8.5962 15.884 18.098 19.79 55.923"/>
+        <path d="m332.66 363.14 14.633 74.677"/>
+      </g>
+      <g stroke="#0057af" stroke-width="20">
+        <path d="m303.51 224.26c81.105-46.863 65.803-98.391 58.493-135.33"/>
+        <path d="m412.18 117.85c55.503 35.343 41.821 114.2-49.313 126.62"/>
+        <path d="m230.43 82.038c-44.476 33.494-32.187 130.33-15.69 180.24"/>
+        <path d="m303.51 76.901c-22.862-9.264-38.984-10.531-70.358 1.101"/>
+        <path d="m155.91 264.11c-32.78 1.019-69.487-1.7727-80.167-42.543s10.247-111.35 86.321-133.93"/>
+        <path d="m155.54 178.04c-24.46 8.68-55.321 11.825-78.191 4.2752"/>
+      </g>
+      </g>
+      <g fill="#007fff" :stroke="strokeColor" :stroke-width="strokeWidth">
+        <circle cx="51.448" cy="127.48" r="15" fill-opacity=".5"/>
+        <circle cx="162.6" cy="86.189" r="15"/>
+        <circle cx="231" cy="79.791" r="15"/>
+        <circle cx="156.22" cy="264.22" r="15"/>
+        <circle cx="216.63" cy="262.61" r="15"/>
+        <circle cx="410.91" cy="116.26" r="15"/>
+        <circle cx="362.65" cy="88.309" r="15"/>
+        <circle cx="360.88" cy="243.99" r="15"/>
+        <g fill-opacity=".5">
+          <circle cx="408.07" cy="271.67" r="15"/>
+          <circle cx="322.36" cy="296.27" r="15"/>
+          <circle cx="330.2" cy="347.72" r="15"/>
+          <circle cx="350.37" cy="451.94" r="15"/>
+          <circle cx="290.56" cy="430.17" r="15"/>
+          <circle cx="87.593" cy="289.01" r="15"/>
+          <circle cx="237.91" cy="306.23" r="15"/>
+        </g>
+        <circle cx="291.48" cy="231.76" r="15"/>
+        <circle cx="155.34" cy="176.6" r="15"/>
+      </g>
+      <path d="m240.65 173.25c51.651 11.245 114.53-49.846 63.724-95.891" fill="none" fill-opacity=".5" stroke="#0057af" stroke-width="20"/>
+      <circle cx="303.52" cy="77.242" r="15" fill="#007fff" :stroke="strokeColor" :stroke-width="strokeWidth"/>
+    </g>
+  </svg>
 </template>
