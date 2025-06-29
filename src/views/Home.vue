@@ -9,16 +9,11 @@
             Epicurrents is an open-source, modular and extensible library for reading, processing and displaying
             neurophysiological signal data in the web browser.
         </blockquote>
-        <blockquote class="note">
-            <div class="icon">
-                <wa-icon name="info-circle" variant="light" fixed-width></wa-icon>
-                <strong>Note</strong>
-            </div>
-            <div class="text">
-                This is an initial release of the documentation and is constantly updated to cover
-                more features of the library.
-            </div>
-        </blockquote>
+        <wa-callout>
+            <wa-icon slot="icon" name="circle-info" variant="regular"></wa-icon>
+            This is an initial release of the documentation and is constantly updated to cover
+            more features of the library.
+        </wa-callout>
         <h2>Core features</h2>
         <ul class="features">
             <li>
@@ -110,7 +105,7 @@
         padding-left: 1.8em;
         text-indent: -1.8em;
     }
-    .content wa-icon {
+    .content li wa-icon {
         position: relative;
         top: 0.25em;
         vertical-align: top;
