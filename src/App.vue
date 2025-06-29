@@ -233,27 +233,29 @@ if (window.matchMedia) {
             Navigation
         </nav>
         <nav slot="navigation">
-            <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
-                <template v-for="(item, idx) in documentation" :key="`nav-${idx}`">
-                    <wa-divider v-if="idx && !item.path"></wa-divider>
-                    <wa-menu-label v-if="!item.path" :key="`nav-label-${idx}`">
-                        {{ item.name }}
-                    </wa-menu-label>
-                    <wa-tree-item v-else :key="`nav-${idx}`"
-                        :expanded="isDocParent(item.path) ? true : undefined"
-                        :selected="isDocPath(item.path) ? true : undefined"
-                        :data-path="docPathFromPath(item.path)"
-                    >
-                        {{ item.name }}
-                        <wa-tree-item v-for="(subitem, idy) in (item.subitems || [])" :key="`nav-${idx}-${idy}`"
-                            :selected="isDocPath(subitem.path) ? true : undefined"
-                            :data-path="docPathFromPath(subitem.path)"
+            <wa-scroller orientation="vertical">
+                <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
+                    <template v-for="(item, idx) in documentation" :key="`nav-${idx}`">
+                        <wa-divider v-if="idx && !item.path"></wa-divider>
+                        <wa-menu-label v-if="!item.path" :key="`nav-label-${idx}`">
+                            {{ item.name }}
+                        </wa-menu-label>
+                        <wa-tree-item v-else :key="`nav-${idx}`"
+                            :expanded="isDocParent(item.path) ? true : undefined"
+                            :selected="isDocPath(item.path) ? true : undefined"
+                            :data-path="docPathFromPath(item.path)"
                         >
-                            {{ subitem.name.split('/').pop() }}
+                            {{ item.name }}
+                            <wa-tree-item v-for="(subitem, idy) in (item.subitems || [])" :key="`nav-${idx}-${idy}`"
+                                :selected="isDocPath(subitem.path) ? true : undefined"
+                                :data-path="docPathFromPath(subitem.path)"
+                            >
+                                {{ subitem.name.split('/').pop() }}
+                            </wa-tree-item>
                         </wa-tree-item>
-                    </wa-tree-item>
-                </template>
-            </wa-tree>
+                    </template>
+                </wa-tree>
+            </wa-scroller>
         </nav>
         <nav slot="navigation-footer">
             <ul>
