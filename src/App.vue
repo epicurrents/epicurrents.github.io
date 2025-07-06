@@ -34,7 +34,7 @@ router.beforeEach((to, _from, next) => {
         // Remove the prefix from the path.
         const docPath = to.path.replace(pathVersion ? `/docs/${docVersion}/` : '/docs/', '')
         // Construct route path for breadcrumbs.
-        for (const [section, items] of Object.entries(documentation)) {
+        for (const [_section, items] of Object.entries(documentation)) {
             for (const item of items) {
                 if (!item.path) {
                     // Skip headers.
@@ -59,7 +59,7 @@ router.beforeEach((to, _from, next) => {
         // Inject previous and next page information.
         // We need to flatten the navigation tree to include child routes.
         const navList = [] as NavigationItem[]
-        for (const [section, items] of Object.entries(documentation)) {
+        for (const [_section, items] of Object.entries(documentation)) {
             for (const item of items) {
                 navList.push(item)
                 if (item.subitems) {
