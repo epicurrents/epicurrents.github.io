@@ -31,25 +31,27 @@ router.beforeEach((to, _from, next) => {
             docVersion = pathVersion[1]
         }
         to.meta.version = docVersion
-        // Remove the prefixx from the path.
+        // Remove the prefix from the path.
         const docPath = to.path.replace(pathVersion ? `/docs/${docVersion}/` : '/docs/', '')
         // Construct route path for breadcrumbs.
-        for (const item of documentation) {
-            if (!item.path) {
-                // Skip headers.
-                continue
-            }
-            if (docPath.startsWith(item.path)) {
-                routePath.value.push({ ...item})
-                if (docPath === item.path) {
-                    to.meta.subitems = item.subitems || null
-                    break
+        for (const [section, items] of Object.entries(documentation)) {
+            for (const item of items) {
+                if (!item.path) {
+                    // Skip headers.
+                    continue
                 }
-            }
-            if (docPath.length > item.path.length && item.subitems) {
-                for (const subitem of item.subitems) {
-                    if (docPath === subitem.path) {
-                        routePath.value.push({ ...subitem})
+                if (docPath.startsWith(item.path)) {
+                    routePath.value.push({ ...item})
+                    if (docPath === item.path) {
+                        to.meta.subitems = item.subitems || null
+                        break
+                    }
+                }
+                if (docPath.length > item.path.length && item.subitems) {
+                    for (const subitem of item.subitems) {
+                        if (docPath === subitem.path) {
+                            routePath.value.push({ ...subitem})
+                        }
                     }
                 }
             }
@@ -57,10 +59,12 @@ router.beforeEach((to, _from, next) => {
         // Inject previous and next page information.
         // We need to flatten the navigation tree to include child routes.
         const navList = [] as NavigationItem[]
-        for (const item of documentation) {
-            navList.push(item)
-            if (item.subitems) {
-                navList.push(...item.subitems)
+        for (const [section, items] of Object.entries(documentation)) {
+            for (const item of items) {
+                navList.push(item)
+                if (item.subitems) {
+                    navList.push(...item.subitems)
+                }
             }
         }
         for (let i=0; i<navList.length; i++) {
@@ -68,17 +72,31 @@ router.beforeEach((to, _from, next) => {
                 if (!i) {
                     to.meta.prev = null
                 } else {
+                    let prevIdx = i - 1
+                    // Find the previous item that has a path.
+                    while (prevIdx >= 0 && !navList[prevIdx].path) {
+                        prevIdx--
+                    }
+                    if (prevIdx > 0) {
                     to.meta.prev = {
-                        name: navList[i-1].name,
-                        path: pathVersion ? `/docs/${docVersion}/${navList[i-1].path}`
-                                          : `/docs/${navList[i-1].path}`,
+                        name: navList[prevIdx].name,
+                        path: pathVersion ? `/docs/${docVersion}/${navList[prevIdx].path}`
+                                          : `/docs/${navList[prevIdx].path}`,
+                    }
                     }
                 }
                 if (i < navList.length - 1) {
-                    to.meta.next = {
-                        name: navList[i+1].name,
-                        path: pathVersion ? `/docs/${docVersion}/${navList[i+1].path}`
-                                          : `/docs/${navList[i+1].path}`,
+                    // Find the next item that has a path.
+                    let nextIdx = i + 1
+                    while (nextIdx < navList.length && !navList[nextIdx].path) {
+                        nextIdx++
+                    }
+                    if (nextIdx < navList.length) {
+                        to.meta.next = {
+                            name: navList[nextIdx].name,
+                            path: pathVersion ? `/docs/${docVersion}/${navList[nextIdx].path}`
+                                            : `/docs/${navList[nextIdx].path}`,
+                        }
                     }
                 } else {
                     to.meta.next = null
@@ -192,9 +210,10 @@ if (window.matchMedia) {
                 </div>
             </div>
             <div class="right">
-                <wa-input type="search" placeholder="Search" disabled>
-                    <wa-icon name="search" slot="prefix"></wa-icon>
+                <wa-input id="search" type="search" placeholder="Search" disabled>
+                    <wa-icon name="search" slot="start"></wa-icon>
                 </wa-input>
+                <wa-tooltip for="search">Search is not implemented yet.</wa-tooltip>
                 <div class="mode">
                     <div>Mode</div>
                     <wa-radio-group
@@ -203,18 +222,18 @@ if (window.matchMedia) {
                         value="system"
                         @input="mode = $event.target.value"
                     >
-                        <wa-radio-button value="light">
-                            <wa-icon id="mode-light" name="sun" variant="regular"></wa-icon>
-                            <wa-tooltip for="mode-light">Light</wa-tooltip>
-                        </wa-radio-button>
-                        <wa-radio-button value="dark">
-                            <wa-icon id="mode-dark" name="moon" variant="regular"></wa-icon>
-                            <wa-tooltip for="mode-dark">Dark</wa-tooltip>
-                        </wa-radio-button>
-                        <wa-radio-button value="system">
-                            <wa-icon id="mode-system" name="circle-half-stroke" variant="regular"></wa-icon>
-                            <wa-tooltip for="mode-system">System</wa-tooltip>
-                        </wa-radio-button>
+                        <wa-radio id="mode-light" appearance="button" value="light">
+                            <wa-icon name="sun" variant="regular"></wa-icon>
+                        </wa-radio>
+                        <wa-tooltip for="mode-light">Light</wa-tooltip>
+                        <wa-radio id="mode-dark" appearance="button" value="dark">
+                            <wa-icon name="moon" variant="regular"></wa-icon>
+                        </wa-radio>
+                        <wa-tooltip for="mode-dark">Dark</wa-tooltip>
+                        <wa-radio id="mode-system" appearance="button" value="system">
+                            <wa-icon name="circle-half-stroke" variant="regular"></wa-icon>
+                        </wa-radio>
+                        <wa-tooltip for="mode-system">System</wa-tooltip>
                     </wa-radio-group>
                 </div>
             </div>
@@ -234,13 +253,13 @@ if (window.matchMedia) {
         </nav>
         <nav slot="navigation">
             <wa-scroller orientation="vertical">
-                <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
-                    <template v-for="(item, idx) in documentation" :key="`nav-${idx}`">
-                        <wa-divider v-if="idx && !item.path"></wa-divider>
-                        <wa-menu-label v-if="!item.path" :key="`nav-label-${idx}`">
-                            {{ item.name }}
-                        </wa-menu-label>
-                        <wa-tree-item v-else :key="`nav-${idx}`"
+                <template v-for="([section, items], idx) in Object.entries(documentation)" :key="`nav-${idx}`">
+                    <wa-divider v-if="idx"></wa-divider>
+                    <strong class="section">
+                        {{ section }}
+                    </strong>
+                    <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
+                        <wa-tree-item v-for="(item, idy) of items" :key="`nav-${idx}-${idy}`"
                             :expanded="isDocParent(item.path) ? true : undefined"
                             :selected="isDocPath(item.path) ? true : undefined"
                             :data-path="docPathFromPath(item.path)"
@@ -253,8 +272,8 @@ if (window.matchMedia) {
                                 {{ subitem.name.split('/').pop() }}
                             </wa-tree-item>
                         </wa-tree-item>
-                    </template>
-                </wa-tree>
+                    </wa-tree>
+                </template>
             </wa-scroller>
         </nav>
         <nav slot="navigation-footer">
@@ -341,7 +360,7 @@ wa-page[view='mobile']::part(navigation-toggle) {
 }
     [slot='header'] .logo {
         display: inline-block;
-        height: 5rem;
+        height: 6rem;
         padding: 0.5rem;
         border-radius: 0.5rem;
         border: solid 1px var(--wa-color-brand-border-normal);
@@ -476,10 +495,21 @@ aside li,
 nav li {
     padding: 0.25rem 1rem;
 }
+wa-input[type='search'] {
+    width: 100%;
+    max-inline-size: 12.5rem;
+}
 aside ul {
     padding: 1rem 0;
     border-radius: 0.5rem;
     border: solid 1px var(--wa-color-neutral-border-normal);
+}
+nav strong {
+    color: var(--wa-color-brand-on-normal);
+    margin-inline-start: 1rem;
+}
+nav wa-tree {
+    margin-inline-start: 0.25rem;
 }
 nav wa-tree-item::part(item) {
     cursor: pointer;
@@ -507,10 +537,24 @@ li.title {
     CONTENT STYLES
 ***********************/
 .content h1 {
+    font-size: 2rem;
     font-variant: small-caps;
+    margin-block-start: 1.5rem;
+    margin-block-end: 1.5rem;
 }
 .content h2 {
-    border-bottom: solid 1px var(--wa-color-brand-border-loud);
+    border-bottom: solid 1px var(--wa-color-brand-border-normal);
+    font-size: 1.5rem;
+    margin-block-start: 1rem;
+    margin-block-end: 1rem;
+}
+.content h3 {
+    font-size: 1.2rem;
+    margin: 0.75rem 0;
+}
+.content h4 {
+    font-weight: bold;
+    margin: 0.5rem 0;
 }
 .content a {
     color: var(--wa-color-text-link);
@@ -518,6 +562,7 @@ li.title {
 .content blockquote {
     margin: 1em 0;
     padding: 0.5em 1em;
+    font-family: inherit;
     font-size: 1.125em;
     border-left: solid 0.25em var(--wa-color-brand-on-quiet);
     background-color: var(--wa-color-brand-fill-quiet);
@@ -535,28 +580,33 @@ li.title {
     object-fit: scale-down;
     vertical-align: middle;
 }
-.content > div > div.table-of-contents > ul {
+.content p {
+    margin: 1rem 0;
+}
+.content .table-of-contents > ul {
     position: relative;
     list-style-type: none;
     color: var(--wa-color-text-normal);
     border: solid 1px var(--wa-color-neutral-border-normal);
     border-radius: 0.5em;
     padding: 1rem 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
     margin-top: 1.5rem;
 }
-    .content > div > div.table-of-contents > ul a {
+    .content .table-of-contents > ul a {
         color: var(--wa-color-text-normal);
     }
-    .content > div > div.table-of-contents > ul > li > a {
+    .content .table-of-contents > ul > li > a {
         display: block;
         padding: 0 1rem;
         margin: 0.25rem 0;
     }
-        .content > div > div.table-of-contents > ul > li > a:hover,
-        .content > div > div.table-of-contents > ul ul > li:hover {
+        .content .table-of-contents > ul > li > a:hover,
+        .content .table-of-contents > ul ul > li:hover {
             background-color: var(--wa-color-neutral-fill-quiet);
         }
-    .content > div > div.table-of-contents > ul::before {
+    .content .table-of-contents > ul::before {
         content: 'Table of contents';
         position: absolute;
         top: -0.75rem;
@@ -569,6 +619,7 @@ li.title {
     }
     .content .table-of-contents ul ul {
         /* Nested TOC */
+        margin-inline-start: 0;
         padding: 0;
     }
     .content .table-of-contents ul ul li {

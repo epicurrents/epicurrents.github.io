@@ -4,6 +4,8 @@ import About from './views/About.vue'
 import Docs from './views/Docs.vue'
 import License from './views/License.vue'
 
+export type DocumentationTree = Record<string, NavigationItem[]>
+
 export type NavigationItem = {
     name: string
     path: string
@@ -22,115 +24,110 @@ export type NavigationItem = {
  * }[]
  * ````
  */
-export const documentation = [
-    {
-        name: 'Basic use', path: ''
-    },
-    {
-        name: 'Introduction',
-        path: 'introduction',
+export const documentation = {
+    'Basic use': [
+        {
+            name: 'Introduction',
+            path: 'introduction',
 
-    },
-    {
-        name: 'Getting started',
-        path: 'getting-started',
-        subitems: [
-            {
-                name: 'Installation',
-                path: 'getting-started/installation',
-            },
-            {
-                name: 'Usage',
-                path: 'getting-started/usage',
-            },
-        ],
-    },
-    {
-        name: 'User interface',
-        path: 'user-interface',
-        subitems: [
-            {
-                name: 'Settings',
-                path: 'user-interface/settings',
-            },
-            {
-                name: 'Interface layout',
-                path: 'user-interface/interface-layout',
-            },
-            {
-                name: 'Opening files',
-                path: 'user-interface/opening-files',
-            },
-        ],
-    },
-    {
-        name: 'Study modules', path: ''
-    },
-    {
-        name: 'EEG module',
-        path: 'eeg-module',
-        subitems: [
-            {
-                name: 'Supported file types',
-                path: 'eeg-module/supported-file-types',
-            },
-            {
-                name: 'EEG viewer',
-                path: 'eeg-module/eeg-viewer',
-            },
-            {
-                name: 'Analysis tools',
-                path: 'eeg-module/analysis-tools',
-            },
-        ],
-    },
-    {
-        name: 'File readers', path: ''
-    },
-    {
-        name: 'EDF reader',
-        path: 'edf-reader',
+        },
+        {
+            name: 'Getting started',
+            path: 'getting-started',
+            subitems: [
+                {
+                    name: 'Installation',
+                    path: 'getting-started/installation',
+                },
+                {
+                    name: 'Usage',
+                    path: 'getting-started/usage',
+                },
+            ],
+        },
+        {
+            name: 'User interface',
+            path: 'user-interface',
+            subitems: [
+                {
+                    name: 'Settings',
+                    path: 'user-interface/settings',
+                },
+                {
+                    name: 'Interface layout',
+                    path: 'user-interface/interface-layout',
+                },
+                {
+                    name: 'Opening files',
+                    path: 'user-interface/opening-files',
+                },
+            ],
+        },
+    ],
+    'Study modules': [
+        {
+            name: 'EEG module',
+            path: 'eeg-module',
+            subitems: [
+                {
+                    name: 'Supported file types',
+                    path: 'eeg-module/supported-file-types',
+                },
+                {
+                    name: 'EEG viewer',
+                    path: 'eeg-module/eeg-viewer',
+                },
+                {
+                    name: 'Analysis tools',
+                    path: 'eeg-module/analysis-tools',
+                },
+            ],
+        },
+    ],
+    'File readers': [
+        {
+            name: 'EDF reader',
+            path: 'edf-reader',
 
-    },
-    {
-        name: 'Advanced topics', path: ''
-    },
-    {
-        name: 'Implementation',
-        path: 'implementation',
+        },
+    ],
+    'Advanced topics': [
+        {
+            name: 'Implementation',
+            path: 'implementation',
 
-    },
-    {
-        name: 'Library structure',
-        path: 'library-structure',
-        subitems: [
-            {
-                name: 'Core application',
-                path: 'library-structure/core-application',
-            },
-            {
-                name: 'Study modules',
-                path: 'library-structure/study-modules',
-            },
-            {
-                name: 'File readers',
-                path: 'library-structure/file-readers',
-            },
-            {
-                name: 'Services',
-                path: 'library-structure/services',
-            },
-        ],
-    },
-    {
-        name: 'For developers', path: ''
-    },
-    {
-        name: 'Development',
-        path: 'development',
+        },
+        {
+            name: 'Library structure',
+            path: 'library-structure',
+            subitems: [
+                {
+                    name: 'Core application',
+                    path: 'library-structure/core-application',
+                },
+                {
+                    name: 'Study modules',
+                    path: 'library-structure/study-modules',
+                },
+                {
+                    name: 'File readers',
+                    path: 'library-structure/file-readers',
+                },
+                {
+                    name: 'Services',
+                    path: 'library-structure/services',
+                },
+            ],
+        },
+    ],
+    'For developers': [
+        {
+            name: 'Development',
+            path: 'development',
 
-    },
-] as NavigationItem[]
+        },
+    ],
+ } as DocumentationTree
 
 /** Array of Vue Router routes. */
 const routes: Array<RouteRecordRaw> = [

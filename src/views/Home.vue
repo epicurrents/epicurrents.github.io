@@ -1,5 +1,17 @@
 <script setup lang="ts">
+const license = `Copyright 2019- Sampsa Lohi
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use the files in this repository except in compliance
+with the License. You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.`
 </script>
 
 <template>
@@ -70,22 +82,7 @@
             section.
         </p>
         <h2>License</h2>
-        <code class="license">
-            <p>Copyright 2019- Sampsa Lohi</p>
-            <p>
-                Licensed under the Apache License, Version 2.0 (the "License");
-                you may not use the files in this repository except in compliance
-                with the License. You may obtain a copy of the License at
-            </p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;http://www.apache.org/licenses/LICENSE-2.0</p>
-            <p>
-                Unless required by applicable law or agreed to in writing, software
-                distributed under the License is distributed on an "AS IS" BASIS,
-                WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-                See the License for the specific language governing permissions and
-                limitations under the License.
-            </p>
-        </code>
+        <pre class="license">{{ license }}</pre>
         <p>
             Epicurrents logo &copy; 2025 Sampsa Lohi, all rights reserved.
         </p>
@@ -94,11 +91,13 @@
 
 <style scoped>
 .features {
-    list-style-type: none;
-    padding: 0.5em 1em;
-    font-size: 1.2em;
     background-color: var(--wa-color-brand-fill-quiet);
     border-radius: 0.5em;
+    font-size: 1.2em;
+    list-style-type: none;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    padding: 0.5em 1em;
 }
     .features li {
         margin: 0.5em 0.25em;
@@ -123,6 +122,11 @@
             flex: 1 1 auto;
         }
     .license {
-        font-size: 0.8em;
+        display: block;
+        font-size: 0.9em;
+        margin: 1em 0;
+        padding: 1rem;
+        background-color: var(--wa-color-fill-quiet);
+        border-radius: 0.5rem;
     }
 </style>
