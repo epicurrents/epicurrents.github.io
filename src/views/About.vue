@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <div class="content">
+    <main class="content">
         <h1>About Epicurrents</h1>
         <p>
             Epicurrents is an open-source, collaborative project. Although not officially affiliated with any company
@@ -41,7 +41,7 @@
             Epicurrents is not a medical device and should not be used in clinical work. The software is intended
             for investigational and educational purposes only.
         </p>
-    </div>
+    </main>
 </template>
 
 <style scoped>

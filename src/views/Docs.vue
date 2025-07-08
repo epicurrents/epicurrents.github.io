@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, type PropType } from 'vue'
+import { onUnmounted, ref, watch, type PropType } from 'vue'
 import { onMounted } from 'vue'
 import markdownit from 'markdown-it'
 import anchor from 'markdown-it-anchor'
@@ -66,6 +66,16 @@ const loadDoc = async (path: string[]) => {
                 `<wa-icon name="$1" variant="regular"></wa-icon>`
             )
         isLoading.value = false
+        requestAnimationFrame(() => {
+            // Move the TOC to the aside element if we're on desktop.
+            const toc = document.querySelector('.doc > .table-of-contents') as HTMLElement
+            const aside = document.querySelector('aside#docs-toc') as HTMLElement
+            if (toc && aside) {
+                toc.classList.add('wa-mobile-only')
+                aside.style.display = 'block'
+                aside.innerHTML = toc.innerHTML
+            }
+        })
     } else {
         content.value = `<h2>Not found</h2><p>The requested document could not be found.</p>`
         isLoading.value = false
@@ -77,10 +87,20 @@ watch(() => props.path, (value) => {
 onMounted(async () => {
     loadDoc(props.path)
 })
+onUnmounted(() => {
+    // Clear the content when the component is unmounted.
+    content.value = ''
+    isLoading.value = true
+    const aside = document.querySelector('aside#docs-toc') as HTMLElement
+    if (aside) {
+        aside.style.display = 'none'
+        aside.innerHTML = ''
+    }
+})
 </script>
 
 <template>
-    <div class="content">
+    <main class="content">
         <h1>{{ route.meta.name }} <wa-spinner v-if="isLoading"></wa-spinner></h1>
         <wa-details v-if="route.meta.subitems" class="subsections" summary="Sub-sections">
             <ul>
@@ -102,7 +122,7 @@ onMounted(async () => {
                 {{ route.meta.next.name }} →
             </router-link>
         </div>
-    </div>
+    </main>
 </template>
 
 <style scoped>
@@ -129,6 +149,30 @@ h1 wa-spinner {
     padding: 0;
     margin-bottom: 0.5rem;
 }
+.doc:deep(div.table-of-contents > ul) {
+    position: relative;
+    margin-block-end: 0;
+    margin-block-start: 1.5rem;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+}
+.doc:deep(div.table-of-contents > ul::before) {
+    position: absolute;
+    top: -0.75rem;
+    left: 0.5rem;
+    font-weight: 700;
+    color: var(--wa-color-brand-on-normal);
+    background-color: var(--wa-color-surface-default);
+    display: block;
+    padding: 0 0.5rem;
+}
+    .doc:deep(.table-of-contents > ul a) {
+        color: var(--wa-color-text-normal);
+    }
+        .doc:deep(.table-of-contents > ul > li > a:hover),
+        .doc:deep(.table-of-contents > ul ul > li:hover) {
+            background-color: var(--wa-color-neutral-fill-quiet);
+        }
 .doc :deep(wa-icon) {
     position: relative;
     top: 0.125em;

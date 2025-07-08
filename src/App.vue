@@ -192,7 +192,7 @@ if (window.matchMedia) {
 </script>
 
 <template>
-    <wa-page disable-sticky="aside" mobile-breakpoint="920">
+    <wa-page disable-sticky="aside" mobile-breakpoint="960">
         <header slot="header" class="wa-split">
             <div class="left">
                 <router-link to="/">
@@ -210,12 +210,8 @@ if (window.matchMedia) {
                 </div>
             </div>
             <div class="right">
-                <wa-input id="search" type="search" placeholder="Search" disabled>
-                    <wa-icon name="search" slot="start"></wa-icon>
-                </wa-input>
-                <wa-tooltip for="search">Search is not implemented yet.</wa-tooltip>
                 <div class="mode">
-                    <div>Mode</div>
+                    <div>Theme</div>
                     <wa-radio-group
                         name="mode"
                         orientation="horizontal"
@@ -225,17 +221,21 @@ if (window.matchMedia) {
                         <wa-radio id="mode-light" appearance="button" value="light">
                             <wa-icon name="sun" variant="regular"></wa-icon>
                         </wa-radio>
-                        <wa-tooltip for="mode-light">Light</wa-tooltip>
                         <wa-radio id="mode-dark" appearance="button" value="dark">
                             <wa-icon name="moon" variant="regular"></wa-icon>
                         </wa-radio>
-                        <wa-tooltip for="mode-dark">Dark</wa-tooltip>
                         <wa-radio id="mode-system" appearance="button" value="system">
                             <wa-icon name="circle-half-stroke" variant="regular"></wa-icon>
                         </wa-radio>
-                        <wa-tooltip for="mode-system">System</wa-tooltip>
                     </wa-radio-group>
+                    <wa-tooltip for="mode-light" placement="bottom">Light</wa-tooltip>
+                    <wa-tooltip for="mode-dark" placement="bottom">Dark</wa-tooltip>
+                    <wa-tooltip for="mode-system" placement="bottom">System</wa-tooltip>
                 </div>
+                <wa-input id="search" type="search" placeholder="Search" disabled>
+                    <wa-icon name="search" slot="start"></wa-icon>
+                </wa-input>
+                <wa-tooltip for="search" placement="bottom">Search is not implemented yet.</wa-tooltip>
             </div>
         </header>
         <nav slot="subheader">
@@ -304,16 +304,16 @@ if (window.matchMedia) {
                 </li>
             </ul>
         </nav>
-        <main>
-            <router-view></router-view>
-        </main>
-        <aside slot="aside" class="wa-desktop-only">
+        <router-view></router-view>
+        <aside id="docs-toc" slot="aside" class="conditional table-of-contents wa-desktop-only">
+            <!-- This will be dynamically populated from the docs component. -->
+        </aside>
+        <aside slot="aside" class="social-links wa-desktop-only">
             <ul>
-                <li class="title">Development</li>
                 <li>
                     <a href="https://github.com/epicurrents" target="_blank">
                         <wa-icon name="github" family="brands" slot="prefix"></wa-icon>
-                        GitHub
+                        GitHub repository
                     </a>
                 </li>
             </ul>
@@ -327,7 +327,7 @@ if (window.matchMedia) {
 <style>
 wa-page {
     --menu-width: 15rem;
-    --aside-width: 15rem;
+    --aside-width: 20rem;
     color: var(--wa-color-text-normal);
 }
 wa-page[view='desktop'] {
@@ -340,12 +340,15 @@ wa-page[view='mobile'] {
     --aside-width: auto;
 }
 wa-page[view='mobile']::part(navigation-toggle) {
+    background-color: var(--wa-color-surface-default);
+    border-radius: 0.5rem;
+    border: solid 1px var(--wa-color-neutral-border-normal);
+    cursor: pointer;
+    left: 0;
+    margin-inline-start: 0.5rem;
+    padding: 0;
     position: absolute;
     top: 0.5rem;
-    left: 0;
-    padding-right: 0.25rem;
-    background-color: var(--wa-color-surface-default);
-    cursor: pointer;
 }
 [slot='banner'] {
     --wa-color-text-link: var(--wa-color-neutral-on-loud);
@@ -391,8 +394,8 @@ wa-page[view='mobile']::part(navigation-toggle) {
         }
     [slot='header'] .right {
         display: flex;
-        /* Without this, the mode button tooltips will be placed behind the serach bar. */
-        flex-direction: column-reverse;
+        flex-direction: column;
+        align-items: flex-end;
     }
         [slot='header'] .right .mode {
             display: flex;
@@ -404,7 +407,9 @@ wa-page[view='mobile']::part(navigation-toggle) {
                 margin-right: 1rem;
             }
         [slot='header'] .right wa-input[type='search'] {
-            margin-top: 0.5rem;
+            width: 100%;
+            margin-block-start: 0.5rem;
+            max-inline-size: 13rem;
         }
 [slot*='header'] a {
     font-weight: var(--wa-font-weight-action);
@@ -456,7 +461,7 @@ main,
 main {
     padding: 0;
 }
-main .content {
+main.content {
     padding: 0 2rem;
 }
 [slot='main-footer'] {
@@ -481,35 +486,57 @@ a {
         position: relative;
         top: 0.25em;
     }
+aside {
+    margin-block-start: 1.5rem;
+    padding: 0 1rem;
+    position: relative;
+}
+aside.conditional {
+    display: none;
+}
 aside.wa-desktop-only {
     padding-left: 0;
 }
-aside ul,
+aside > ul,
 nav ul {
-    margin: 0;
     padding: 0;
     text-align: left;
     list-style-type: none;
 }
-aside li,
+nav ul {
+    margin: 0;
+}
+aside > ul {
+    margin-block-end: 0;
+    margin-block-start: 0;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+}
+aside > ul li,
 nav li {
     padding: 0.25rem 1rem;
 }
-wa-input[type='search'] {
-    width: 100%;
-    max-inline-size: 12.5rem;
-}
-aside ul {
-    padding: 1rem 0;
+aside > ul {
+    padding: 1rem 0 0.75rem 0;
     border-radius: 0.5rem;
     border: solid 1px var(--wa-color-neutral-border-normal);
+}
+aside > ul::before {
+    position: absolute;
+    top: -0.75rem;
+    left: 0.5rem;
+    font-weight: 700;
+    color: var(--wa-color-brand-on-normal);
+    background-color: var(--wa-color-surface-default);
+    display: block;
+    padding: 0 0.5rem;
 }
 nav strong {
     color: var(--wa-color-brand-on-normal);
     margin-inline-start: 1rem;
 }
-nav wa-tree {
-    margin-inline-start: 0.25rem;
+nav wa-tree-item::part(indentation) {
+    margin-inline-end: 0.25rem;
 }
 nav wa-tree-item::part(item) {
     cursor: pointer;
@@ -583,50 +610,41 @@ li.title {
 .content p {
     margin: 1rem 0;
 }
-.content .table-of-contents > ul {
-    position: relative;
+.table-of-contents > ul::before {
+    content: 'Table of contents';
+}
+.social-links > ul::before {
+    content: 'Social links';
+}
+.table-of-contents > ul {
     list-style-type: none;
-    color: var(--wa-color-text-normal);
     border: solid 1px var(--wa-color-neutral-border-normal);
     border-radius: 0.5em;
-    padding: 1rem 0;
-    margin-block-end: 0;
-    margin-inline-start: 0;
-    margin-top: 1.5rem;
+    padding: 1rem 0 0.75rem 0;
 }
-    .content .table-of-contents > ul a {
-        color: var(--wa-color-text-normal);
+    .table-of-contents ul li {
+        padding: 0;
+        margin: 0;
     }
-    .content .table-of-contents > ul > li > a {
+    .table-of-contents ul > li > a {
         display: block;
-        padding: 0 1rem;
         margin: 0.25rem 0;
+        padding: 0;
     }
-        .content .table-of-contents > ul > li > a:hover,
-        .content .table-of-contents > ul ul > li:hover {
-            background-color: var(--wa-color-neutral-fill-quiet);
-        }
-    .content .table-of-contents > ul::before {
-        content: 'Table of contents';
-        position: absolute;
-        top: -0.75rem;
-        left: 0.5rem;
-        font-weight: 700;
-        color: var(--wa-color-brand-on-normal);
-        background-color: var(--wa-color-surface-default);
-        display: block;
-        padding: 0 0.5rem;
+    .table-of-contents > ul > li > a {
+        /* Apply padding to the first level links */
+        padding: 0 1rem;
     }
-    .content .table-of-contents ul ul {
-        /* Nested TOC */
+    /* Nested TOC */
+    .table-of-contents ul ul {
         margin-inline-start: 0;
         padding: 0;
     }
-    .content .table-of-contents ul ul li {
+    .table-of-contents ul ul li {
         display: block;
         padding-left: 2.75rem;
     }
-    .content .table-of-contents ul ul li::before {
+    .table-of-contents ul ul li::before {
         content: '⚬';
         position: absolute;
         left: 1.5rem;

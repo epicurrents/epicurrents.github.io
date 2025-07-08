@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <div class="content">
+    <main class="content">
         <h1 class="subtitle">Apache License</h1>
         <p class="subtitle">Version 2.0, January 2004</p>
         <p class="subtitle"><a href="http://www.apache.org/licenses/">http://www.apache.org/licenses/</a></p>
@@ -209,7 +209,7 @@
             incurred by, or claims asserted against, such Contributor by reason
             of your accepting any such warranty or additional liability.
         </p>
-    </div>
+    </main>
 </template>
 
 <style scoped>

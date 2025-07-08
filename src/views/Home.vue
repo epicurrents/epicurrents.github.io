@@ -15,7 +15,7 @@ limitations under the License.`
 </script>
 
 <template>
-    <div class="content">
+    <main class="content">
         <h1>Epicurrents</h1>
         <blockquote>
             Epicurrents is an open-source, modular and extensible library for reading, processing and displaying
@@ -86,7 +86,7 @@ limitations under the License.`
         <p>
             Epicurrents logo &copy; 2025 Sampsa Lohi, all rights reserved.
         </p>
-    </div>
+    </main>
 </template>
 
 <style scoped>
