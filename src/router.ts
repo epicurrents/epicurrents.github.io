@@ -43,6 +43,10 @@ export const documentation = {
                     name: 'Usage',
                     path: 'getting-started/usage',
                 },
+                {
+                    name: 'Opening files',
+                    path: 'getting-started/opening-files',
+                },
             ],
         },
         {
@@ -56,10 +60,6 @@ export const documentation = {
                 {
                     name: 'Interface layout',
                     path: 'user-interface/interface-layout',
-                },
-                {
-                    name: 'Opening files',
-                    path: 'user-interface/opening-files',
                 },
             ],
         },

@@ -580,6 +580,7 @@ li.title {
     margin: 0.75rem 0;
 }
 .content h4 {
+    font-size: 1rem;
     font-weight: bold;
     margin: 0.5rem 0;
 }
