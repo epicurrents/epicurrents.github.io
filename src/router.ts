@@ -86,6 +86,11 @@ export const documentation = {
     ],
     'File readers': [
         {
+            name: 'DICOM reader',
+            path: 'dicom-reader',
+
+        },
+        {
             name: 'EDF reader',
             path: 'edf-reader',
 
