@@ -127,7 +127,7 @@ Annotations can be created in three ways:
 
 When a signal selection is active (a range has been dragged on the trace), the new annotation is created over that selection with the selection's start time and duration pre-filled. When there is no active selection, an instantaneous annotation is created at the cursor position.
 
-> **Planned features:** Creating spot annotations at the cursor position without a prior selection (instant annotation), and a dedicated context menu for existing annotations and signal selections, are planned for an upcoming release. These will be tracked in the roadmap.
+> **Planned:** Creating spot annotations at the cursor position without a prior selection (instant annotation), and context menus for existing annotations and signal selections, are not yet implemented.
 
 ## Saving and exporting
 
