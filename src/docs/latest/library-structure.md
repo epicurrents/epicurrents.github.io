@@ -153,3 +153,7 @@ onmessage = ({ data }) => {
     postMessage({ uuid: data.uuid, result })
 }
 ```
+
+## Annotations
+
+For a full treatment of annotations — labels vs events, properties, coded annotations, locking, creation, and export — see the dedicated [Annotations](docs/annotations) page. The section on event classes and the configurable `GenericBiosignalEvent.PRIORITY` defaults is also covered there.

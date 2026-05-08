@@ -61,7 +61,10 @@ export const documentation = {
         {
             name: 'Introduction',
             path: 'introduction',
-
+        },
+        {
+            name: 'Annotations',
+            path: 'annotations',
         },
         {
             name: 'Getting started',
