@@ -25,6 +25,38 @@ export type NavigationItem = {
  * ````
  */
 export const documentation = {
+    'Platform': [
+        {
+            name: 'Introduction',
+            path: 'platform/introduction',
+        },
+        {
+            name: 'Deployment',
+            path: 'platform/deployment',
+        },
+        {
+            name: 'Configuration',
+            path: 'platform/configuration',
+        },
+        {
+            name: 'Project development',
+            path: 'platform/project-development',
+            subitems: [
+                {
+                    name: 'Fork',
+                    path: 'platform/project-development/fork',
+                },
+                {
+                    name: 'Submodule',
+                    path: 'platform/project-development/submodule',
+                },
+                {
+                    name: 'Testing',
+                    path: 'platform/project-development/testing',
+                },
+            ],
+        },
+    ],
     'Basic use': [
         {
             name: 'Introduction',

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch, type PropType } from 'vue'
+import { computed, onUnmounted, ref, watch, type PropType } from 'vue'
 import { onMounted } from 'vue'
 import markdownit from 'markdown-it'
 import anchor from 'markdown-it-anchor'
 import footnote from 'markdown-it-footnote'
 import toc from 'markdown-it-table-of-contents'
 import { useRoute } from 'vue-router'
+import PlatformStatus from '../components/PlatformStatus.vue'
 
 const route = useRoute()
+const isPlatformPage = computed(() => route.path.includes('/platform/'))
 const md = markdownit()
 md.use(anchor)
 md.use(footnote, {
@@ -112,6 +114,7 @@ onUnmounted(() => {
                 </li>
             </ul>
         </wa-details>
+        <platform-status v-if="isPlatformPage"></platform-status>
         <div class="doc" v-html="content"></div>
         <div class="nav">
             <router-link v-if="route.meta.prev" :to="route.meta.prev.path" class="prev">
