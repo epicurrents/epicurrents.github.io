@@ -211,6 +211,9 @@ const router = createRouter({
                 if (to.hash) {
                     return resolve({
                         el: to.hash,
+                        // Offset below the sticky header (~6rem) + subheader (~3rem)
+                        // plus a little breathing room.
+                        top: 200,
                         behavior: 'smooth',
                     })
                 }

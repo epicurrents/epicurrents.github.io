@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import EpicurrentsLogo from './assets/logo.vue'
 import { documentation, type NavigationItem } from './router'
+import SearchResults from './components/SearchResults.vue'
 
 type PageProperties = {
     name: string
@@ -152,6 +153,27 @@ const loadDocs = (path: string) => {
     router.push(path)
 }
 
+// Search
+const searchQuery = ref('')
+const searchOpen = ref(false)
+function onSearchInput(e: Event) {
+    searchQuery.value = (e.target as HTMLInputElement).value
+    searchOpen.value = true
+}
+function closeSearch() {
+    searchOpen.value = false
+}
+function onSearchKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') closeSearch()
+}
+
+function onDocClick(e: MouseEvent) {
+    const wrap = document.querySelector('.search-wrap')
+    if (wrap && !wrap.contains(e.target as Node)) closeSearch()
+}
+onMounted(() => document.addEventListener('click', onDocClick, true))
+onUnmounted(() => document.removeEventListener('click', onDocClick, true))
+
 // Color scheme.
 const mode = ref('system' as 'light' | 'dark' | 'system')
 watch(() => mode.value, value => {
@@ -232,10 +254,24 @@ if (window.matchMedia) {
                     <wa-tooltip for="mode-dark" placement="bottom">Dark</wa-tooltip>
                     <wa-tooltip for="mode-system" placement="bottom">System</wa-tooltip>
                 </div>
-                <wa-input id="search" type="search" placeholder="Search" disabled>
-                    <wa-icon name="search" slot="start"></wa-icon>
-                </wa-input>
-                <wa-tooltip for="search" placement="bottom">Search is not implemented yet.</wa-tooltip>
+                <div class="search-wrap">
+                    <wa-input
+                        id="search"
+                        type="search"
+                        placeholder="Search"
+                        :value="searchQuery"
+                        @input="onSearchInput"
+                        @keydown="onSearchKeydown"
+                        @focus="searchOpen = true"
+                    >
+                        <wa-icon name="search" slot="start"></wa-icon>
+                    </wa-input>
+                    <search-results
+                        v-if="searchOpen"
+                        :query="searchQuery"
+                        @close="closeSearch"
+                    ></search-results>
+                </div>
             </div>
         </header>
         <nav slot="subheader">
@@ -360,10 +396,16 @@ wa-page[view='mobile']::part(navigation-toggle) {
 }
 [slot='header'] .left {
     display: flex;
+    min-inline-size: 0;
 }
+    [slot='header'] .left > a {
+        flex-shrink: 0;
+    }
     [slot='header'] .logo {
+        aspect-ratio: 1;
         display: inline-block;
         height: 6rem;
+        overflow: hidden;
         padding: 0.5rem;
         border-radius: 0.5rem;
         border: solid 1px var(--wa-color-brand-border-normal);
@@ -378,24 +420,23 @@ wa-page[view='mobile']::part(navigation-toggle) {
         font-variant: small-caps;
     }
         [slot='header'] .title .main {
-            height: 4rem;
-            line-height: 4.5rem;
+            height: 3.75rem;
+            line-height: 4.25rem;
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--wa-color-brand-on-normal);
         }
         [slot='header'] .title .sub {
-            height: 2rem;
-            line-height: 1rem;
             color: var(--wa-color-text-quiet);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            line-height: 1rem;
+            min-block-size: 2rem;
         }
     [slot='header'] .right {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
+        flex-shrink: 0;
+        margin-inline-start: auto;
     }
         [slot='header'] .right .mode {
             display: flex;
@@ -406,9 +447,12 @@ wa-page[view='mobile']::part(navigation-toggle) {
                 line-height: 2.75rem;
                 margin-right: 1rem;
             }
-        [slot='header'] .right wa-input[type='search'] {
-            width: 100%;
+        [slot='header'] .right .search-wrap {
             margin-block-start: 0.5rem;
+            position: relative;
+        }
+        [slot='header'] .right .search-wrap wa-input[type='search'] {
+            width: 100%;
             max-inline-size: 13rem;
         }
 [slot*='header'] a {

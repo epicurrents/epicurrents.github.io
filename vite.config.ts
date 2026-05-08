@@ -1,12 +1,14 @@
 import { defineConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import vue from '@vitejs/plugin-vue'
+import { searchIndexPlugin } from './src/searchIndexPlugin'
 
 // https://vite.dev/config/
 export default defineConfig({
     assetsInclude: ['**/*.md'],
     base: '/',
     plugins: [
+        searchIndexPlugin(),
         vue({
             template: {
                 compilerOptions: {
