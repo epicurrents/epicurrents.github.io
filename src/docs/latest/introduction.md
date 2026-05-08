@@ -6,7 +6,7 @@ Epicurrents is an open-source library for reading, processing and displaying neu
 
 ## Purpose
 
-Epicurrents is intended for educational and scientific use. It is not a medical device and should not be used for clincial purposes.
+Epicurrents is intended for educational and scientific use. It is not a medical device and should not be used for clinical purposes.
 
 ## Getting started
 
@@ -14,13 +14,13 @@ To get started quickly, check out the [getting started](docs/getting-started) se
 
 ## User interface
 
-The [user interface](docs/user-interface) section contains all the information needed to use the default application UI. The default interface is designed for larger displays, but it is possible to develop dedicated interfaces for mobile devices or speific use cases.
+The [user interface](docs/user-interface) section contains all the information needed to use the default application UI. The default interface is designed for larger displays, but it is possible to develop dedicated interfaces for mobile devices or specific use cases.
 
 ## Study modules
 
 ### EEG module
 
-Instructions on using EEG module, including supported file types, record browsing and available analysis tools can be found under the [EEG module](docs/eeg-module) heading.
+Instructions on using the EEG module, including supported file types, record browsing and available analysis tools can be found under the [EEG module](docs/eeg-module) heading.
 
 ## File readers
 

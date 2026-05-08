@@ -5,7 +5,7 @@
 The default EEG module is designed for viewing normal-density EEG recordings based on the international 10-20-system. It has the following features out-of-the-box:
 - Reconstructing EEG signals in the following 10-20 montages:
   * As recorded (with only 10-20 system EEG channels displayed).
-  * Average reference (identical to "as recorded" if the source singals are average referenced).
+  * Average reference (identical to "as recorded" if the source signals are average referenced).
   * Double banana (longitudinal bipolar).
   * Laplacian (source density).
   * Transverse bipolar.

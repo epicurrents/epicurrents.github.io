@@ -13,13 +13,13 @@ To select a signal segment drag over a signal in the EEG view. Using the right m
 
 To select multiple segments for comparison, drag over them with the left mouse button while pressing down the `Ctrl` key. Clicking (instead of dragging) [`[[icon:mouse]]`] on a signal while pressing the `Ctrl` key will select a segment at the exact same time position as the first selected segment on that channel. The active signal segment can be selected from the upper right corner of the analysis tool window.
 
-After selecting the desired segments the analysis tool can be opened by using a hotkey or by selcting the last segment using the right mouse button. Hotkeys for the different analysis tools are:
+After selecting the desired segments the analysis tool can be opened by using a hotkey or by selecting the last segment using the right mouse button. Hotkeys for the different analysis tools are:
 - `F`: Fast-Fourier transform tool.
 - `E`: Segment examination tool.
 
 ### Fast-Fourier transform tool
 
-The FFT tool can be used to analyze the frequency components of one or more signal segments. The frequency components are displayed as a line graph, with lower frequencies to the left and higher friequencies to the right.
+The FFT tool can be used to analyze the frequency components of one or more signal segments. The frequency components are displayed as a line graph, with lower frequencies to the left and higher frequencies to the right.
 
 The graph includes guidelines for the four commonly used frequency ranges:
 - `Delta`: below **4 Hz**.
@@ -53,7 +53,7 @@ The Python integration (using the Pyodide service) unlocks more advanced EEG ana
 
 ### Voltage topogram visualizer
 
-This tool uses MNE-Python's topomap feature to calculate surface voltage maps at a specific point in time. In addition to the exact time point a voltage development series can be computed with voltage maps at certain time intervals before and after the selected time point. The tool uses the EEG cursor's position as the analysis time point. The cursor tool below the topogram may make it easier to select the exact position. Double-clicking [`[[icon:mouse]]`] on the signal will move the cursor to that position, after which he cursor can be either dragged or adjusted one sample at a time by using the the `arrow` keys.
+This tool uses MNE-Python's topomap feature to calculate surface voltage maps at a specific point in time. In addition to the exact time point a voltage development series can be computed with voltage maps at certain time intervals before and after the selected time point. The tool uses the EEG cursor's position as the analysis time point. The cursor tool below the topogram may make it easier to select the exact position. Double-clicking [`[[icon:mouse]]`] on the signal will move the cursor to that position, after which the cursor can be either dragged or adjusted one sample at a time by using the `arrow` keys.
 
 ![voltage-topogram-tool](/img/voltage-topogram-tool.png)
 _Voltage topogram of the vertex sharp wave._

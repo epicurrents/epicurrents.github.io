@@ -2,10 +2,10 @@
 
 ## Components overview
 
-The interface is composed of four main main components:
+The interface is composed of four main components:
 - `Viewport`: This contains the visualization of the selected study (for example EEG channels) and is always visible.
 - `Menubar`: The menubar on top of the window contains a set of global controls (i.e. they are available irrespective of a study being open or not) and study-specific controls. It can be hidden.
-- `Dataset`: The left hand panel contains controls for creating and opening datasets, as well as opening files within a dataset. This component can be hidden, however a set of quick action are always visible on the left edge of the *Viewport* controls bar.
+- `Dataset`: The left hand panel contains controls for creating and opening datasets, as well as opening files within a dataset. This component can be hidden, however a set of quick actions are always visible on the left edge of the *Viewport* controls bar.
 - `Footer`: The footer bar on the bottom of the page displays information about on-going processes in different application modules and contains a system status menu.
 
 ## The viewport component
@@ -14,9 +14,9 @@ The viewport is responsible for displaying the actual data of the opened study. 
 
 ### Viewport controls
 
-All vieports have a `controls` bar on the top. Like the viewport itself, the content of the controls bar depend on the type of the stydy.
+All viewports have a `controls` bar on the top. Like the viewport itself, the content of the controls bar depend on the type of the study.
 
-Common to all vieports are a set of three icons at the left end of the controls bar that provide quick actions for the current `dataset`:
+Common to all viewports are a set of three icons at the left end of the controls bar that provide quick actions for the current `dataset`:
 - `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
 - `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
 - `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
@@ -51,7 +51,7 @@ The three-dot menu `[[icon:ellipsis]]` at the right edge of the menu bar contain
 
 ## The dataset component
 
-The dataset component three parts from top to bottom: the dataset selector, the dataset inspector, and the dataset footer.
+The dataset component has three parts from top to bottom: the dataset selector, the dataset inspector, and the dataset footer.
 
 ### Dataset selector
 

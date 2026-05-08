@@ -11,7 +11,7 @@ To open files from the file system, click `File` on the top menu bar and select 
 - `Open <format> files from folder`: Opens all files of this type from the selected folder.
 - `Open <format> from URL`: Opens a single file from the given URL. Note that the file must be directly available at the given URL; e.g. in case of EDF files the url should end in `.edf`.
 
-Epicurrents utilizes the FileSystemAPI to open multiple files from the file system. This API avaible by default on chromium based browsers. Availability in other browsers may vary.
+Epicurrents utilizes the FileSystemAPI to open multiple files from the file system. This API is available by default on Chromium-based browsers. Availability in other browsers may vary.
 
 ## WebDAV file sources
 
