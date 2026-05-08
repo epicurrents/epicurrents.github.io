@@ -49,6 +49,36 @@ npm run build
 
 The `scripts/` directory contains Node.js helpers for installing, copying type declarations between packages, and updating dependency versions across the workspace.
 
+## Testing
+
+Tests use [Vitest](https://vitest.dev/). Each package with tests has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Only three packages currently have test suites: `core` (48 suites), `eeg-module` (10 suites), and `tab-module` (1 suite).
+
+```bash
+# Run tests for a specific package (from the package directory)
+cd epicurrents/core && vitest run
+
+# Run with coverage
+vitest run --coverage
+
+# From the workspace root
+npm run test:core
+npm run test:eeg
+npm run test:tab
+```
+
+### How the test configuration works
+
+The `package.json` `imports` field in `core/` maps `#*` aliases to `src/` files (not `dist/`). This is what makes tests run against TypeScript source rather than the compiled output. The build step (`tsconfig-replace-paths`) rewrites all `#` aliases in emitted JS before they become part of the dist, so this setting has no effect on published packages.
+
+Each package's `vitest.config.ts` configures the same alias resolution for Vite's module graph. The `eeg-module` additionally redirects `@epicurrents/core` to a mock implementation under `tests/mocks/` to keep unit tests isolated from core internals.
+
+### Adding tests to a new package
+
+1. Copy `vitest.config.ts` from `core/` or `eeg-module/` and update the path aliases.
+2. Create a `tests/` directory with `*.test.ts` files.
+3. Add `"test:unit": "vitest run --coverage"` to the package's `scripts` in `package.json`.
+4. If the package uses `#` path aliases, ensure the `package.json` `imports` field points to `src/` rather than `dist/`.
+
 ## Type-checking
 
 After any change to `epicurrents/core/` (types, base class signatures, interface definitions), run a type-check sweep across all dependent packages to catch regressions before building:
