@@ -79,6 +79,10 @@ export const documentation = {
                     name: 'Opening files',
                     path: 'getting-started/opening-files',
                 },
+                {
+                    name: 'Platform integration',
+                    path: 'getting-started/platform-integration',
+                },
             ],
         },
         {
@@ -137,24 +141,6 @@ export const documentation = {
         {
             name: 'Library structure',
             path: 'library-structure',
-            subitems: [
-                {
-                    name: 'Core application',
-                    path: 'library-structure/core-application',
-                },
-                {
-                    name: 'Study modules',
-                    path: 'library-structure/study-modules',
-                },
-                {
-                    name: 'File readers',
-                    path: 'library-structure/file-readers',
-                },
-                {
-                    name: 'Services',
-                    path: 'library-structure/services',
-                },
-            ],
         },
     ],
     'For developers': [
