@@ -92,3 +92,8 @@ There are two ways to work with a project plugin:
 - **[Submodule](docs/platform/project-development/submodule)** — keep your project in its own repository and add it as a git submodule inside the platform's `projects/` directory. Platform updates are a `git pull` on the platform side; your project code stays in its own history.
 
 Both patterns produce identical runtime behaviour — the platform cannot tell the difference.
+
+## Further reading
+
+- **[Extending annotations](docs/platform/project-development/annotations)** — how to attach project-specific semantic labels and scores to annotations using the `Code` model, including the `epicurrents.<project>.<concept>` naming convention and the API-wrapping pattern.
+- **[Testing](docs/platform/project-development/testing)** — conventions for writing and running tests inside a project plugin.

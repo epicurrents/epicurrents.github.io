@@ -54,6 +54,10 @@ export const documentation = {
                     name: 'Testing',
                     path: 'platform/project-development/testing',
                 },
+                {
+                    name: 'Extending annotations',
+                    path: 'platform/project-development/annotations',
+                },
             ],
         },
     ],
