@@ -48,6 +48,23 @@ _An EEG file with two longer gaps._
 
 Double-clicking [`[[icon:mouse]]`] on the navigator will browse to that point in the recording, attempting to position the clicked point in time in the middle of the screen.
 
+### Trend strip
+
+The trend strip is an optional band rendered just above the navigator, showing one or more derived signals computed over the full recording. Each *trend* compresses an entire epoch of EEG into a single value (or a pair of values) per epoch, so the full recording fits on one horizontal line and lets the user spot long-term patterns at a glance.
+
+The strip is hidden by default. Toggle it from the `Display` → `Biosignal` → `Trend strip` menu item; the menu shows a check mark while the strip is visible. Toggling on expands the bottom compartment to make room for the strip; toggling off collapses it back to the navigator's natural height. The same red view-position marker that appears on the navigator is mirrored on the trend strip so the user can see where the current page sits in the wider trend.
+
+The currently implemented trend type is **amplitude-integrated EEG (aEEG)**:
+- For each epoch (15 seconds by default) the signal is band-pass filtered (2–15 Hz), an amplitude envelope is computed, and the minimum and maximum envelope width within the epoch are recorded.
+- The pair is rendered as a vertical line per epoch on a semi-log scale: linear up to 10 µV, logarithmic above (the Hellström-Westas scale). Tick marks on the right of each trend mark 10, 20, 50, 100, 200 and 500 µV; 10 and 100 carry labels.
+- Two homologous derivations (one per hemisphere — typically C3/C4 or P3/P4) are computed in parallel and shown side-by-side. The left-hemisphere band uses the EEG left-side trace colour, the right-hemisphere band uses the right-side colour, and each band carries the corresponding electrode label aligned to the bottom of its band.
+
+The strip has two display modes that switch automatically depending on the available height:
+- **Stacked** (default when there is room): each derivation gets its own horizontal slot, with a separator line between them at the value-0 line.
+- **Superimposed** (when the strip is dragged narrow): the bands overlap on the same slot, drawn with partial transparency so both sides remain visible. Labels stack at the bottom-right of the combined slot in this mode.
+
+If the user drags the bottom compartment too small to fit the strip, the trend is hidden automatically and the navigator takes the full slot — the strip reappears as soon as the compartment is expanded again.
+
 ## Browsing an EEG
 
 There are five means to browse an EEG:
