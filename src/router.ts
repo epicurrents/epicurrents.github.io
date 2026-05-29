@@ -139,6 +139,12 @@ export const documentation = {
 
         },
     ],
+    'Services': [
+        {
+            name: 'Pyodide service',
+            path: 'pyodide-service',
+        },
+    ],
     'Advanced topics': [
         {
             name: 'Implementation',
@@ -148,6 +154,10 @@ export const documentation = {
         {
             name: 'Library structure',
             path: 'library-structure',
+        },
+        {
+            name: 'Memory management',
+            path: 'memory-management',
         },
     ],
     'For developers': [

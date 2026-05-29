@@ -1,4 +1,4 @@
-# Extending annotations from a project plugin
+## Extending annotations from a project plugin
 
 The platform ships a generic annotation system in the `annotations` app.  Four concrete types — `Event`, `Interruption`, `Label`, and `Annotation` — all extend an abstract `AnnotationBase` that provides a generic FK target (any Django model), a 32-character `object_hash` unique per target, a 64-character `content_hash` that covers every type-specific field, and `author` / `created_at` / `modified_at` timestamps.
 
