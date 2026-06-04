@@ -303,6 +303,7 @@ if (window.matchMedia) {
                             {{ item.name }}
                             <wa-tree-item v-for="(subitem, idy) in (item.subitems || [])" :key="`nav-${idx}-${idy}`"
                                 :selected="isDocPath(subitem.path) ? true : undefined"
+                                style="--indent-size: 1rem"
                                 :data-path="docPathFromPath(subitem.path)"
                             >
                                 {{ subitem.name.split('/').pop() }}
