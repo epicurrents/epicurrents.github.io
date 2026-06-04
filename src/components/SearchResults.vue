@@ -135,6 +135,10 @@ ul {
     margin: 0;
     padding: 0.25rem 0;
 }
+    ul li {
+        margin-inline-start: 0;
+        padding: 0.25rem 1rem;
+    }
 .search-item {
     cursor: pointer;
     padding: 0.5rem 1rem;

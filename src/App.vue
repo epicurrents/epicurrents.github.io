@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import EpicurrentsLogo from './assets/logo.vue'
 import { documentation, type NavigationItem } from './router'
@@ -153,6 +153,101 @@ const loadDocs = (path: string) => {
     router.push(path)
 }
 
+// Collapsible navigation sections.
+/** Sections expanded by default; the rest start collapsed. */
+const defaultExpandedSections = ['Platform', 'Basic use']
+/** Reactive map of section title -> expanded state. */
+const expandedSections = reactive<Record<string, boolean>>(
+    Object.fromEntries(
+        Object.keys(documentation).map(section => [section, defaultExpandedSections.includes(section)])
+    )
+)
+
+/**
+ * Find the nearest scrollable ancestor of an element, crossing shadow DOM
+ * boundaries (the navigation lives inside a wa-scroller).
+ * @param el - Element to start the search from.
+ */
+const getScrollParent = (el: Element): HTMLElement => {
+    const visit = (current: Node | null): Node | null => {
+        if (!current) {
+            return null
+        }
+        const slot = (current as Element).assignedSlot
+        if (slot) {
+            return slot
+        }
+        if (current.parentNode instanceof ShadowRoot) {
+            return current.parentNode.host
+        }
+        return current.parentNode
+    }
+    let node: Node | null = visit(el)
+    while (node) {
+        if (node instanceof HTMLElement) {
+            const overflowY = getComputedStyle(node).overflowY
+            if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+                return node
+            }
+        }
+        node = visit(node)
+    }
+    return (document.scrollingElement as HTMLElement) ?? document.documentElement
+}
+
+/**
+ * Bring a freshly expanded section into view: reveal the whole section if it
+ * fits in the scroller, otherwise align its title with the top of the viewport.
+ * @param sectionEl - The `.nav-section` element that was expanded.
+ */
+const scrollSectionIntoView = (sectionEl: HTMLElement) => {
+    const viewport = getScrollParent(sectionEl)
+    const vpRect = viewport.getBoundingClientRect()
+    const secRect = sectionEl.getBoundingClientRect()
+    const vpHeight = viewport.clientHeight
+    let delta = 0
+    if (secRect.height <= vpHeight) {
+        // The whole section fits: scroll the minimum needed to show all of it.
+        if (secRect.bottom > vpRect.top + vpHeight) {
+            delta = secRect.bottom - (vpRect.top + vpHeight)
+        } else if (secRect.top < vpRect.top) {
+            delta = secRect.top - vpRect.top
+        }
+    } else {
+        // Section is taller than the viewport: align its title with the top.
+        delta = secRect.top - vpRect.top
+    }
+    if (delta) {
+        viewport.scrollBy({ top: delta, behavior: 'smooth' })
+    }
+}
+
+/**
+ * Toggle a navigation section open/closed, scrolling it into view on expand.
+ * @param section - Section title.
+ * @param ev - Originating click event.
+ */
+const toggleSection = (section: string, ev: Event) => {
+    const expand = !expandedSections[section]
+    expandedSections[section] = expand
+    if (expand) {
+        const sectionEl = (ev.currentTarget as HTMLElement).closest('.nav-section') as HTMLElement | null
+        if (sectionEl) {
+            nextTick(() => requestAnimationFrame(() => scrollSectionIntoView(sectionEl)))
+        }
+    }
+}
+
+/** Make sure the section containing the active documentation page is expanded. */
+const ensureActiveSectionExpanded = () => {
+    for (const [section, items] of Object.entries(documentation)) {
+        if (items.some(item => !!isDocParent(item.path))) {
+            expandedSections[section] = true
+        }
+    }
+}
+watch(() => route.path, () => ensureActiveSectionExpanded(), { immediate: true })
+
 // Search
 const searchQuery = ref('')
 const searchOpen = ref(false)
@@ -176,8 +271,18 @@ onUnmounted(() => document.removeEventListener('click', onDocClick, true))
 
 // Color scheme.
 const mode = ref('system' as 'light' | 'dark' | 'system')
+/** Icon representing the currently active color mode (shown on the toggle button). */
+const modeIcon = computed(() =>
+    mode.value === 'light' ? 'sun' : mode.value === 'dark' ? 'moon' : 'display'
+)
+/** Activate the color mode selected from the mode menu. */
+const onModeSelect = (ev: Event) => {
+    const value = (ev as CustomEvent).detail?.item?.value
+    if (value === 'light' || value === 'dark' || value === 'system') {
+        mode.value = value
+    }
+}
 watch(() => mode.value, value => {
-    console.log(value)
     const html = document.querySelector('html')
     if (value === 'light') {
         html?.classList.remove('wa-dark')
@@ -232,28 +337,6 @@ if (window.matchMedia) {
                 </div>
             </div>
             <div class="right">
-                <div class="mode">
-                    <div>Theme</div>
-                    <wa-radio-group
-                        name="mode"
-                        orientation="horizontal"
-                        value="system"
-                        @input="mode = $event.target.value"
-                    >
-                        <wa-radio id="mode-light" appearance="button" value="light">
-                            <wa-icon name="sun" variant="regular"></wa-icon>
-                        </wa-radio>
-                        <wa-radio id="mode-dark" appearance="button" value="dark">
-                            <wa-icon name="moon" variant="regular"></wa-icon>
-                        </wa-radio>
-                        <wa-radio id="mode-system" appearance="button" value="system">
-                            <wa-icon name="circle-half-stroke" variant="regular"></wa-icon>
-                        </wa-radio>
-                    </wa-radio-group>
-                    <wa-tooltip for="mode-light" placement="bottom">Light</wa-tooltip>
-                    <wa-tooltip for="mode-dark" placement="bottom">Dark</wa-tooltip>
-                    <wa-tooltip for="mode-system" placement="bottom">System</wa-tooltip>
-                </div>
                 <div class="search-wrap">
                     <wa-input
                         id="search"
@@ -272,6 +355,27 @@ if (window.matchMedia) {
                         @close="closeSearch"
                     ></search-results>
                 </div>
+                <wa-dropdown class="mode" placement="bottom-end" @wa-select="onModeSelect">
+                    <wa-button id="mode-toggle" slot="trigger" appearance="outlined">
+                        <wa-icon :name="modeIcon" variant="regular"></wa-icon>
+                    </wa-button>
+                    <wa-dropdown-item value="light">
+                        <wa-icon slot="icon" name="sun" variant="regular"></wa-icon>
+                        Light
+                        <wa-icon v-if="mode === 'light'" slot="details" name="check"></wa-icon>
+                    </wa-dropdown-item>
+                    <wa-dropdown-item value="dark">
+                        <wa-icon slot="icon" name="moon" variant="regular"></wa-icon>
+                        Dark
+                        <wa-icon v-if="mode === 'dark'" slot="details" name="check"></wa-icon>
+                    </wa-dropdown-item>
+                    <wa-dropdown-item value="system">
+                        <wa-icon slot="icon" name="display" variant="regular"></wa-icon>
+                        System
+                        <wa-icon v-if="mode === 'system'" slot="details" name="check"></wa-icon>
+                    </wa-dropdown-item>
+                </wa-dropdown>
+                <wa-tooltip for="mode-toggle" placement="bottom">Color mode</wa-tooltip>
             </div>
         </header>
         <nav slot="subheader">
@@ -291,25 +395,40 @@ if (window.matchMedia) {
             <wa-scroller orientation="vertical">
                 <template v-for="([section, items], idx) in Object.entries(documentation)" :key="`nav-${idx}`">
                     <wa-divider v-if="idx"></wa-divider>
-                    <strong class="section">
-                        {{ section }}
-                    </strong>
-                    <wa-tree @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)">
-                        <wa-tree-item v-for="(item, idy) of items" :key="`nav-${idx}-${idy}`"
-                            :expanded="isDocParent(item.path) ? true : undefined"
-                            :selected="isDocPath(item.path) ? true : undefined"
-                            :data-path="docPathFromPath(item.path)"
+                    <div class="nav-section" :data-section="section">
+                        <button
+                            type="button"
+                            class="section"
+                            :aria-expanded="expandedSections[section] ? 'true' : 'false'"
+                            @click="toggleSection(section, $event)"
                         >
-                            {{ item.name }}
-                            <wa-tree-item v-for="(subitem, idy) in (item.subitems || [])" :key="`nav-${idx}-${idy}`"
-                                :selected="isDocPath(subitem.path) ? true : undefined"
-                                style="--indent-size: 1rem"
-                                :data-path="docPathFromPath(subitem.path)"
+                            <span>{{ section }}</span>
+                            <wa-icon
+                                class="section-toggle"
+                                :name="expandedSections[section] ? 'minus' : 'plus'"
+                                variant="regular"
+                            ></wa-icon>
+                        </button>
+                        <wa-tree
+                            v-show="expandedSections[section]"
+                            @wa-selection-change="loadDocs($event.detail.selection[0].dataset.path)"
+                        >
+                            <wa-tree-item v-for="(item, idy) of items" :key="`nav-${idx}-${idy}`"
+                                :expanded="isDocParent(item.path) ? true : undefined"
+                                :selected="isDocPath(item.path) ? true : undefined"
+                                :data-path="docPathFromPath(item.path)"
                             >
-                                {{ subitem.name.split('/').pop() }}
+                                {{ item.name }}
+                                <wa-tree-item v-for="(subitem, idy) in (item.subitems || [])" :key="`nav-${idx}-${idy}`"
+                                    :selected="isDocPath(subitem.path) ? true : undefined"
+                                    style="--indent-size: 1rem"
+                                    :data-path="docPathFromPath(subitem.path)"
+                                >
+                                    {{ subitem.name.split('/').pop() }}
+                                </wa-tree-item>
                             </wa-tree-item>
-                        </wa-tree-item>
-                    </wa-tree>
+                        </wa-tree>
+                    </div>
                 </template>
             </wa-scroller>
         </nav>
@@ -355,9 +474,6 @@ if (window.matchMedia) {
                 </li>
             </ul>
         </aside>
-        <footer slot="footer">
-            <p>&copy; 2025 Epicurrents</p>
-        </footer>
     </wa-page>
 </template>
 
@@ -405,7 +521,7 @@ wa-page[view='mobile']::part(navigation-toggle) {
     [slot='header'] .logo {
         aspect-ratio: 1;
         display: inline-block;
-        height: 6rem;
+        height: 4.5rem;
         overflow: hidden;
         padding: 0.5rem;
         border-radius: 0.5rem;
@@ -416,49 +532,47 @@ wa-page[view='mobile']::part(navigation-toggle) {
             color: var(--wa-color-text-normal);
         }
     [slot='header'] .title {
-        height: 6rem;
+        min-block-size: 4.5rem;
         padding-left: 1rem;
         font-variant: small-caps;
     }
         [slot='header'] .title .main {
-            height: 3.75rem;
-            line-height: 4.25rem;
-            font-size: 2.5rem;
+            height: 2.75rem;
+            line-height: 2.75rem;
+            font-size: 1.875rem;
             font-weight: 700;
             color: var(--wa-color-brand-on-normal);
         }
         [slot='header'] .title .sub {
             color: var(--wa-color-text-quiet);
-            line-height: 1rem;
-            min-block-size: 2rem;
+            line-height: 1.1rem;
+            min-block-size: 1.75rem;
         }
     [slot='header'] .right {
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-direction: row;
+        align-items: center;
+        align-self: flex-start;
+        gap: 0.5rem;
         flex-shrink: 0;
         margin-inline-start: auto;
     }
-        [slot='header'] .right .mode {
-            display: flex;
-            justify-content: flex-end;
-        }
-            [slot='header'] .right .mode div {
-                height: 2.75rem;
-                line-height: 2.75rem;
-                margin-right: 1rem;
-            }
         [slot='header'] .right .search-wrap {
-            margin-block-start: 0.5rem;
             position: relative;
         }
         [slot='header'] .right .search-wrap wa-input[type='search'] {
-            width: 100%;
-            max-inline-size: 13rem;
+            inline-size: 18rem;
+            max-inline-size: 100%;
         }
 [slot*='header'] a {
     font-weight: var(--wa-font-weight-action);
 }
+#search::part(base) {
+    padding: 0 0.75rem;
+}
+    #search wa-icon {
+        margin-inline-end: 0.75rem;
+    }
 [slot='subheader'] {
     background-color: var(--wa-color-surface-lowered);
     border-block-end: var(--wa-border-width-s) var(--wa-border-style) var(--wa-color-surface-border);
@@ -469,11 +583,15 @@ wa-page[view='mobile']::part(navigation-toggle) {
     [slot='subheader'] a:hover {
         color: var(--wa-color-text-link);
     }
+wa-page::part(navigation-header) {
+    padding-block: 0.5rem;
+}
 [slot='navigation-header'] {
     display: block;
     border-block-end: var(--wa-border-width-s) var(--wa-border-style) var(--wa-color-surface-border);
     font-weight: 700;
     color: var(--wa-color-brand-on-normal);
+    padding: var(--wa-space-s) var(--wa-space-m);
 }
     [slot='navigation-header'] wa-icon {
         margin-inline-end: 0.25rem;
@@ -490,9 +608,12 @@ wa-page[view='mobile']::part(navigation-toggle) {
     font-size: 1rem;
     font-weight: 700;
 }
+wa-page::part(navigation-footer) {
+    padding-block: 0.5rem;
+}
 [slot='navigation-footer'] {
     border-block-start: var(--wa-border-width-s) var(--wa-border-style) var(--wa-color-surface-border);
-    padding: 1rem 0;
+    padding: 0.5rem 0;
     .wa-flank {
         --flank-size: 1.25em;
     }
@@ -559,7 +680,7 @@ aside > ul {
 }
 aside > ul li,
 nav li {
-    padding: 0.25rem 1rem;
+    padding: 0.125rem 1rem;
 }
 aside > ul {
     padding: 1rem 0 0.75rem 0;
@@ -576,10 +697,31 @@ aside > ul::before {
     display: block;
     padding: 0 0.5rem;
 }
-nav strong {
+nav .nav-section .section {
+    align-items: center;
+    background: none;
+    border: none;
     color: var(--wa-color-brand-on-normal);
-    margin-inline-start: 1rem;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-weight: 700;
+    inline-size: 100%;
+    justify-content: space-between;
+    padding: 0.25rem 1rem;
+    text-align: start;
 }
+    nav button.section {
+        height: 2rem;
+    }
+    nav .nav-section .section:hover {
+        color: var(--wa-color-text-link);
+    }
+    nav .nav-section .section .section-toggle {
+        color: var(--wa-color-brand-on-quiet);
+        font-size: 0.85em;
+        margin-inline-start: 0.5rem;
+    }
 nav wa-tree-item::part(indentation) {
     margin-inline-end: 0.25rem;
 }
@@ -600,6 +742,9 @@ nav li a {
 }
 nav li a {
     display: block;
+}
+nav[slot='navigation-footer'] li {
+    margin-inline-start: 0;
 }
 li.title {
     font-weight: 700;
