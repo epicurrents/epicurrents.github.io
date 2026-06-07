@@ -65,6 +65,25 @@ The strip has two display modes that switch automatically depending on the avail
 
 If the user drags the bottom compartment too small to fit the strip, the trend is hidden automatically and the navigator takes the full slot — the strip reappears as soon as the compartment is expanded again.
 
+### Cascade montage view
+
+When the active montage is a cascade (see [cascade montage configuration](docs/eeg-module#cascade-montages)), the viewer switches to a stacked-row layout: one source channel rendered as N rows top-to-bottom, each row covering a fixed `pageLength` seconds. The visible reach across the whole stack is `rowCount * pageLength`, and the navigator's red view-position bar widens accordingly to span the full reach.
+
+![eeg-cascade](/img/eeg-cascade.png)
+_EKG cascade with ten 30-second rows. Timestamps on the Y axis mark each row's start time, the blue bars above some rows are span annotations, the translucent band marks the recording's main-page position, and the navigator at the bottom spans the full five-minute reach._
+
+The Y-axis column on the left of the viewer carries recording-time stamps instead of the repeated source channel name — each row's label is the start time of the slice it displays, and the labels update live as `viewStart` scrolls. Clicking on a row label has no effect in cascade view because every row points at the same source channel.
+
+A translucent light-blue band sits over the rows that hold the recording's regular page (the time range your last non-cascade montage was parked on). The band scrolls with `viewStart`, so it acts as a continuous "if you switch back to a regular montage, this is what you would see" cue.
+
+Annotations on a cascade are drawn as compact markers only:
+- Spot events are vertical lines on the row containing the event time.
+- Span events render as narrow horizontal bars at the top edge of each row the duration covers.
+
+Annotation labels are stripped to keep the rows readable — hover over a marker to see the full label and text in the tooltip. Cascade annotations are read-only; to edit or add annotations, switch to a regular montage first.
+
+Filter and sensitivity changes made while a cascade is active stay with the cascade. The recording's regular montage settings are preserved and reapplied when the user switches away. Filter changes apply on the main thread for now, so the rendered rows update immediately but heavier modality-specific processing is not yet available through the cascade.
+
 ## Browsing an EEG
 
 There are five means to browse an EEG:
@@ -74,3 +93,4 @@ There are five means to browse an EEG:
 3. Swiping left or right over the EEG traces on a touch screen.
 4. Double-clicking [`[[icon:mouse]]`] on the navigation bar below the EEG display will move to that location.
 5. If the recording has annotations, clicking on an annotation will jump to that location (annotations can be viewed by pressing `A`).
+6. Double-clicking [`[[icon:mouse]]`] on a cascade signal recenters `viewStart` on that point. The light-blue band on the cascade shifts to mark the new location, and any regular montage you switch to afterwards is parked around that time.

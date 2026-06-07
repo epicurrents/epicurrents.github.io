@@ -10,6 +10,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
   * Laplacian (source density).
   * Transverse bipolar.
 - Viewing select polygraphic channels (EKG, EMG, EOG, respiration) *if* they are correctly labeled in the source file.
+- Optional polygraphic *cascade* view — N time-shifted slices of a single polygraphic channel stacked vertically, for at-a-glance scanning of long segments.
 - Adjusting signal sensitivity for all channels or each channel individually.
 - Adjusting signal filters (high-pass, low-pass and notch) for all channels or each channel individually.
 - Adjusting signal colors based on signal type (polygraphic signals) or side of the body (for EEG signals).
@@ -103,6 +104,42 @@ app.registerModule('eeg', eegRuntime, {
 ```
 
 **From a configuration file** (when loading from a URL or embedded JSON in the platform): the `applyConfiguration` method on the EEG runtime processes a `EegModuleConfiguration` object, fetching any URL-referenced montage or setup files on demand.
+
+## Cascade montages
+
+A *cascade montage* is a special-purpose view that takes one source channel and renders it as N vertically stacked rows. Each row covers a fixed `pageLength` seconds, so the visible reach across the whole stack is `rowCount * pageLength` and a page-turn advances by the full reach — successive screens do not overlap. The intended use case is fast visual scanning of a single polygraphic signal (EKG, breathing, EMG, EOG) where the user would otherwise have to page through dozens of regular pages to cover the same duration.
+
+Cascade montages are registered against a setup (the same way as regular montages) and ship as part of the EEG module configuration:
+
+```ts
+app.registerModule('eeg', eegRuntime, {
+    cascadeMontages: {
+        'standard-1020': [
+            {
+                id: 'ekg',
+                label: 'EKG cascade',
+                candidates: ['EKG', 'ECG', 'EKG1'],
+                rowCount: 15,
+                pageLength: 10,
+                sensitivity: 100,
+                highpass: 0.5,
+                lowpass: 40,
+                notch: 50,
+            },
+        ],
+    },
+})
+```
+
+Per-entry fields:
+- `id` — stable identifier; the resulting montage's name is `cascade:<id>`.
+- `label` — display name shown in the montage selector.
+- `candidates` — source channel labels tried in priority order against the keyed setup. The first label that matches a channel name in that setup wins. An entry whose candidates do not resolve is silently skipped.
+- `rowCount` — number of stacked rows (typical scanning ranges from 10 to 15).
+- `pageLength` — seconds displayed per row. Becomes the montage's own `pageLength` while it is active.
+- `sensitivity`, `highpass`, `lowpass`, `notch` — optional initial display state. Cascade montages own their own state independently from the recording's regular montages: changes the user makes while a cascade is active land on the cascade, and the regular montage settings are preserved and reapplied on switch.
+
+The cascade configuration mirrors the `extraMontages` shape (setup name → list of entries) so the same configuration file or inline object covers both.
 
 ## Annotation event filtering
 

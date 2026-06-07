@@ -17,6 +17,8 @@ After selecting the desired segments the analysis tool can be opened by using a 
 - `F`: Fast-Fourier transform tool.
 - `E`: Segment examination tool.
 
+In a [cascade montage view](docs/eeg-module/eeg-viewer#cascade-montage-view), selections are sized to one channel band (rather than the full viewport) and a drag that crosses row boundaries is split into one bar per affected row. All bars share the same underlying selection — clicking any of them opens the analysis window for the full selected time range.
+
 ### Fast-Fourier transform tool
 
 The FFT tool can be used to analyze the frequency components of one or more signal segments. The frequency components are displayed as a line graph, with lower frequencies to the left and higher frequencies to the right.
