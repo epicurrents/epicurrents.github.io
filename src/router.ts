@@ -39,6 +39,10 @@ export const documentation = {
             path: 'platform/configuration',
         },
         {
+            name: 'Data protection',
+            path: 'platform/data-protection',
+        },
+        {
             name: 'Project development',
             path: 'platform/project-development',
             subitems: [
