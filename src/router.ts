@@ -166,6 +166,10 @@ export const documentation = {
     ],
     'For developers': [
         {
+            name: 'Building the application',
+            path: 'building-the-application',
+        },
+        {
             name: 'Development',
             path: 'development',
 
