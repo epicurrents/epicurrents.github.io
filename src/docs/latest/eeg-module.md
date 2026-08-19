@@ -15,6 +15,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
 - Adjusting signal filters (high-pass, low-pass and notch) for all channels or each channel individually.
 - Adjusting signal colors based on signal type (polygraphic signals) or side of the body (for EEG signals).
 - Viewing, editing and adding global and channel-specific annotations.
+- Scalp voltage field topography at the cursor position, computed natively in the browser and drawn both as a flat map and on an anatomical head surface (see [analysis tools](docs/eeg-module/analysis-tools#voltage-field-topogram)).
 
 ## Configuration
 
@@ -104,6 +105,69 @@ app.registerModule('eeg', eegRuntime, {
 ```
 
 **From a configuration file** (when loading from a URL or embedded JSON in the platform): the `applyConfiguration` method on the EEG runtime processes a `EegModuleConfiguration` object, fetching any URL-referenced montage or setup files on demand.
+
+## Trend derivations
+
+The [trend strip](docs/eeg-module/eeg-viewer#trend-strip) computes its values over derivations resolved against the recording's setup, and the defaults name 10-20 electrodes. A deployment with a different electrode array — a sub-hairline array, an intracranial grid — must declare its own, or the affected trends are silently skipped and the strip stays empty.
+
+The aEEG, ratio and spectrogram trends each build one trend per entry in a derivation list, and pdBSI averages an index over a list of homologous electrode pairs. `aeeg.derivations` doubles as the fallback for the other two, so an array where all three read the same signal declares it once:
+
+```ts
+app.registerModule('eeg', eegRuntime, {
+    aeeg: {
+        derivations: [
+            {
+                id: 'left',
+                label: 'Left',
+                color: [0.20, 0.45, 0.85, 0.85],
+                candidates: [
+                    { source: 'C3', reference: 'P3' },
+                    { source: 'C3', reference: '' },
+                ],
+            },
+            // ... one entry per trend slot, conventionally one per hemisphere
+        ],
+    },
+    // Optional: only when a trend should not share the aEEG derivations.
+    ratio: {
+        derivations: [ /* same shape as aeeg.derivations */ ],
+    },
+    spectrogram: {
+        derivations: [ /* same shape as aeeg.derivations */ ],
+    },
+    pdbsi: {
+        pairs: [
+            { left: 'Fp1', right: 'Fp2' },
+            { left: 'F7', right: 'F8' },
+        ],
+    },
+    trends: {
+        pdbsi: { epochLength: 2, band: [1, 4] },
+    },
+})
+```
+
+- `candidates` are tried in order and the first one that resolves wins, so a list can cover several electrode arrays at once. Each entry resolves by three strategies in turn: an empty `reference` matches the named channel on its own; otherwise a single channel named like the pair (`'c3-p3'`) is tried, then the two electrodes individually with the subtraction applied at compute time.
+- Splitting `ratio` or `spectrogram` off is worth it where the trends want different signals. aEEG measures amplitude, so it wants the widest bipolar span the array offers, while a band-ratio index computed against a common average reference is usually taken from a single electrode (an empty `reference`).
+- `pairs` whose left or right electrode is missing from the setup are skipped individually. A partially-resolving list computes the index over the pairs that did resolve, so an incomplete list is a silent narrowing rather than an error — declare every pair the array actually carries.
+- `trends` holds the per-type math knobs (epoch length, frequency bands, referencing). It merges per trend type over the defaults, so naming one knob leaves the rest of that type's defaults in place.
+
+## Scalp topography
+
+The [voltage field topogram](docs/eeg-module/analysis-tools#voltage-field-topogram) is computed in the module itself. Nothing about it needs the Pyodide service, and a frame costs one matrix-vector product and a colour ramp, which is what lets the map follow the cursor directly instead of trailing it behind a debounce.
+
+Two independent paths back the two views:
+
+- **`EegTopogram`** builds a spherical-spline interpolation operator at runtime, for any electrode set, from a bundled position table covering the 10-20, 10-10 and 10-05 systems. The operator depends only on the electrode positions, so it is built once per montage and reused for every frame. Positions are matched case-insensitively and the pre-1991 temporal names (T3/T4/T5/T6) resolve to their modern equivalents.
+- **`EegSurfaceFieldMap`** evaluates `field = mapping @ data` against a matrix computed offline against an anatomical scalp mesh. That matrix is a pseudo-inverse over a whole channel set, so columns cannot be dropped to serve a subset: a map serves exactly the electrode array it was baked for. Two are bundled — the classic 19-electrode 10-20 array and the IFCN standardised array, which adds F9/F10, T9/T10 and P9/P10 — and `EegSurfaceFieldMap.forLabels` picks the richest one a recording can feed, matching electrodes by resolved position rather than by name.
+
+The two views therefore disagree slightly on purpose: one interpolates over a sphere fitted to the electrodes, the other onto an averaged anatomical scalp. Both are seeded from the same sphere origin and share a colour ramp and contour formula, so a feature that moves in one moves correspondingly in the other, but the anatomy shifts maxima by a few millimetres relative to the sphere and spreads the surrounding field differently.
+
+Both paths agree with MNE-Python's own interpolation to about `1e-7` relative on identical input, which the tooling in the package's `tools/topography/` verifies against MNE directly rather than against a stored fixture. Baking a map for a new electrode array is done with the same tooling; its README covers the procedure and the pitfalls.
+
+Adding a surface map is worth it only for arrays that recur across recordings. A dense array is better served by the 2D view, which builds its operator at runtime for any montage — a baked map costs roughly `vertices × channels × 4` bytes in the bundle, which is around 230 KiB for 19 channels and would approach 700 KiB for a full 10-10 array.
+
+> **Third-party material:** the baked assets are not original work of this project. The mapping matrices are computed with MNE-Python (BSD-3-Clause), and the mesh is a modified version of the FreeSurfer fsaverage head surface, under a licence that is not OSI-approved and that requires its text to accompany copies. The package ships `NOTICE` and `licenses/` with the terms, and each generated asset repeats its own provenance internally. Anything that redistributes a built application carries the mesh, and these conditions, with it.
 
 ## Cascade montages
 

@@ -41,7 +41,7 @@ Services extend the application with capabilities that run in a separate web wor
 
 | Package | npm | Description |
 |---|---|---|
-| `pyodide-service` | `@epicurrents/pyodide-service` | Python-in-browser via [Pyodide](https://pyodide.org). Unlocks spectral analysis, voltage topomaps, and other scipy/MNE-based tools. |
+| `pyodide-service` | `@epicurrents/pyodide-service` | Python-in-browser via [Pyodide](https://pyodide.org). Unlocks spectral analysis, source localisation, and other scipy/MNE-based tools. |
 | `onnx-service` | `@epicurrents/onnx-service` | ONNX model inference for ML-assisted annotation. |
 
 ### Interface

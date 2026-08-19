@@ -6,6 +6,7 @@ The EEG interface module contains a set of analysis tools that can be used in th
 - Fast-Fourier transform (FFT) tool to compute signal frequency spectrums of selected signal segments.
 - Displaying exact durations and amplitudes of signal segments.
 - Inspecting segments more closely, including time and amplitude difference between exact positions (e.g. to calculate spike duration).
+- Scalp voltage field topogram at the cursor position, drawn both as a flat map and on a three-dimensional head surface.
 
 ### Usage
 
@@ -16,6 +17,7 @@ To select multiple segments for comparison, drag over them with the left mouse b
 After selecting the desired segments the analysis tool can be opened by using a hotkey or by selecting the last segment using the right mouse button. Hotkeys for the different analysis tools are:
 - `F`: Fast-Fourier transform tool.
 - `E`: Segment examination tool.
+- `T`: Voltage field topogram.
 
 In a [cascade montage view](docs/eeg-module/eeg-viewer#cascade-montage-view), selections are sized to one channel band (rather than the full viewport) and a drag that crosses row boundaries is split into one bar per affected row. All bars share the same underlying selection — clicking any of them opens the analysis window for the full selected time range.
 
@@ -49,16 +51,44 @@ Left-clicking [`[[icon:mouse]]`] on the signal plot will place a marker. By plac
 
 Below the examination tool is a segment cropping tool. Dragging [`[[icon:mouse]]`] the handles from the edges of the segment will crop out those parts of the signal and allow closer examination of individual waveforms, for example.
 
+### Voltage field topogram
+
+The topogram displays the scalp voltage field at a single point in time, computed from the signal values under the EEG cursor. Both views are calculated in the browser as the cursor moves, so the tool is available in every deployment and does not need the Python integration.
+
+![voltage-field-map-tool](/img/voltage-field-map-tool.png)
+_Voltage field map of the vertex sharp wave._
+
+The tool uses the EEG cursor's position as the analysis time point. Double-clicking [`[[icon:mouse]]`] on the signal will move the cursor to that position, after which the cursor can be either dragged or adjusted one sample at a time by using the `arrow` keys. The cursor tool below the map makes it easier to select the exact position.
+
+Electrode positions are marked on both views, and the electrode of the active channel is drawn in yellow, which shows at a glance where the signal being read sits in the field. Selecting several channels highlights each of their electrodes.
+
+The topogram needs a montage with a common reference — a bipolar montage such as the double banana describes voltage *differences* between electrode pairs, which cannot be placed at a single scalp position. It also needs enough channels whose electrode positions are known; channels the module cannot place, including polygraphic ones, are left out of the interpolation.
+
+#### The two views
+
+Two views are drawn side by side from the same values, using the same colour scale and the same contour levels:
+- **Voltage field map** — the familiar flat map, viewed from above with the nose pointing up. It is drawn for any montage that meets the requirements above.
+- **Scalp surface** — the same field projected onto an anatomical head surface, which can be rotated by dragging [`[[icon:mouse]]`]. This view needs a surface map prepared in advance for the recording's electrode array, and the module ships two: the classic 19-electrode 10-20 array, and the IFCN standardised array, which adds the inferior temporal chain (F9/F10, T9/T10, P9/P10) to those 19. The richest of the two that the recording can feed is used automatically. If neither matches, the view reports that no surface field map is available for the montage and the flat map is displayed alone.
+
+![scalp-surface-field-map](/img/scalp-surface-field-map.png)
+_The same field on the scalp surface view._
+
+**The two views are not meant to look identical.** They are computed from the same voltages at the same instant, but over different head models: the flat map interpolates over a sphere fitted to the electrode positions, while the surface view interpolates onto the anatomical scalp of an averaged head. Anatomy that a sphere does not have — the temporal flattening, the occipital slope, the frontal curvature — shifts a maximum by a few millimetres and stretches the surrounding field differently in each view. The pair should be read for agreement about where a field is centred and how it is signed, not for a pixel-by-pixel match.
+
+The views also differ in handedness, which is likewise intentional. The scalp surface is a realistic view of a head, so the subject's right side is on the viewer's left when facing them, whereas the flat map is seen from above with the nose up, placing the subject's right side on the right of the image.
+
+#### Display options
+
+The map's appearance is configured under the `Voltage field topogram` heading of the `EEG` settings tab:
+- **Colour scale** — displays the voltage limit next to the map.
+- **Contour levels** — the number of field contours drawn either side of zero; `0` draws none.
+- **Fixed voltage scale** — the voltage in µV mapped to full colour saturation. At `0` every frame is scaled to its own maximum, which is what makes a single field easiest to read but also renders a flat stretch and a burst identically. Setting a fixed scale is what allows amplitudes to be compared across a time window.
+- **Colour saturation of the mid range** — at `0` the colour is proportional to the voltage, which is the clearest setting for focal findings such as spikes. Raising it lifts low-amplitude structure into view — a diffuse asymmetry, a background gradient — at the cost of making a focal field appear to spread further than it does.
+- **Colours** — the colours of the most negative and most positive values and of the midpoint. The default poles stay distinguishable for the common forms of colour vision deficiency, and the midpoint is deliberately neutral; a hue there reads as a third category.
+
 ## Python tools
 
 The Python integration (using the Pyodide service) unlocks more advanced EEG analysis tools. As the service significantly increases the memory requirement of the application it should be employed only when the features are required.
-
-### Voltage topogram visualizer
-
-This tool uses MNE-Python's topomap feature to calculate surface voltage maps at a specific point in time. In addition to the exact time point a voltage development series can be computed with voltage maps at certain time intervals before and after the selected time point. The tool uses the EEG cursor's position as the analysis time point. The cursor tool below the topogram may make it easier to select the exact position. Double-clicking [`[[icon:mouse]]`] on the signal will move the cursor to that position, after which the cursor can be either dragged or adjusted one sample at a time by using the `arrow` keys.
-
-![voltage-topogram-tool](/img/voltage-topogram-tool.png)
-_Voltage topogram of the vertex sharp wave._
 
 ### Power spectrum analysis tool
 

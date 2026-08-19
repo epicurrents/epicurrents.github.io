@@ -53,10 +53,11 @@ At minimum you need an `apps.py`:
 # projects/myproject/apps.py
 from django.apps import AppConfig
 
+
 class MyProjectConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'projects.myproject'
-    label = 'myproject'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "projects.myproject"
+    label = "myproject"
 
     def ready(self):
         pass

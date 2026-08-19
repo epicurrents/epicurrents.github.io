@@ -39,7 +39,7 @@ The EEG view includes a navigator displaying the whole record span, including da
 ![eeg-navigator](/img/eeg-navigator.png)
 _The red area is the visible page, blue bars on top are annotations._
 
-The time displayed on the left side of the navigator shows the time position of the **cursor line**. Depending on the setting, the cursor either displays time elapsed from the start of the recording or the actual time at that point of the recording, provided the EEG source file contains the recording start time. The same applies to the time intervals displayed below the navigator bar.
+The time displayed on the left side of the navigator shows the time position of the **cursor line**. It reads as time elapsed from the start of the recording by default; unticking *Display time elapsed from the recording start instead of the time of day* under the `EEG` settings tab switches it to the wall-clock time at that point of the recording instead. The same applies to the time intervals displayed below the navigator bar. Absolute time needs the EEG source file to carry a recording start time, and a de-identified recording deliberately does not — which is why relative time is the default.
 
 Sometimes EEG recordings may have gaps (i.e. missing segments) in the data. These gaps are shown as gray areas in the navigator.
 
@@ -57,7 +57,9 @@ The strip is hidden by default. Toggle it from the `Display` → `Biosignal` →
 The currently implemented trend type is **amplitude-integrated EEG (aEEG)**:
 - For each epoch (15 seconds by default) the signal is band-pass filtered (2–15 Hz), an amplitude envelope is computed, and the minimum and maximum envelope width within the epoch are recorded.
 - The pair is rendered as a vertical line per epoch on a semi-log scale: linear up to 10 µV, logarithmic above (the Hellström-Westas scale). Tick marks on the right of each trend mark 10, 20, 50, 100, 200 and 500 µV; 10 and 100 carry labels.
-- Two homologous derivations (one per hemisphere — typically C3/C4 or P3/P4) are computed in parallel and shown side-by-side. The left-hemisphere band uses the EEG left-side trace colour, the right-hemisphere band uses the right-side colour, and each band carries the corresponding electrode label aligned to the bottom of its band.
+- Two homologous derivations (one per hemisphere — C3/C4 or P3/P4 by default) are computed in parallel and shown side-by-side. The left-hemisphere band uses the EEG left-side trace colour, the right-hemisphere band uses the right-side colour, and each band carries the corresponding electrode label aligned to the bottom of its band.
+
+Those derivations are resolved against the recording's setup, and the ratio and spectrogram trends fall back to them unless they declare their own. A deployment whose electrode array does not carry the default 10-20 electrodes therefore has to declare its own — see [trend derivations](docs/eeg-module#trend-derivations) — or all three trends build nothing at all and the strip stays empty.
 
 The strip has two display modes that switch automatically depending on the available height:
 - **Stacked** (default when there is room): each derivation gets its own horizontal slot, with a separator line between them at the value-0 line.

@@ -7,7 +7,6 @@ The Pyodide service (`@epicurrents/pyodide-service`) embeds a full Python interp
 This unlocks analysis routines that rely on scientific libraries which have no comparable JavaScript equivalent — primarily `numpy`, `scipy`, `matplotlib`, and `mne`. The built-in EEG module uses it for:
 
 - Welch's-method power spectral density (PSD)
-- Voltage topomaps and propagation series
 - Distributed and dipole source localisation (sLORETA, eLORETA, dSPM, MNE, MUSIC)
 - Bandpass / highpass / lowpass / notch filtering of derived signals
 
@@ -147,10 +146,8 @@ The EEG module bundles several ready-to-use scripts that consume the `biosignal.
 | Script | Module | Purpose |
 |---|---|---|
 | `psd.py` | `interface/src/app/modules/eeg/scripts/` | Welch's method PSD and squared FFT coefficients |
-| `topomap.py` | `interface/src/app/modules/eeg/scripts/` | Voltage topomap rendering via MNE + matplotlib, including a 3×3 propagation series grid |
 | `eeg_source_localize.py` | `eeg-module/src/pyodide/scripts/` | Distributed and dipole source localisation (sLORETA, eLORETA, dSPM, MNE, MUSIC). Requires a pre-computed lead field matrix supplied from the server. |
 | `eeg_filter_signal.py` | `eeg-module/src/pyodide/scripts/` | One-shot Butterworth filter application for arbitrary signal arrays |
-| `eeg_load_topomap.py` | `eeg-module/src/pyodide/scripts/` | Setup helper for the topomap script |
 
 The source localisation script is intentionally designed so that the heavy `mne.make_forward_solution()` computation (which requires compiled MNE-C code that does not run in Pyodide) happens server-side via the platform's `compute` app, while the inverse computation and all visualisation run entirely in the browser.
 
@@ -162,6 +159,7 @@ Plotting scripts render matplotlib figures directly onto a JavaScript canvas via
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from js import ImageData, Uint8ClampedArray
 
+
 def draw_to_canvas(fig, canvas):
     agg = FigureCanvasAgg(fig)
     agg.draw()
@@ -169,7 +167,7 @@ def draw_to_canvas(fig, canvas):
     rgba = np.frombuffer(agg.buffer_rgba(), dtype=np.uint8)
     canvas.width = w
     canvas.height = h
-    ctx = canvas.getContext('2d')
+    ctx = canvas.getContext("2d")
     img = ImageData.new(Uint8ClampedArray.new(rgba.tobytes()), w, h)
     ctx.putImageData(img, 0, 0)
 ```
@@ -188,12 +186,14 @@ To add a new analysis routine:
 # my_analysis.py
 import numpy as np
 
+
 def detect_spikes(threshold=3.0):
     from js import signal, fs
+
     arr = np.frombuffer(signal, dtype=np.float32)
     z = (arr - arr.mean()) / (arr.std() + 1e-12)
     above = np.where(z > float(threshold))[0]
-    return {'count': int(len(above)), 'positions_s': (above / float(fs)).tolist()}
+    return {"count": int(len(above)), "positions_s": (above / float(fs)).tolist()}
 ```
 
 ```ts
@@ -220,5 +220,5 @@ A script that needs persistent state across calls (e.g. precomputed coefficients
 ## Related concepts
 
 - [Memory management](docs/memory-management) — the `SharedArrayBuffer` memory manager and `BiosignalMutex` discipline that supply the Python side's input
-- [EEG module — Analysis tools](docs/eeg-module/analysis-tools) — PSD, topomaps, and other features that use the Pyodide service
+- [EEG module — Analysis tools](docs/eeg-module/analysis-tools) — PSD, source localisation, and other features that use the Pyodide service. The voltage field topogram used to be one of them; it is now computed natively and needs no Python.
 - [Implementation — App lifecycle](docs/implementation#app-lifecycle) — where `registerService` fits in the startup sequence

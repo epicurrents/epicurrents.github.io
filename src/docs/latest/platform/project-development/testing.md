@@ -32,7 +32,7 @@ Add this file to your project directory (alongside `settings.py`, `models.py`, e
 # projects/myproject/settings_test.py
 from epicurrents.settings.test_platform import *  # noqa: F401, F403
 
-INSTALLED_APPS = INSTALLED_APPS + ['projects.myproject']  # noqa: F405
+INSTALLED_APPS = INSTALLED_APPS + ["projects.myproject"]  # noqa: F405
 ```
 
 ### 2. Create `tests/conftest.py`
@@ -45,13 +45,14 @@ The conftest handles three things: URL routing, shared fixtures, and a note for 
 Run with:
     DJANGO_SETTINGS_MODULE=projects.myproject.settings_test pytest projects/myproject/tests/
 """
+
 import pytest
 from django.test import Client
 
 
 @pytest.fixture(autouse=True)
 def use_myproject_urlconf(settings):
-    settings.ROOT_URLCONF = 'projects.myproject.tests.urls'
+    settings.ROOT_URLCONF = "projects.myproject.tests.urls"
 
 
 # Add shared fixtures here as needed.
@@ -70,7 +71,7 @@ from epicurrents.urls import urlpatterns as base_urlpatterns
 import projects.myproject.urls as myproject_urls
 
 urlpatterns = [
-    path('project/api/v1/', include(myproject_urls)),
+    path("project/api/v1/", include(myproject_urls)),
 ] + list(base_urlpatterns)
 ```
 
@@ -83,11 +84,12 @@ Tests follow standard pytest-django conventions. Use the global `make_user`, `su
 import json
 import pytest
 
-BASE = '/project/api/v1'
+BASE = "/project/api/v1"
+
 
 @pytest.mark.django_db
 def test_my_endpoint_requires_auth(client):
-    resp = client.get(f'{BASE}/my-endpoint/')
+    resp = client.get(f"{BASE}/my-endpoint/")
     assert resp.status_code == 401
 ```
 

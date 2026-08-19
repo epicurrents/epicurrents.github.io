@@ -23,7 +23,7 @@ npm install @epicurrents/eeg-module
 npm install @epicurrents/emg-module
 
 # Add optional services
-npm install @epicurrents/pyodide-service   # Python-in-browser (spectral analysis, topomaps)
+npm install @epicurrents/pyodide-service   # Python-in-browser (spectral analysis, source localisation)
 npm install @epicurrents/onnx-service      # ONNX machine learning inference
 ```
 

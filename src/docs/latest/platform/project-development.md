@@ -65,14 +65,16 @@ Register EDF middleware classes and read-permission extensions in your app's `re
 # projects/myproject/apps.py
 from django.apps import AppConfig
 
+
 class MyProjectConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'projects.myproject'
-    label = 'myproject'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "projects.myproject"
+    label = "myproject"
 
     def ready(self):
         from epicurrents.permissions import register_read_permission_extension
         from projects.myproject.permissions import can_read_via_my_rule
+
         register_read_permission_extension(can_read_via_my_rule)
 ```
 

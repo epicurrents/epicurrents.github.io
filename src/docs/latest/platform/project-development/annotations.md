@@ -45,7 +45,7 @@ The `edu` project uses `Code` to attach instructor evaluation results to student
 from annotations.models import Code, Event
 from django.contrib.contenttypes.models import ContentType
 
-_MARK_STANDARD = 'epicurrents.edu.mark'
+_MARK_STANDARD = "epicurrents.edu.mark"
 
 # Set a mark with an optional numeric score
 Code.objects.update_or_create(
@@ -53,16 +53,16 @@ Code.objects.update_or_create(
     object_id=str(event.pk),
     standard=_MARK_STANDARD,
     defaults={
-        'value': 'correct',           # 'correct' | 'incorrect' | 'reference'
-        'meta': {'score': 8.5},
+        "value": "correct",  # 'correct' | 'incorrect' | 'reference'
+        "meta": {"score": 8.5},
     },
 )
 
 # Read the mark back
 code = event.codes.filter(standard=_MARK_STANDARD).first()
 if code:
-    mark = code.value           # 'correct'
-    score = code.meta.get('score') if code.meta else None
+    mark = code.value  # 'correct'
+    score = code.meta.get("score") if code.meta else None
 ```
 
 ### Exposing marks through the project API
@@ -75,8 +75,9 @@ Do **not** expose `Code` rows or the `standard` string directly to API consumers
 
 ```python
 # In projects/edu/urls.py
-_VALID_MARKS = frozenset({'reference', 'correct', 'incorrect'})
-_EDU_MARK_STANDARD = 'epicurrents.edu.mark'
+_VALID_MARKS = frozenset({"reference", "correct", "incorrect"})
+_EDU_MARK_STANDARD = "epicurrents.edu.mark"
+
 
 @submissions_router.patch("/{token}/annotation-mark", auth=None)
 def patch_annotation_mark(request, token: str, payload: AnnotationMarkIn):
@@ -86,7 +87,7 @@ def patch_annotation_mark(request, token: str, payload: AnnotationMarkIn):
         content_type=event_ct,
         object_id=str(event.pk),
         standard=_EDU_MARK_STANDARD,
-        defaults={'value': payload.mark, 'meta': meta},
+        defaults={"value": payload.mark, "meta": meta},
     )
 ```
 
