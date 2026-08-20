@@ -8,7 +8,7 @@ Settings on the general tab affect either the general functionality of the appli
 
 By default all settings are stored only for the current session. A session changes whenever the page is opened in a new tab, but survives page reloads in the same tab. It is possible to save settings information in a more persistent storage using a cookie. Enabling the `Use a cookie to store my settings locally` implies that the user gives their consent to the use of cookies.
 
-All store settings only apply to the device **and** the browser in question.
+All stored settings only apply to the device **and** the browser in question — unless the deployment has configured a user-settings backend, in which case the same settings are also saved to your account and follow you between browsers and machines. That happens automatically and needs no consent toggle: the settings go to the server you are already signed in to, not into browser storage. See [Storing user settings on a backend](docs/implementation#storing-user-settings-on-a-backend) for the deployment side.
 
 ### Require Alt for hotkey actions
 

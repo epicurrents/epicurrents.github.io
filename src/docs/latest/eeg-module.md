@@ -9,6 +9,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
   * Double banana (longitudinal bipolar).
   * Laplacian (source density).
   * Transverse bipolar.
+  * Cz reference.
 - Viewing select polygraphic channels (EKG, EMG, EOG, respiration) *if* they are correctly labeled in the source file.
 - Optional polygraphic *cascade* view — N time-shifted slices of a single polygraphic channel stacked vertically, for at-a-glance scanning of long segments.
 - Adjusting signal sensitivity for all channels or each channel individually.
@@ -74,15 +75,21 @@ Setting an active montage automatically stops signal caching from the previous m
 The following are included out of the box and loaded automatically when a recording is opened:
 
 **Setups:**
-- `standard-1020` — standard 10-20 system (19 electrodes + Cz reference)
-- `standard-1010` — extended 10-10 system (64 electrodes)
+- `default:10-20` — labelled *Default IFCN 25*: the 19 electrodes of the 10-20 system, the inferior chain (F9/F10, T9/T10, P9/P10), and the polygraphic channels the module recognises. Electrodes a recording does not carry go unmatched, so the same setup serves a plain 10-20 record and an extended one. The `name` still reads `default:10-20` — it keys `defaultMontages`, every montage identifier and every host that injects against it, so it is left alone until the setup is reworked properly.
 
-**Montages (per setup):**
-- `as-recorded` — source channels only, no re-referencing
-- `average` — common average reference
-- `longitudinal` — double banana (longitudinal bipolar)
+**Default montages**, listed in `defaultMontages` and added to every recording:
+- `rec` — As recorded: source channels only, no re-referencing
+- `avg` — Average reference (active electrode included in the average)
+- `lon` — Double banana (longitudinal bipolar)
+- `trv` — Transverse bipolar
+
+**Extra montages**, shipped with the module and added after the defaults:
+- `cz-ref` — Cz reference
 - `laplacian` — source density (small Laplacian)
-- `transverse` — transverse bipolar
+
+These are textbook derivations any deployment might want. A montage that belongs to one deployment goes in that deployment's own configuration instead — see [Custom setups and montages](#custom-setups-and-montages) below.
+
+The name in each list is the montage's own name, not its full identifier: a montage is registered as `<setup>:<name>` (`default:10-20:laplacian`), and the `eeg.defaultMontage` setting is matched against the trailing segment. Keying the setting by name rather than by position is deliberate — the set of montages available to a deployment changes, and a stored preference has to keep pointing at the same montage when it does. The default-montage dropdown in the settings view is built at render time from the default montages, the module's own extras and anything the host injected, so a montage added by either route appears there without a code change.
 
 ## Custom setups and montages
 
@@ -105,6 +112,8 @@ app.registerModule('eeg', eegRuntime, {
 ```
 
 **From a configuration file** (when loading from a URL or embedded JSON in the platform): the `applyConfiguration` method on the EEG runtime processes a `EegModuleConfiguration` object, fetching any URL-referenced montage or setup files on demand.
+
+Injected montages are added to a recording before its channel layout is applied and before `eeg.defaultMontage` is resolved, so they behave like the built-in ones: they are laid out with the user's spacing settings, and one of them can be the deployment's default montage. (Cascade montages are the exception — they are added after the layout pass on purpose, because a cascade stacks N rows of a single channel and computes its own equidistant offsets that a group layout would overwrite.)
 
 ## Trend derivations
 

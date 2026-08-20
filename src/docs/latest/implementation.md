@@ -130,6 +130,21 @@ await app.loadStudy('edf', {
 
 The first argument is the importer name registered in step 3. The second is a `StudySource` object describing the files. The returned promise resolves once the recording header has been parsed and the resource is in `'ready'` state.
 
+### 8. Preparing a recording before it is shown (optional)
+
+A recording reaches `'ready'` with its header parsed and its worker acquired, but with no signal data behind it — the buffer allocation, montage construction and cache fill all run when the resource is *activated*. For an application that already knows which recording comes next, that cost can be moved to a moment where the user is looking at something else:
+
+```ts
+const next = await app.loadStudy('edf', nextSource)
+await next.preload()          // allocate, build montages, fill the cache — without activating
+// …later, when the user is ready:
+runtime.setActiveResource(next)   // now costs a redraw rather than a load
+```
+
+`preload()` is idempotent and does not make the resource visible; activating it afterwards finds the work done and skips it. A recording that is never preloaded behaves exactly as before, so this is an optimisation to reach for in queued-review workflows (one recording after another, in a known order), not something a general viewer needs.
+
+> **Note:** `preload()` holds a second recording's buffer and worker for as long as it is queued. Release a queued recording you decide not to show — `dataset.removeResource(resource)` followed by `resource.destroy()` — rather than letting it accumulate.
+
 ## Embedding with a `ViewerPlugin`
 
 When the viewer is embedded inside a larger application (such as the Epicurrents platform), project-specific behaviour is injected through a `ViewerPlugin` object that hooks into the viewer lifecycle without modifying core code.
@@ -160,6 +175,32 @@ mountViewer(containerEl, {
     },
 })
 ```
+
+## Storing user settings on a backend
+
+User-definable settings are kept on the device by default: session storage always, and local storage as well once the user has enabled the settings cookie. That copy belongs to one browser on one machine, which is the wrong granularity when the same person works from whichever workstation is free.
+
+Setting `app.userSettingsBackend` to an address turns on a second, account-level copy. The host normally passes it in the setup object rather than writing the setting directly, because the interface reads it while loading modules — before the host regains control:
+
+```ts
+await createEpicurrentsApp({
+    assetPath: '/viewer',
+    userSettingsBackend: '/api/v1/user/preferences?scope=viewer',
+})
+```
+
+The address must answer `GET` with `{ "settings": { "<module>.<field>": value } }` and accept the same shape on `PUT`. Requests carry same-origin credentials, and a `csrftoken` cookie — if one is present — is echoed in an `X-CSRFToken` header, which covers the common session-authenticated backend without the viewer needing to know anything else about it.
+
+Behaviour once it is set:
+
+- **At startup** the stored settings are applied *after* the device copy, so the account wins. A setting changed on another machine is found that way here rather than being overridden by whatever this browser had stored from an earlier session.
+- **On every change** the full settings map is written back, debounced by a second so a burst of adjustments costs one request.
+- **Only user-definable fields** cross the wire in either direction; the same `_userDefinable` check that guards local storage guards this, so a misconfigured backend cannot reach a setting the user could not set anyway.
+- **Failures are quiet.** A backend that cannot be reached is logged and ignored, and the device copy carries on as before — a settings mirror must never be what stops the viewer from opening. Both requests carry a five-second timeout, because a hanging connection would stall startup in a way a failing one does not.
+- **Nothing is written before a read succeeds.** A write replaces the stored map wholesale, so writing from a local picture that was never populated would delete everything the user has stored from another machine. Until the startup read succeeds, changes stay on the device only.
+- **Values are checked before they are sent.** The write is all-or-nothing, so one value the backend rejects would take every other setting with it and keep doing so for the rest of the session. A value outside the contract — anything that is not a primitive or a short flat list of them — is dropped client-side with a warning instead.
+
+Leaving the setting empty (its default) keeps everything on the device and makes no network requests.
 
 ## Standalone HTML file
 
