@@ -21,13 +21,13 @@ Use `Code` instead for any project-specific semantic labeling.
 
 | Field | Type | Purpose |
 |---|---|---|
-| `standard` | `CharField(64)` | Namespaced identifier for the coding system |
-| `value` | `CharField(128)` | The code value within that system |
-| `meta` | `JSONField(null=True)` | Arbitrary structured metadata |
+| `standard` | `CharField(64)` | Identifier for the coding system |
+| `value` | `TextField` | The code value within that system |
+| `meta` | `JSONField(null=True)` | Arbitrary structured metadata (the API accepts objects, lists, and scalars) |
 
 ### Naming convention
 
-Use a dot-separated hierarchy to namespace the standard:
+External standards use their own registry identifier as the `standard` string — `hed`, `icd10`, `snomed` — because there the string is the meaningful public identifier. Project-specific codes use a dot-separated hierarchy to namespace the standard:
 
 ```
 epicurrents.<project>.<concept>
@@ -36,6 +36,18 @@ epicurrents.<project>.<concept>
 Examples:
 - `epicurrents.edu.mark` — instructor evaluation mark in the edu project
 - `epicurrents.epicai.confidence` — model confidence score in the epicai project
+
+### Vocabulary validation
+
+A project or plugin that owns a coding standard can register a validator from its `AppConfig.ready()`:
+
+```python
+from annotations.vocabularies import register_vocabulary
+
+register_vocabulary("hed", label="HED", version="8.3.0", validator=my_validator)
+```
+
+The validator receives `(value, meta)` and raises `ValueError` when the pair violates the vocabulary; the codes API rejects such writes with 422. The platform ships no vocabularies of its own — an unregistered `standard` is accepted unvalidated unless the deployment sets `ANNOTATION_CODE_STRICT_VOCABULARY = True` in its project settings, which rejects every unregistered standard. Validation applies to API writes only; server-side code (ingest, management commands) is not gated.
 
 ### Example: edu annotation marks
 
