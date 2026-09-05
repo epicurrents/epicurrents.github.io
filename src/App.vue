@@ -453,7 +453,7 @@ if (window.matchMedia) {
                     </a>
                 </li>
                 <li>
-                    <a href="https://alpha.epicurrents.io/" target="_blank">
+                    <a href="https://demo.epicurrents.io/viewer/public" target="_blank">
                         <wa-icon name="desktop" variant="light"></wa-icon>
                         Demo
                     </a>
