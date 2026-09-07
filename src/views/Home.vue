@@ -81,6 +81,13 @@ limitations under the License.`
             File readers for different general-purpose and vendor-specific open file formats can be found under this
             section.
         </p>
+        <h2>Demo version</h2>
+        <p>
+            A demonstration version of the application is available at
+            <a href="https://demo.epicurrents.io/viewer/public" target="_blank">demo.epicurrents.io/viewer/public</a>.
+            This allows you to explore the features and functionality of the library without having to build and serve
+            it yourself.
+        </p>
         <h2>License</h2>
         <pre class="license">{{ license }}</pre>
         <p>
