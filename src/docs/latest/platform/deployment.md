@@ -14,7 +14,7 @@ git clone https://github.com/epicurrents/platform epicurrents
 cd epicurrents
 ```
 
-If you are using a project plugin from a separate repository, add it as a submodule before continuing — see [Submodule](docs/platform/project-development/submodule).
+If you are using a project plugin from a separate repository, check it out at `projects/<name>/` before continuing, or set `EPICURRENTS_PROJECT_REPO` in `.env` and let bootstrap clone it — see [Separate repository](docs/platform/project-development/separate-repository).
 
 ### 2. Copy environment templates
 

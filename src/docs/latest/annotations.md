@@ -7,7 +7,7 @@ Annotations are structured notes attached to a recording that describe either th
 Two concrete examples:
 
 - **Supervised learning for AI** — researchers annotate seizures, sleep stages, or artefacts across a dataset, producing labelled ground truth that a model can be trained on. Coded annotations (see below) make this output interoperable with external tooling without re-labelling.
-- **Student annotation validation** — in an educational session, students annotate the same recording independently. The instructor later compares submissions against a reference set, using the annotation data as the unit of assessment. The `edu` platform plugin is built entirely around this flow.
+- **Student annotation validation** — in an educational session, students annotate the same recording independently. The instructor later compares submissions against a reference set, using the annotation data as the unit of assessment. A teaching project plugin can be built entirely around this flow.
 
 ## Labels and events
 

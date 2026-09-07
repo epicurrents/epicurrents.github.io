@@ -140,7 +140,29 @@ test-myproject:
     - run: pytest projects/myproject/tests/ -q
 ```
 
-If your project lives in a separate repository (the submodule pattern), its own CI pipeline can run the same test command against the submodule checkout — no changes needed to the project's workflow file.
+The job above belongs in the platform's own workflow, which can only see a project developed in a fork. A project in its own repository runs the equivalent job there, and has one extra step to arrange: its tests import platform code and settings, so the project has to sit inside a platform checkout for pytest to resolve anything.
+
+```yaml
+test-myproject:
+  env:
+    DJANGO_SETTINGS_MODULE: projects.myproject.settings_test
+  steps:
+    - uses: actions/checkout@v4          # the platform
+      with:
+        repository: epicurrents/platform
+    - uses: actions/checkout@v4          # this project, where the platform expects it
+      with:
+        path: projects/myproject
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: pip
+    - run: pip install -r requirements.txt -r requirements-dev.txt
+    - run: pip install -r projects/myproject/requirements.lock   # if the project has its own
+    - run: pytest projects/myproject/tests/ -q
+```
+
+Pin the platform checkout to the range your `requires_platform` declares, so the suite fails when the platform moves past what the project has been tested against rather than silently testing a combination no deployment runs.
 
 ## Coverage
 

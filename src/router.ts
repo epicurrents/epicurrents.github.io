@@ -51,8 +51,8 @@ export const documentation = {
                     path: 'platform/project-development/fork',
                 },
                 {
-                    name: 'Submodule',
-                    path: 'platform/project-development/submodule',
+                    name: 'Separate repository',
+                    path: 'platform/project-development/separate-repository',
                 },
                 {
                     name: 'Testing',

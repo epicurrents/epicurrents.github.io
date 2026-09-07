@@ -9,7 +9,7 @@ Forking is the right choice when:
 - Your project is tightly coupled to the platform version in use (e.g. you rely on internal APIs that may change).
 - You prefer to review every upstream change before incorporating it.
 
-If you expect to stay in close sync with platform development or your project code is maintained by a different team, consider the [submodule](docs/platform/project-development/submodule) pattern instead.
+If you expect to stay in close sync with platform development or your project code is maintained by a different team, keep the project in a [separate repository](docs/platform/project-development/separate-repository) instead.
 
 ## Setup
 
@@ -32,11 +32,13 @@ git remote add upstream https://github.com/epicurrents/platform
 
 ### 2. Initialise submodules
 
-The platform includes a git submodule for the Nicolet/Nervus EDF converter. Initialise it after cloning:
+The platform carries the viewer and the documentation site as submodules. Initialise them after cloning:
 
 ```bash
 git submodule update --init --recursive
 ```
+
+Submodules belonging to a single plugin are registered with `update = none` and skipped here; the scripts that enable such a plugin fetch its submodule themselves.
 
 ### 3. Create your project
 
@@ -117,7 +119,13 @@ Either approach works. The key is to review the upstream changelog before mergin
 
 ## Committing your project
 
-There is nothing special to do — your project files live inside the repository alongside the platform code and are committed the same way as anything else:
+One thing does need doing first. The platform ignores everything under `projects/` except the package marker and the scaffolded template, because a project is normally its own repository — so in a fork, `git add projects/myproject/` is refused until you re-include the directory in the fork's `.gitignore`:
+
+```
+!/projects/myproject/
+```
+
+After that your project files are committed like anything else in the repository:
 
 ```bash
 git add projects/myproject/

@@ -84,14 +84,14 @@ Subclass `EDFHeaderMiddleware` (isometric, header-only transforms) or `EDFSignal
 
 ### API endpoints
 
-Add a `urls.py` to your project — its `api` object is mounted at `/project/api/v1/` automatically. Use standard Django Ninja patterns; see `projects/edu/urls.py` for a complete example.
+Add a `urls.py` to your project — its `api` object is mounted at `/project/api/v1/` automatically. Use standard Django Ninja patterns; the scaffolded template at `projects/example/` carries a working one, including the staff and superuser guards.
 
 ## Integration patterns
 
 There are two ways to work with a project plugin:
 
 - **[Fork](docs/platform/project-development/fork)** — copy the whole platform repository and develop your project inside it. Straightforward git workflow; platform updates require a manual rebase or cherry-pick.
-- **[Submodule](docs/platform/project-development/submodule)** — keep your project in its own repository and add it as a git submodule inside the platform's `projects/` directory. Platform updates are a `git pull` on the platform side; your project code stays in its own history.
+- **[Separate repository](docs/platform/project-development/separate-repository)** — keep your project in its own repository, checked out at `projects/<name>/`, which the platform ignores rather than tracks. Platform updates are a `git pull` on the platform side; your project code stays in its own history, and no pinned commit ties the two together.
 
 Both patterns produce identical runtime behaviour — the platform cannot tell the difference.
 

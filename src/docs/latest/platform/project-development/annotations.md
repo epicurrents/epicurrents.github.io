@@ -34,8 +34,8 @@ epicurrents.<project>.<concept>
 ```
 
 Examples:
-- `epicurrents.edu.mark` — instructor evaluation mark in the edu project
-- `epicurrents.epicai.confidence` — model confidence score in the epicai project
+- `epicurrents.myproject.mark` — an instructor's evaluation mark
+- `epicurrents.myproject.confidence` — a model's confidence score
 
 ### Vocabulary validation
 
@@ -49,15 +49,15 @@ register_vocabulary("hed", label="HED", version="8.3.0", validator=my_validator)
 
 The validator receives `(value, meta)` and raises `ValueError` when the pair violates the vocabulary; the codes API rejects such writes with 422. The platform ships no vocabularies of its own — an unregistered `standard` is accepted unvalidated unless the deployment sets `ANNOTATION_CODE_STRICT_VOCABULARY = True` in its project settings, which rejects every unregistered standard. Validation applies to API writes only; server-side code (ingest, management commands) is not gated.
 
-### Example: edu annotation marks
+### Example: evaluation marks
 
-The `edu` project uses `Code` to attach instructor evaluation results to student annotation events without touching `AnnotationBase`:
+A teaching project can use `Code` to attach an instructor's evaluation results to student annotation events without touching `AnnotationBase`:
 
 ```python
 from annotations.models import Code, Event
 from django.contrib.contenttypes.models import ContentType
 
-_MARK_STANDARD = "epicurrents.edu.mark"
+_MARK_STANDARD = "epicurrents.myproject.mark"
 
 # Set a mark with an optional numeric score
 Code.objects.update_or_create(
@@ -82,13 +82,13 @@ if code:
 Do **not** expose `Code` rows or the `standard` string directly to API consumers.  Instead wrap the interaction in a dedicated endpoint that:
 
 1. Validates the `value` against an allowed set
-2. Resolves the annotation by its edu `object_hash` (not by PK)
+2. Resolves the annotation by its `object_hash` (not by PK)
 3. Uses `update_or_create` keyed on `(content_type, object_id, standard)` to prevent duplicates
 
 ```python
-# In projects/edu/urls.py
+# In projects/myproject/urls.py
 _VALID_MARKS = frozenset({"reference", "correct", "incorrect"})
-_EDU_MARK_STANDARD = "epicurrents.edu.mark"
+_PROJECT_MARK_STANDARD = "epicurrents.myproject.mark"
 
 
 @submissions_router.patch("/{token}/annotation-mark", auth=None)
@@ -98,12 +98,12 @@ def patch_annotation_mark(request, token: str, payload: AnnotationMarkIn):
     Code.objects.update_or_create(
         content_type=event_ct,
         object_id=str(event.pk),
-        standard=_EDU_MARK_STANDARD,
+        standard=_PROJECT_MARK_STANDARD,
         defaults={"value": payload.mark, "meta": meta},
     )
 ```
 
-Callers send `{ mark: 'correct', score: 8.5 }` — the `epicurrents.edu.mark` standard is an implementation detail they never see.
+Callers send `{ mark: 'correct', score: 8.5 }` — the `epicurrents.myproject.mark` standard is an implementation detail they never see.
 
 ## Content hash behaviour
 
