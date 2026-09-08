@@ -13,7 +13,7 @@ Three families of data subjects, with different mechanics:
 | Subjects | Data | Where it lives |
 |---|---|---|
 | **Account holders** — clinicians, researchers, students with accounts | Username, name, email, password hash, external-login identity, push-notification device registrations | The user account and its linked rows |
-| **Recording subjects** — patients whose data is uploaded | Signal recordings (EDF/BDF), uploaded filenames, clinical annotation text, attached media, DICOM data (dicom project) | Recording, media, and annotation storage |
+| **Recording subjects** — patients whose data is uploaded | Signal recordings (EDF/BDF, and vendor study formats converted to EDF at ingest), uploaded filenames, clinical annotation text, attached media, DICOM data (dicom project) | Recording, media, and annotation storage |
 | **Third parties** — people incidentally mentioned | Free-text mentions in notes or search queries | Prevented where possible: search queries are stored hashed, credential and identifier fields are masked out of audit records |
 
 The platform keeps a tamper-evident audit trail of data changes. Identifier and credential fields are excluded from audit records at write time (masked), so the permanent trail does not accumulate password hashes, encryption keys, patient-identifying filenames, or session credentials.
@@ -22,7 +22,7 @@ The platform keeps a tamper-evident audit trail of data changes. Identifier and 
 
 **Account erasure.** The `erase_user` management command is the fulfilment path for an account holder's erasure request: it inventories the account's data (dry run by default), deletes the account and everything it owns — recordings and media including their files on disk, collections, datasets, annotations, sharing grants, push registrations, external-login identity — flushes the user's sessions, and scrubs the person's identifiers from the audit trail while keeping the trail's integrity chain verifiable. The erasure itself is recorded.
 
-**Recording erasure.** Deleting a recording (or media file) moves it to a trash state; a scheduled task permanently removes the database rows and the files after the retention window. De-identification also happens at the front door: EDF/BDF patient-identification header fields are blanked during upload processing.
+**Recording erasure.** Deleting a recording (or media file) moves it to a trash state; a scheduled task permanently removes the database rows and the files after the retention window. De-identification also happens at the front door: EDF/BDF patient-identification header fields are blanked during upload processing. Vendor study formats are converted to EDF on the same path, and carry more to remove than an EDF does — a Natus / Xltek study repeats the patient name and the site identifier in every one of its files, so none of the source files are stored and only the converted recording and its annotation timings survive ingest.
 
 **Retention windows.** All operator-tunable:
 
