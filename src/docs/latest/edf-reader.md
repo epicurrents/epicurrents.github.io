@@ -20,19 +20,27 @@ Parsing and signal I/O run inside a dedicated web worker (`edf.worker.ts`). This
 
 The worker holds a single `EdfReader` instance for the lifetime of the study. Communication follows the commission/promise pattern used throughout the library: the main thread posts a message with a unique commission ID and awaits a reply with the same ID.
 
-Worker actions:
+Most of those commissions are not EDF's own. `EdfWorker` extends `SignalReaderWorker` from `@epicurrents/core`, which answers everything a signal reader answers alike, and adds what the format needs of its own:
 
-| Action | Description |
-|---|---|
-| `setup-worker` | Parse EDF/BDF header, store file URL or `File` reference |
-| `setup-cache` | Allocate a `BiosignalMutex` (SharedArrayBuffer path) or `BiosignalCache` (heap fallback) |
-| `cache-signals` | Progressively read and store all data records in the background |
-| `get-signals` | Fetch a specific time range on demand (used before background cache reaches that range) |
-| `release-cache` | Free the SAB or heap allocation |
-| `shutdown` | Terminate the worker |
-| `update-settings` | Apply new settings (e.g. changed display scale) |
+| Action | Answered by | Description |
+|---|---|---|
+| `setup-worker` | `EdfWorker` | Parse EDF/BDF header, store file URL or `File` reference |
+| `setup-cache` | shared | Allocate a `BiosignalMutex` (SharedArrayBuffer path) or `BiosignalCache` (heap fallback) |
+| `cache-signals` | shared | Progressively read and store all data records in the background |
+| `get-signals` | shared | Fetch a specific time range on demand (used before background cache reaches that range) |
+| `request-signals` | shared | Fetch a range through the view-anchored protocol, positioning a rolling window over it first |
+| `set-interruptions` | shared | Replace the interruption table from external metadata |
+| `set-buffer-range` | shared | Move the reader's views after the memory manager rearranges the shared buffer |
+| `set-signal-polarity` | shared | Invert the sign of a recording exported with a reversed phase |
+| `release-signal-arrays` | shared | Drop the signal views but keep the cache layout for re-activation |
+| `release-cache` | shared | Free the SAB or heap allocation |
+| `reset-network` | `EdfWorker` | Clear the per-origin breakers after re-authentication |
+| `shutdown` | shared | Terminate the worker |
+| `update-settings` | shared | Apply new settings (e.g. changed display scale) |
 
-An `EdfWorkerSubstitute` runs the same code synchronously on the main thread as a fallback for environments where web workers are not available.
+EDF also reports the annotations and interruptions it discovers while decoding, which ride along with the `get-signals` reply.
+
+An `EdfWorkerSubstitute` runs the same code synchronously on the main thread as a fallback for environments where web workers are not available. It carries a dispatch of its own and answers fewer commissions than the worker does.
 
 ## Progressive loading
 

@@ -117,8 +117,16 @@ All `*-reader` packages follow the same pattern:
 1. **Importer** (e.g. `EdfImporter`) — parses the file header, creates a `StudyContext`, and provides a format worker constructor. This is the entry point registered with `app.registerStudyImporter()`.
 2. **Reader** (e.g. `EdfReader`) — runs *inside* the format worker. Handles progressive background loading of signal data records and on-demand range fetches.
 3. **Decoder** (e.g. `EdfDecoder`) — converts raw binary bytes to `Float32Array` typed arrays.
-4. **Worker** (e.g. `edf.worker.ts`) — receives commission messages (`setup-worker`, `cache-signals`, `get-signals`) and delegates to the reader.
-5. **Worker substitute** — runs the same reader code synchronously on the main thread as a fallback when web workers are not available.
+4. **Worker** (e.g. `edf.worker.ts`) — extends `SignalReaderWorker` from `@epicurrents/core`, which already registers every commission a reader answers alike: `setup-cache`, `cache-signals`, `get-signals`, `request-signals`, `set-interruptions`, `set-buffer-range`, `set-signal-polarity`, `release-signal-arrays`, `release-cache`, `reset-network`, `shutdown` and `update-settings`. A package adds `setup-worker`, where the formats genuinely differ, and overrides a shared handler where its format demands it — a reader whose timeline admits no gaps refuses `set-interruptions` rather than applying one. Commissions are answered from the cache and reach the file only for what the cache does not hold; the work happens in a worker because the cache's lock blocks on `Atomics.wait`, which throws on the main thread.
+5. **Worker substitute** — runs the same reader code synchronously on the main thread as a fallback when web workers are not available. It serves the heap cache only, never the `SharedArrayBuffer` path: `BiosignalMutex` acquires its lock with a blocking `Atomics.wait`, which throws outside a worker. A substitute should refuse a memory-manager commission rather than attempt one, so the failure names its cause instead of surfacing as an `Atomics` type error. Substitutes still carry a dispatch of their own and answer fewer commissions than the workers do; one that reaches an action it does not implement reports it as unsupported.
+
+### Studies that span several files
+
+Some vendor formats store one recording as a directory of sibling files — a segment table, a signal stream and an index per segment, and separate annotation and timing files. Two things differ for a reader of such a format.
+
+The importer is called once per file rather than once per study, so it accumulates what it is given and describes the study only when the set is complete. Registering it with the `study` importer mode is what produces that call sequence: `study` treats the chosen directory as one recording, where `folder` imports each file in it as a recording of its own. Both open a directory picker, so the distinction is only visible in the menu label.
+
+The reader then receives the whole set as `SignalSourceOptions.files`, alongside the `file` and `url` a single-file reader uses. No one member of the set can stand in for the study, so a reader that needs the set reads it from there; single-file readers ignore the field.
 
 ## Module pattern
 

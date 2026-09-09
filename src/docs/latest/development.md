@@ -49,6 +49,27 @@ npm run build
 
 The `scripts/` directory contains Node.js helpers for installing, copying type declarations between packages, and updating dependency versions across the workspace.
 
+### Running a setup of your own
+
+The dev server's entry is `interface/src/setups/standalone.ts`, which launches `setups/full.example.ts` — the reference consumer that registers every bundled module, importer and service. If a `*.local.ts` file sits beside it, that is launched instead.
+
+Everything under `src/setups/` is gitignored apart from the framework entry, the standalone entry and the examples, so a local setup stays out of the repository. That is what makes it the place to register something the example cannot import: the example is built by everyone who checks the repository out, so it can only name published packages, while a local setup can name a reader that has no public release, or a project's own.
+
+A local setup does not have to restate the example's registrations. `registerAllModules` is exported, so a setup can run it and then add to the same context:
+
+```ts
+import { createEpicurrentsApp as createFrameworkApp, type SetupContext } from '#setups/index'
+import { registerAllModules } from '#setups/full.example'
+
+export const createEpicurrentsApp = (config?: ApplicationInterfaceConfig) =>
+    createFrameworkApp(config, async (ctx: SetupContext) => {
+        await registerAllModules(ctx)
+        ctx.app.registerStudyImporter('eeg/my-file', 'Open my format', 'file', myLoader)
+    })
+```
+
+Registrations compose this way because each is a call against the setup context, which is not something merging two configuration objects could do for them.
+
 ## Testing
 
 Tests use [Vitest](https://vitest.dev/). Each package with tests has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Only three packages currently have test suites: `core` (48 suites), `eeg-module` (10 suites), and `tab-module` (1 suite).
