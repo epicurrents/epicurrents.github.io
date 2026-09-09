@@ -36,6 +36,8 @@ Display options affect the general look of EEG signals. Options include:
 - `On`: Signals are displayed with smaller voltage values towards the top of the viewport and larger values towards the bottom the of the viewport (i.e. negative up, positive down). This is the default by general convention.
 - `Off`: Signals are displayed with larger voltage values towards the top of the viewport and smaller values towards the bottom of the viewport (i.e. positive up, negative down).
 
+This setting decides which way a trace is drawn and nothing else; the sample values stay as the recording stores them. A recording that was *exported* with a reversed sign needs [the polarity correction](#correcting-a-recording-exported-with-a-reversed-sign) instead.
+
 **Apply antialiasing to traces**
 - `On`: Traces are drawn using the browser's WebGL antialiasing. Due to technical limitations the traces can only be drawn at 1px thickness. Antialiasing can improve perceived contrast between the trace and background on high-density displays.
 - `Off`: Traces are drawn without antialising applied (default).
@@ -49,6 +51,14 @@ Color presets have preconfigured options for commonly used signal color configur
 #### Grid options
 
 The EEG viewer supports individual display of a number of grid lines. For the time axis, there are `major` grid lines displayed every 1 second and `minor` grid lines for every 0.2 seconds (or 5 per second). For the voltage axis there is an `isoelectric` line displayed at zero voltage level of each channel. In addition to hiding or displaying these lines, both the thickness and color of each line can be configured.
+
+## Correcting a recording exported with a reversed sign
+
+Some recordings are written out with the phase of every signal inverted. This is a property of the file rather than a display preference, so it is corrected in the signal data: `Display > Correct inverted signal polarity` negates every sample as it is read, and a checkmark on the entry shows when a recording is being read that way.
+
+Because the correction applies to the data, everything downstream follows it — the plotted traces, the analysis tools, montage derivations, trends, and any computation reading the signals. Toggling it discards the samples already cached and reads them again, so the view refills before it redraws.
+
+The correction is available for every signal format the application can read, and it is not remembered between sessions: a recording opened again is read as stored until the correction is applied to it again.
 
 ## Recording, setup, and montage hierarchy
 
