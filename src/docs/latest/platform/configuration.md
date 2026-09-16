@@ -100,7 +100,7 @@ scripts/manage.sh generate_vapid_keys
 | `FEDERATION_PUBLIC_KEY` | Ed25519 public key (base64url, 43 chars) |
 | `FEDERATION_PRIVATE_KEY` | Ed25519 private key (base64url, 43 chars) — never expose |
 | `FEDERATION_INSTANCE_URL` | Canonical HTTPS base URL of this instance, e.g. `https://eeg.example.com` |
-| `FEDERATION_JWT_TTL` | Outbound JWT lifetime in seconds (default `60`) |
+| `FEDERATION_KEY_FETCH_TIMEOUT` | Seconds to wait when fetching a peer's public key from its well-known URL (default `10`) |
 
 Both keypairs are generated automatically by `init_env`. To rotate the federation keypair after a suspected compromise:
 

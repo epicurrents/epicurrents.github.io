@@ -43,11 +43,13 @@ The flows an operator needs on their processor list and in their privacy notice:
 
 | Destination | What flows there |
 |---|---|
-| **Federated peer instances** | Recordings shared under a federation grant. Peers are separate controllers, not processors. Recordings are de-identified by default when served to a peer (anonymized header, stripped annotation text); serving raw bytes requires an explicit opt-out by the person granting access. |
+| **Federated peer instances** | Recordings shared under a federation grant. Peers are separate controllers, not processors. Recordings are de-identified by default when served to a peer (anonymized header, stripped annotation text); serving raw bytes requires an explicit opt-out by the person granting access. The de-identification covers the annotation records a peer reads through the API as well as the text inside the signal file. |
 | **Email provider** (operator-chosen SMTP) | Recipient addresses and account emails such as password-reset links. |
 | **Browser push services** (Google, Mozilla, Apple) | A per-device delivery endpoint and message timing. Message content is end-to-end encrypted; the push service cannot read it. |
 | **External login provider** (Microsoft Entra, when enabled) | Login events; the provider returns the user's identity to the platform. |
 | **Tailscale** (when the tailnet deployment option is used) | Connection metadata only; traffic between nodes stays encrypted end-to-end. |
+
+**De-identified sharing covers annotation records, not only signal files.** Where access is granted with de-identification, the recipient receives each annotation's timing, authorship and classification codes without the text a person wrote — the same text the platform removes from the signal file itself. That holds for sharing inside a deployment as much as for a federated peer, and on every route the recipient can use to reach those records. People still read the annotations they wrote themselves, and findings produced by an analysis run stay readable, since those are computed from the de-identified signal rather than transcribed from it.
 
 The platform includes no analytics, telemetry, or error-reporting services.
 

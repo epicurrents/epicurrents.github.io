@@ -105,6 +105,26 @@ def patch_annotation_mark(request, token: str, payload: AnnotationMarkIn):
 
 Callers send `{ mark: 'correct', score: 8.5 }` — the `epicurrents.myproject.mark` standard is an implementation detail they never see.
 
+## Annotation text under de-identified access
+
+A read grant can carry de-identification, which blanks the patient-identification fields in a signal file's header and replaces the annotation text inside it. The annotation rows hold that same text, so the platform withholds it from a caller who did not write it: `Event.name` and `value`, `Label.name` and `value`, and `Annotation.content` come back empty and the row carries `text_withheld`. Timing, hashes and author ids are unaffected, as are a code's `standard` and `value`; a code's free-form `meta` follows the text.
+
+An endpoint a project ships has to apply the same rule itself — nothing in the core can reach a serialiser it does not own:
+
+```python
+from annotations.redaction import withheld_row_ids
+from epicurrents.permissions import get_read_access_result
+
+terms = get_read_access_result(user=request.user, obj=recording)
+if not terms.granted:
+    raise HttpError(403, "You do not have permission to view this recording")
+
+withheld = withheld_row_ids(rows, caller=request.user, terms=terms)
+return [serialise(row, withhold_text=row.pk in withheld) for row in rows]
+```
+
+Resolve the caller's access as *terms* rather than as a boolean: `can_read_object` reaches the same decision but discards what the rule needs. Two exemptions are built in and need no work from a project — the caller's own rows, and rows whose producer has registered them as machine-generated, such as an analysis run's findings.
+
 ## Content hash behaviour
 
 Adding a `Code` to an annotation fires the `Code` post-save signal, which calls `recompute_content_hash()` on the parent annotation.  This is intentional: a marked annotation is semantically different from an unmarked one, and `ObjectChangeLog` should record the change.
