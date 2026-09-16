@@ -111,6 +111,14 @@ docker compose restart web celery
 
 After rotating, remote instance administrators must re-fetch your public key before inbound requests will succeed again.
 
+## Annotations
+
+| Variable | Description |
+|---|---|
+| `ANNOTATION_EXPORT_ALL_ANNOTATORS_REQUIRES_SUPERUSER` | Whether exporting annotations across all annotators is reserved for superusers (default `True`). Set to `False` where the staff tier is the deployment's research-coordinator tier, which restores staff-wide export. Everyone outside the tier exports their own annotations only. |
+
+`ANNOTATION_CODE_STRICT_VOCABULARY` is not an environment variable. Whether an unregistered coding standard is rejected belongs with the code that registers the vocabularies, so a project sets it in its own settings module; see [Annotations](project-development/annotations.md) in the project development guide.
+
 ## Logging
 
 | Variable | Default | Description |
