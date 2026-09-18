@@ -101,6 +101,8 @@ All host-side scripts live in `scripts/`.
 
 On startup, `entrypoint.sh` calls `python manage.py createadmin`, which creates a superuser from `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_EMAIL` if no superuser exists yet. If a superuser already exists the command is a no-op.
 
+That no-op covers the password as well, which matters when the password is the thing you are trying to change: an existing account keeps the one it was created with, so editing `ADMIN_PASSWORD` in `.env` and restarting changes nothing, while the file and a clean restart both suggest otherwise. Use `scripts/manage.sh changepassword <username>` instead.
+
 You can also run it manually at any time:
 
 ```bash
