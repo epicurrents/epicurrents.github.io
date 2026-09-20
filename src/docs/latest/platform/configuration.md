@@ -63,6 +63,10 @@ Uploads exceeding this limit are rejected mid-stream and the partial staging fil
 | `EMAIL_FROM` | `noreply@epicurrents.local` | `From:` address for transactional email |
 | `EMAIL_TIMEOUT` | `20` | Seconds to wait on the relay. Django's default is no deadline; mail is sent inside the workers, so a stalled relay would hold a worker child indefinitely |
 
+Three kinds of message go out: the invitation a new account is created with, the password reset a user asks for, and maintenance job notices to superusers. Without a relay configured they all go to the container log, where an account created by invitation cannot be signed in to at all — so a deployment that adds accounts through the administration pages needs this section filled in before it adds the first one.
+
+To check a relay without a shell on the host, run the **Send a test email** operation from the Maintenance tab. It mails every active superuser and reports what the relay said, naming no address; if delivery fails it shows the SMTP error class, which distinguishes bad credentials from a rejected sender domain. It refuses to report success while mail is still going to the container log.
+
 ## File storage
 
 | Variable | Default | Description |

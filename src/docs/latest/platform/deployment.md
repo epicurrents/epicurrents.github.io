@@ -111,6 +111,10 @@ scripts/manage.sh createadmin
 
 This is only for the first account, since `createadmin` makes a superuser and does nothing once one exists. Every account after it is created in the application: sign in, open the user menu in the navigation bar and pick *Administration*. That surface also covers group membership, project roles, password resets and clearing a second factor for someone who has lost their authenticator. Staff can read it, superusers can change it.
 
+Accounts are added by invitation: give the new account a username and an email address, and it is created with no password while a link goes out for the holder to choose one. Nobody else ever knows it, which removes the step where an operator has to convey a password out of band. The link lasts three days and the account page can send it again. Setting a password yourself is still offered on the form for the case where there is no address to send to.
+
+That makes [outgoing mail](configuration.md#email) a prerequisite for adding accounts rather than a convenience: without a relay the invitation goes to the container log and the account cannot be signed in to. The *Send a test email* operation in the Maintenance tab checks that before the first invitation rather than after it.
+
 Accounts are deliberately not deleted from there. Removing someone is `scripts/manage.sh erase_user`, which also unlinks the recording and media files they own and scrubs their personal data from the audit trail — none of which a plain account delete does.
 
 ## Docker services
