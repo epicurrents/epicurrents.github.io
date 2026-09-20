@@ -61,6 +61,7 @@ Uploads exceeding this limit are rejected mid-stream and the partial staging fil
 | `EMAIL_HOST_USER` | — | SMTP username |
 | `EMAIL_HOST_PASSWORD` | — | SMTP password |
 | `EMAIL_FROM` | `noreply@epicurrents.local` | `From:` address for transactional email |
+| `EMAIL_TIMEOUT` | `20` | Seconds to wait on the relay. Django's default is no deadline; mail is sent inside the workers, so a stalled relay would hold a worker child indefinitely |
 
 ## File storage
 
