@@ -43,7 +43,7 @@ The flows an operator needs on their processor list and in their privacy notice:
 
 | Destination | What flows there |
 |---|---|
-| **Federated peer instances** | Recordings shared under a federation grant. Peers are separate controllers, not processors. Recordings are de-identified by default when served to a peer (anonymized header, stripped annotation text); serving raw bytes requires an explicit opt-out by the person granting access. The de-identification covers the annotation records a peer reads through the API as well as the text inside the signal file. |
+| **Federated peer instances** | Recordings shared under a federation grant. Peers are separate controllers, not processors. Recordings are de-identified by default when served to a peer (de-identified header, stripped annotation text); serving raw bytes requires an explicit opt-out by the person granting access. The de-identification covers the annotation records a peer reads through the API as well as the text inside the signal file. |
 | **Email provider** (operator-chosen SMTP) | Recipient addresses and account emails such as password-reset links. |
 | **Browser push services** (Google, Mozilla, Apple) | A per-device delivery endpoint and message timing. Message content is end-to-end encrypted; the push service cannot read it. |
 | **External login provider** (Microsoft Entra, when enabled) | Login events; the provider returns the user's identity to the platform. |
