@@ -125,6 +125,25 @@ app.registerModule('eeg', eegRuntime, {
 
 Injected montages are added to a recording before its channel layout is applied and before `eeg.defaultMontage` is resolved, so they behave like the built-in ones: they are laid out with the user's spacing settings, and one of them can be the deployment's default montage. (Cascade montages are the exception — they are added after the layout pass on purpose, because a cascade stacks N rows of a single channel and computes its own equidistant offsets that a group layout would overwrite.)
 
+## Default filters
+
+The filters a recording opens with can be set per deployment, in Hz. Each key replaces the default of the matching filter control, and an omitted key keeps the built-in default (0.3 Hz highpass, 70 Hz lowpass, notch off):
+
+```ts
+app.registerModule('eeg', eegRuntime, {
+    filters: {
+        highpass: 0.16,
+        lowpass: 70,
+        notch: 50,
+    },
+})
+```
+
+- `0` turns a filter off, so a deployment can disable a filter that is on by default.
+- A negative or non-numeric value is ignored with a warning, and that filter keeps its built-in default.
+- A frequency that is not among the control's predefined options is still applied, for a research protocol that calls for one. The filter dropdown lists it as **Custom** at its place in frequency order, and it stays selectable after the user has switched to another value.
+- Use `filters.notch` only when `eeg.notchDefaultFrequency` is not set. With that setting the notch control is an on/off toggle for its frequency rather than a dropdown, and the toggle shows as on only when the recording's notch matches that frequency, so a configured notch at any other frequency is applied but displayed as off.
+
 ## Trend derivations
 
 The [trend strip](docs/eeg-module/eeg-viewer#trend-strip) computes its values over derivations resolved against the recording's setup, and the defaults name 10-20 electrodes. A deployment with a different electrode array — a sub-hairline array, an intracranial grid — must declare its own, or the affected trends are silently skipped and the strip stays empty.

@@ -16,7 +16,7 @@ The controls toolbar above the signals apply general settings on the recording l
 - **Montage**: A list of preconfigured montages to display the signals in.
 - **Sensitivity**: Signal sensitivity in uV/cm units; larger values will attenuate signal amplitudes and smaller values will increase them.
 - **Timescale**: Controls the amount of time displayed on the screen. The dynamic 3cm/second is recommended for general EEG viewing, but a list of static number of seconds per screen is also provided.
-- **Filters**: Settings for high-pass, low-pass and band-reject filters can be chosen from a predefined list of options. The `Low` option applies to the lower (highpass) filter, the `High` to the higher (lowpass) filter, and `Notch` to the band-reject filter (either 50 Hz or 60 Hz to filter AC artifact).
+- **Filters**: Settings for high-pass, low-pass and band-reject filters can be chosen from a predefined list of options. The `Low` option applies to the lower (highpass) filter, the `High` to the higher (lowpass) filter, and `Notch` to the band-reject filter (either 50 Hz or 60 Hz to filter AC artifact). A frequency outside the list — one the deployment configured as a default, for example — is shown as `Custom` at its place in the list and can be reselected there. See [Default filters](docs/eeg-module#default-filters) for configuring the defaults.
 
 On the right end of the controls bar is a set of tool buttons:
 - The `[[icon:magnifying-glass]]` **inspection tool** allows selecting (by `[[icon:mouse]]` dragging) an EEG signal segment for closer inspection in the [EEG analysis window](docs/eeg-module/analysis-tools). Alternatively, the `I` key can be used to toggle the inspection tool.
