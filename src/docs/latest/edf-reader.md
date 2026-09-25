@@ -62,6 +62,29 @@ physical = (digital − dMin) × (pMax − pMin) / (dMax − dMin) + pMin
 
 This conversion is applied in `EdfDecoder.decodeData()`, which returns `Float32Array` typed arrays ready for display.
 
+## Exporting
+
+`EdfExporter` writes a recording as an EDF file with a JSON metadata sidecar. It reads the decoded resource rather than the source file, so it exports a recording from any reader. Pass it as the fourth argument of the module's study loader and register the loader as an exporter:
+
+```ts
+import { EdfExporter } from '@epicurrents/edf-reader'
+
+const exporter = new EdfExporter()
+const loader = new EegStudyLoader('EegEdfLoader', ['eeg'], new EdfImporter(), exporter)
+app.registerStudyExporter('eeg/edf-export', 'Export as de-identified EDF', 'file', loader)
+```
+
+The viewer's file menu then opens the export dialog, and `exporter.exportActiveResource(options)` returns `{ edf, sidecar, fileName }` for a host that runs the export itself.
+
+| Option | Type | Description |
+|---|---|---|
+| `deidentify` | `boolean` | Blank the subject identifiers in the header and remove event and label text. Defaults to `true`. |
+| `deidentifySidecar` | `boolean` | De-identify the sidecar as well. Defaults to `false`, so the sidecar keeps the original metadata. |
+| `embedFooter` | `boolean` | Carry the sidecar as a footer inside the EDF file, marked in the header's reserved field, so the recording travels as one file. The footer is de-identified whenever the file is. |
+| `selection` | `SignalExportSelection` | Reduce the recording before encoding: a time range, an ordered set of channels under output labels, one output rate and an amplitude range. |
+
+A selection is applied with core's `applyExportSelection`. The range is in recording time; an end that falls inside an interruption moves to the edge of the data. Events and interruptions are clipped to the range and moved to start from its beginning, and an event keeps only the channels the selection keeps (an event left with none is dropped). Downsampling uses an anti-aliasing low-pass, and a downsampled channel's recorded low-pass is lowered to match. The output rate must be a whole number of hertz, since the file is written in one-second records, and the file holds whole records only.
+
 ## Limitations
 
 - **Multi-segment files**: very large files recorded in multiple segments are supported but each segment must be a valid EDF/BDF file.

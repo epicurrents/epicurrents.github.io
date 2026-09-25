@@ -91,6 +91,33 @@ app.registerStudyImporter('edf', 'EDF/BDF recording', 'eeg', new EdfImporter())
 
 You can register multiple importers for different formats, all pointing to the same module, or to different modules.
 
+### Exporters and export targets (optional)
+
+An exporter is registered like an importer, with `registerStudyExporter`; the EDF exporter is described on the [EDF reader](docs/edf-reader) page. The file menu offers each one through an export dialog where the user picks a range, the channels with their output labels and order, and an output rate.
+
+A host application can also offer destinations for a recording, such as a repository it runs, as *export targets*. A target states the file format it takes, optional constraints on the export, options for the exporter, and a function that receives the finished file:
+
+```ts
+app.registerSignalExportTarget('repository', {
+    format: 'edf',
+    label: 'My repository',
+    constraints: {
+        channels: ['Fp1', 'Fp2', 'C3', 'C4'],
+        durations: [60, 120],
+        samplingRate: 256,
+    },
+    options: { deidentify: true, embedFooter: true },
+    submit: async ({ data }) => {
+        const response = await fetch('/upload', { method: 'POST', body: new Blob([data]) })
+        return { success: response.ok, message: response.ok ? 'Sent.' : 'The upload failed.' }
+    },
+})
+```
+
+The file menu lists the targets under "Send recording to". Constraints pre-fill and lock the export dialog: a channel list becomes one row per required label, with the source channel suggested from the recording's labels for the user to confirm, and a list of durations becomes the choice of length. The selection is checked against the constraints before anything is encoded. The file and, if the target asks for it with `sidecar: true`, the metadata sidecar are de-identified unless the target's options say otherwise.
+
+A target is offered only for a recording opened from a local file. A recording loaded from a URL or through a connector already exists somewhere, and sending it on would copy it. `app.getSignalExportTargets(resource)` answers which targets a resource may go to, and `unregisterSignalExportTarget(name)` removes one. Targets may be registered at any time, for example from a `ViewerPlugin`'s `onAppReady` after the host has fetched what its destinations accept; the menu follows the `signal-export-targets-changed` event.
+
 ### 4. Register services (optional)
 
 Services provide optional capabilities that run in a separate web worker — Python evaluation via Pyodide, ONNX inference, etc. They are loaded on demand and the application works without them if they are not registered.
