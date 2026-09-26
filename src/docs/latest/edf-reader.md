@@ -80,6 +80,7 @@ The viewer's file menu then opens the export dialog, and `exporter.exportActiveR
 |---|---|---|
 | `deidentify` | `boolean` | Blank the subject identifiers in the header and remove event and label text. Defaults to `true`. |
 | `deidentifySidecar` | `boolean` | De-identify the sidecar as well. Defaults to `false`, so the sidecar keeps the original metadata. |
+| `dither` | `boolean` | Add noise of under one digital step to each sample before it is rounded, from a cryptographic source, so that the same recording never exports to the same bytes. This stops an export from being found by re-encoding a copy of the original and comparing bytes or hashes; it does not stop correlating the signal with the original. A destination that identifies a file by its hash should hand the sender a receipt, since a second export will not reproduce it. Defaults to `false`. |
 | `embedFooter` | `boolean` | Carry the sidecar as a footer inside the EDF file, marked in the header's reserved field, so the recording travels as one file. The footer is de-identified whenever the file is. |
 | `removeMetadataKeys` | `string[]` | Leave every property with one of these names out of the sidecar and the footer, at any depth. De-identification blanks `subject` and empties event and label `text`; this removes the keys themselves, for a destination that refuses them. |
 | `selection` | `SignalExportSelection` | Reduce the recording before encoding: a time range, an ordered set of channels under output labels, one output rate and an amplitude range. |

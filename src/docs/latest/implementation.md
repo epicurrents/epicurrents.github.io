@@ -116,6 +116,8 @@ app.registerSignalExportTarget('repository', {
 
 The file menu lists the targets under "Send recording to". Constraints pre-fill and lock the export dialog: a channel list becomes one row per required label, with the source channel suggested from the recording's labels for the user to confirm, and a list of durations becomes the choice of length. The selection is checked against the constraints before anything is encoded. The file and, if the target asks for it with `sidecar: true`, the metadata sidecar are de-identified unless the target's options say otherwise. Keys listed in the constraints' `forbiddenMetadataKeys` are removed from the metadata wherever they occur, which the dialog asks of the exporter on every export to that target.
 
+A target's result may carry a `receipt`, a file for the sender to keep: `{ data, fileName, mimeType }`. The viewer shows its text in a dialog that offers the download and a copy and stays open until the user closes it, so a declined or missed download can be repeated. A destination that names what it received by something the sender cannot reproduce later, such as the hash of a dithered export, returns it this way, since the viewer keeps no copy.
+
 A target is offered only for a recording opened from a local file. A recording loaded from a URL or through a connector already exists somewhere, and sending it on would copy it. `app.getSignalExportTargets(resource)` answers which targets a resource may go to, and `unregisterSignalExportTarget(name)` removes one. Targets may be registered at any time, for example from a `ViewerPlugin`'s `onAppReady` after the host has fetched what its destinations accept; the menu follows the `signal-export-targets-changed` event.
 
 ### 4. Register services (optional)
