@@ -40,7 +40,7 @@ Most of those commissions are not EDF's own. `EdfWorker` extends `SignalReaderWo
 
 EDF also reports the annotations and interruptions it discovers while decoding, which ride along with the `get-signals` reply.
 
-An `EdfWorkerSubstitute` runs the same code synchronously on the main thread as a fallback for environments where web workers are not available. It carries a dispatch of its own and answers fewer commissions than the worker does.
+An `EdfWorkerSubstitute` drives the same `EdfReader` on the main thread as a fallback for environments where web workers are not available — a page that is not cross-origin isolated, and so has no `SharedArrayBuffer`, is the common case. It answers asynchronously like the worker, through a dispatch of its own, and answers fewer commissions.
 
 ## Progressive loading
 
@@ -50,15 +50,21 @@ If `get-signals` is called for a range not yet cached (e.g. the user jumps to th
 
 ## Discontinuous recordings
 
-In EDF+D files the recording has explicit gaps where no signal data was collected. The reader computes gap positions during header parsing and stores them as *interruptions*. Signal data is stored in *data time* (gap-exclusive): a gap of 30 seconds does not occupy 30 seconds of cache space. When signals are returned to the caller, gap periods are filled with zeros and the correct wall-clock timestamps are applied.
+In EDF+D files the recording has explicit gaps where no signal data was collected. The header says only that the file is discontinuous; where the gaps fall is in the data records, because every EDF+ record opens with a timekeeping annotation stating its own start in recording time. A record that starts later than its position in the file would put it has a gap before it as long as the difference, and the reader stores that as an *interruption*. Signal data is stored in *data time* (gap-exclusive): a gap of 30 seconds does not occupy 30 seconds of cache space. When signals are returned to the caller, gap periods are filled with zeros and the correct wall-clock timestamps are applied.
 
 ## Digital-to-physical conversion
 
-Each EDF channel header specifies a digital range (`dMin`/`dMax`) and a corresponding physical range (`pMin`/`pMax`). The decoder converts raw 16-bit (or 24-bit BDF) integers to floating-point physical values using:
+Each EDF channel header specifies a digital range (`dMin`/`dMax`) and a corresponding physical range (`pMin`/`pMax`). The decoder converts raw 16-bit (or 24-bit BDF) integers to floating-point physical values using the precomputed form of the specification's conversion, rather than recomputing the range ratio for every sample:
 
 ```
-physical = (digital − dMin) × (pMax − pMin) / (dMax − dMin) + pMin
+unitsPerBit  = (pMax − pMin) / (dMax − dMin)
+digitalOffset = pMax / unitsPerBit − dMax
+physical      = unitsPerBit × (digital + digitalOffset) × scale
 ```
+
+The last factor is the one worth knowing: `scale` normalises the channel's own unit to the SI base unit, so a channel recorded in microvolts is decoded and cached in **volts**. Every reader in the library follows that convention, and the unit each channel reports stays as the file wrote it, because that is what a consumer displays the signal against.
+
+A channel whose digital range has no width has no conversion to offer — the division would yield infinity and every sample would decode as `NaN` — so a header declaring one is refused rather than read.
 
 This conversion is applied in `EdfDecoder.decodeData()`, which returns `Float32Array` typed arrays ready for display.
 
