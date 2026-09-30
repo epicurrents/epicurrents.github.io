@@ -118,14 +118,9 @@ for pkg in core api-reader dicom-reader doc-module edf-reader eeg-module emg-mod
 done
 ```
 
-`tsc --noEmit` type-checks each package without emitting files or running any copy/replace steps, so it runs quickly. Two packages have pre-existing type errors that are unrelated to core changes — treat them as baseline noise and do not investigate unless you changed something in their area:
+`tsc --noEmit` type-checks each package without emitting files or running any copy/replace steps, so it runs quickly. **Every package type-checks clean**, so any error at all is a regression introduced by the change in hand — there is no baseline noise to read past.
 
-| Package | Error | Cause |
-|---|---|---|
-| `emg-module` | `TS6196: 'AnnotationLabel' is declared but never used` | Unused import in the EMG module; cosmetic, not a logic error |
-| `onnx-service` | `TS2339` on `awaitAction`, `_setPropertyValue`, `dispatchPropertyChangeEvent` | Class hierarchy issue in the ONNX service; does not affect runtime behaviour |
-
-Any error appearing in a package that was previously clean indicates a regression introduced by your change.
+The builder's own `npm run typecheck` runs the same sweep across all 21 packages and prints a pass/fail count, which is the shorter route to the same answer.
 
 ## Known issues
 
