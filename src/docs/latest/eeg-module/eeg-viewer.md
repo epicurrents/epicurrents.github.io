@@ -54,12 +54,16 @@ The trend strip is an optional band rendered just above the navigator, showing o
 
 The strip is hidden by default. Toggle it from the `Display` → `Biosignal` → `Trend strip` menu item; the menu shows a check mark while the strip is visible. Toggling on expands the bottom compartment to make room for the strip; toggling off collapses it back to the navigator's natural height. The same red view-position marker that appears on the navigator is mirrored on the trend strip so the user can see where the current page sits in the wider trend.
 
-The currently implemented trend type is **amplitude-integrated EEG (aEEG)**:
+Four trend types are implemented — amplitude-integrated EEG, a power spectrogram, a frequency-band ratio and the pairwise derived brain symmetry index — and none of them computes until the strip asks for it, because the per-epoch work shares a worker with the signal requests that fill the first page. A deployment can have the aEEG trend start on its own as soon as caching begins, for a display where the trend is the point rather than an aid; the other three always wait to be opened.
+
+**Amplitude-integrated EEG (aEEG)** is the default:
 - For each epoch the signal is band-pass filtered (2–15 Hz), an amplitude envelope is computed, and the minimum and maximum envelope width within the epoch are recorded. The epoch length is not fixed: it scales with the length of the recording, so an excerpt is summarised more finely than a multi-day study. It runs 2 s for a routine EEG, 5 s past 45 minutes and 10 s past an hour and a half, and longer still for a recording of several hours. The cog in the strip's controls sets it per trend for the session — leave the field empty to go back to scaling with the recording — and a deployment can pin it or redefine the ladder through the trend settings.
 - The pair is rendered as a vertical line per epoch on a semi-log scale: linear up to 10 µV, logarithmic above (the Hellström-Westas scale). Tick marks on the right of each trend mark 10, 20, 50, 100, 200 and 500 µV; 10 and 100 carry labels.
 - Two homologous derivations (one per hemisphere — C3/C4 or P3/P4 by default) are computed in parallel and shown side-by-side. The left-hemisphere band uses the EEG left-side trace colour, the right-hemisphere band uses the right-side colour, and each band carries the corresponding electrode label aligned to the bottom of its band.
 
-Those derivations are resolved against the recording's setup, and the ratio and spectrogram trends fall back to them unless they declare their own. A deployment whose electrode array does not carry the default 10-20 electrodes therefore has to declare its own — see [trend derivations](docs/eeg-module#trend-derivations) — or all three trends build nothing at all and the strip stays empty.
+Those derivations are resolved against the recording's setup, and the ratio and spectrogram trends fall back to them unless they declare their own. A deployment whose electrode array does not carry the default 10-20 electrodes therefore has to declare its own — see [trend derivations](docs/eeg-module#trend-derivations) — or those three trends build nothing at all and the strip stays empty. The symmetry index resolves electrode pairs rather than derivations and is configured separately.
+
+A trend also builds nothing until one full epoch has been cached, so opening the strip early in a long load shows it filling in rather than empty; each trend then extends on its own epoch grid as caching advances.
 
 The strip has two display modes that switch automatically depending on the available height:
 - **Stacked** (default when there is room): each derivation gets its own horizontal slot, with a separator line between them at the value-0 line.

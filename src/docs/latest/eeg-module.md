@@ -86,6 +86,17 @@ The following are included out of the box and loaded automatically when a record
 
 **Setups:**
 - `default:10-20` — labelled *Default IFCN 25*: the 19 electrodes of the 10-20 system, the inferior chain (F9/F10, T9/T10, P9/P10), and the polygraphic channels the module recognises. Electrodes a recording does not carry go unmatched, so the same setup serves a plain 10-20 record and an extended one. The `name` still reads `default:10-20` — it keys `defaultMontages`, every montage identifier and every host that injects against it, so it is left alone until the setup is reworked properly.
+- `default:10-10` — labelled *Default 10-10*: the 74 electrodes of the 10-10 system, including the AF, FC, CP and PO rows, the full midline chain and the earlobe references, for a recording whose montages reach past the 19 electrodes of the 10-20 system. It ships with an as-recorded montage only; the derived montages of the larger array are not bundled.
+
+  **This setup is registered but not selected by default.** `defaultSetups` names the 10-20 setup alone, because giving every recording 74 electrodes of channel matching it may have no signals for is a cost a deployment should choose. A deployment with a high-density array adds it:
+
+  ```ts
+  app.registerModule('eeg', eegRuntime, {
+      defaultSetups: ['default:10-20', 'default:10-10'],
+  })
+  ```
+
+  The order is the order they are registered in, and the first one becomes the recording's canonical setup.
 
 **Default montages**, listed in `defaultMontages` and added to every recording:
 - `rec` — As recorded: source channels only, no re-referencing
@@ -185,9 +196,9 @@ app.registerModule('eeg', eegRuntime, {
 })
 ```
 
-- `candidates` are tried in order and the first one that resolves wins, so a list can cover several electrode arrays at once. Each entry resolves by three strategies in turn: an empty `reference` matches the named channel on its own; otherwise a single channel named like the pair (`'c3-p3'`) is tried, then the two electrodes individually with the subtraction applied at compute time.
+- `candidates` are tried in order and the first one that resolves wins, so a list can cover several electrode arrays at once. Each entry resolves by three strategies in turn: an empty `reference` matches the named channel on its own; otherwise a single channel named like the pair is tried — in either direction, so both `'c3-p3'` and `'p3-c3'` resolve, since the amplitude trends rectify — and then the two electrodes individually, with the subtraction applied at compute time. Electrode names are matched whole and case-insensitively, so `C3` is never served by a channel named `C3A2`.
 - Splitting `ratio` or `spectrogram` off is worth it where the trends want different signals. aEEG measures amplitude, so it wants the widest bipolar span the array offers, while a band-ratio index computed against a common average reference is usually taken from a single electrode (an empty `reference`).
-- `pairs` whose left or right electrode is missing from the setup are skipped individually. A partially-resolving list computes the index over the pairs that did resolve, so an incomplete list is a silent narrowing rather than an error — declare every pair the array actually carries.
+- `pairs` whose left or right electrode is missing from the setup are skipped individually, both sides together: an index over homologous pairs cannot use half of one. A partially-resolving list computes over the pairs that did resolve, so an incomplete list is a silent narrowing rather than an error — declare every pair the array actually carries. Where no pair resolves at all, the trend is not created and the strip simply has no symmetry index in it.
 - `trends` holds the per-type math knobs (epoch length, frequency bands, referencing). It merges per trend type over the defaults, so naming one knob leaves the rest of that type's defaults in place.
 - **Epoch length is derived from the recording unless you name it.** Every type ships `epochLength: 0`, which asks for a length scaled to the recording being viewed: 2 s for a routine EEG, 5 s past 45 minutes, 10 s past an hour and a half, and beyond about five and a half hours a length that keeps the epoch count near 2000 however long the recording runs. A short excerpt is summarised finely and a multi-day recording coarsely, with nothing to configure. Writing a non-zero `epochLength` — as the `pdbsi` block above does — pins that length for every recording instead, and the derivation never overrides it. Two seconds is the floor of the derivation, because EEG activity worth seeing on a trend routinely lasts longer than a second and a shorter epoch would split such an event across two of them; the ladder itself is `epochScaling` on the same block, should a deployment want different bands.
 
@@ -248,8 +259,33 @@ The cascade configuration mirrors the `extraMontages` shape (setup name → list
 
 EDF+ files often contain annotation labels that are specific to the recording system — internal event markers, status codes, or vendor-specific strings that are not meaningful to the end user. The EEG module supports two configuration options to handle these before they reach the UI:
 
-**`ignorePatterns`** — a list of regular expressions. Any annotation label matching one of these patterns is silently discarded. Useful for suppressing recording-system internal events.
+**`ignorePatterns`** — a list of regular expressions, as strings. Any annotation label matching one of them is silently discarded. Useful for suppressing recording-system internal events.
 
-**`convertPatterns`** — a list of `{ pattern, properties }` rules. Any annotation label matching `pattern` is not discarded but instead has its properties remapped according to `properties` (e.g. renaming the label, changing the display colour). Useful for normalising vendor-specific event codes into standard clinical terminology.
+**`convertPatterns`** — a list of `[pattern, replacement]` pairs, where `pattern` is a regular expression string and `replacement` names the event properties to write. An annotation whose label matches is kept and rewritten rather than discarded, which is what normalises a vendor's event codes into clinical terminology.
+
+```ts
+app.registerModule('eeg', eegRuntime, {
+    events: {
+        ignorePatterns: ['^\\$', '^Recording (start|end)$'],
+        convertPatterns: [
+            ['^PHOTIC (\\d+)$', {
+                label: 'Photic stimulation $1 Hz',
+                class: 'activation',
+                channels: [],
+                priority: 0,
+                text: '',
+                type: 'event',
+            }],
+        ],
+    },
+})
+```
+
+Four things about the rewrite are worth knowing before writing one:
+
+- **The label is rewritten through the pattern**, so a capture group is available in the replacement label — `$1` above carries the stimulation frequency across.
+- **Every matching pattern is applied, not just the first**, and each sees the result of the one before it. A label can describe more than one thing worth normalising.
+- **A replacement clears the properties it omits.** `channels`, `class`, `priority`, `text` and `type` are written unconditionally, so a rule that names only a label blanks the other five; the example states all of them for that reason. The annotator is the exception and is kept when the rule does not name one, since relabelling an annotation does not change who made it.
+- **An ignored annotation is never converted.** Ignoring is checked first, so the two lists cannot both act on one annotation.
 
 Both are set via the EEG module settings object and take effect on every recording loaded while those settings are active.
