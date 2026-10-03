@@ -71,16 +71,16 @@ A reader that wants samples `[s, e)` must check `updated_start <= s` and `update
 
 ### `MutexExportProperties`
 
-To give another worker access to the same mutex, the owning service exports a `MutexExportProperties` object describing the SAB, the byte offsets of each channel's view, and the field layout. The receiving worker reconstructs typed-array views over the shared buffer at those offsets. No data is copied.
+To give another worker access to the same mutex, the owning service reads a `MutexExportProperties` object off the `propertiesForCoupling` getter, describing the SAB, the byte offsets of each channel's view, and the field layout. The receiving worker passes it as the `coupledProps` option and reconstructs typed-array views over the shared buffer at those offsets. No data is copied. `inputSignalViews` resolves asynchronously and answers `null` until the input side is coupled.
 
 ```ts
 // Format worker side
-const props: MutexExportProperties = mutex.exportProperties()
+const props: MutexExportProperties = mutex.propertiesForCoupling
 postMessage({ action: 'setup-input-mutex', props })
 
 // Montage worker side
-const mutex = new BiosignalMutex(/* ... */).importProperties(props)
-const inputViews: Float32Array[] = mutex.inputSignalViews
+const mutex = new BiosignalMutex({ coupledProps: props })
+const inputViews: Float32Array[] | null = await mutex.inputSignalViews
 ```
 
 The same export is also sent to the Pyodide service when Python-side processing is enabled — see [Pyodide and the SAB](docs/pyodide-service#sab-input-and-the-slice-refresh-model) on the Pyodide page.
