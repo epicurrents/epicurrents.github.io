@@ -72,7 +72,7 @@ Registrations compose this way because each is a call against the setup context,
 
 ## Testing
 
-Tests use [Vitest](https://vitest.dev/). Each package has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Every package carries a suite except `wav-reader`, which has a `test` script and no test files — and because Vitest exits non-zero on finding none, that one package fails a run across the whole workspace. `core` is much the largest at 77 files, followed by `eeg-module` at 22.
+Tests use [Vitest](https://vitest.dev/). Each package has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Every package carries a suite, so a run across the whole workspace is expected to come back green — note that Vitest exits non-zero when a package has a `test` script and no test files, which makes one such package indistinguishable from a real failure. `core` is much the largest at 77 files, followed by `eeg-module` at 22.
 
 ```bash
 # Run tests for a specific package (from the package directory)
@@ -88,16 +88,21 @@ npm run test:core            # one of the three per-package shortcuts
 
 ### How the test configuration works
 
-The `package.json` `imports` field in `core/` maps `#*` aliases to `src/` files (not `dist/`). This is what makes tests run against TypeScript source rather than the compiled output. The build step (`tsconfig-replace-paths`) rewrites all `#` aliases in emitted JS before they become part of the dist, so this setting has no effect on published packages.
+A package's `#*` aliases are declared in two places that have to agree: the `paths` in its `tsconfig.json`, which is what the editor and `tsc` read, and the `ALIASES` table in its `vite.shared.mjs`, which the library build, the worker build and `vitest.config.ts` all import. The aliases point at `src/`, which is what makes tests run against TypeScript source rather than the compiled output.
 
-Each package's `vitest.config.ts` configures the same alias resolution for Vite's module graph. The `eeg-module` additionally redirects `@epicurrents/core` to a mock implementation under `tests/mocks/` to keep unit tests isolated from core internals.
+Nothing has to rewrite them in the emitted JavaScript: the Vite build resolves every alias while bundling, so `dist/` carries only relative specifiers. Declarations are the exception, since `tsc` emits them with the alias intact, and `epicurrents-build-types` rewrites those to relative paths as it collects them.
+
+The entries are regular expressions rather than strings. A string alias matches only the exact specifier or the specifier followed by a slash, so a bare `#` prefix would never match `#wav/WavReader`; the packages declare no `imports` field, so an alias missing from the table fails to resolve rather than falling through to another mapping.
+
+The `eeg-module` additionally redirects `@epicurrents/core` to a mock implementation under `tests/mocks/` to keep unit tests isolated from core internals.
 
 ### Adding tests to a new package
 
 1. Copy `vitest.config.ts` from `core/` or `eeg-module/` and update the path aliases.
 2. Create a `tests/` directory with `*.test.ts` files.
 3. Add `"test:unit": "vitest run --coverage"` to the package's `scripts` in `package.json`.
-4. If the package uses `#` path aliases, ensure the `package.json` `imports` field points to `src/` rather than `dist/`.
+4. If the package uses `#` path aliases, add them to both the `tsconfig.json` `paths` and the `ALIASES` table in `vite.shared.mjs`, pointing at `src/` rather than `dist/`.
+5. Add a `tsconfig.test.json` extending the package's own, with `rootDir: "."` and the suite in its `include`, and run it as a `test:types` step ahead of the unit run. Type-checking the tests against the real `@epicurrents/core` is what catches an assertion that only ever verified a mock.
 
 ## Type-checking
 

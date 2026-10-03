@@ -18,7 +18,7 @@ File readers parse a specific binary format into a structured signal representat
 |---|---|---|
 | `edf-reader` | `@epicurrents/edf-reader` | EDF, EDF+C, EDF+D, BDF, BDF+ (European/BioSemi data formats) |
 | `dicom-reader` | `@epicurrents/dicom-reader` | DICOM neurophysiology (WG-32: routine EEG) |
-| `wav-reader` | `@epicurrents/wav-reader` | WAV audio |
+| `wav-reader` | `@epicurrents/wav-reader` | WAV audio (RIFF/WAVE, 16-bit PCM) |
 | `htm-reader` | `@epicurrents/htm-reader` | Markdown and HTML documents |
 | `pdf-reader` | `@epicurrents/pdf-reader` | PDF documents |
 | `api-reader` | `@epicurrents/api-reader` | Remote API URL import |
