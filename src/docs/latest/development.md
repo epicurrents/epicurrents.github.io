@@ -72,7 +72,7 @@ Registrations compose this way because each is a call against the setup context,
 
 ## Testing
 
-Tests use [Vitest](https://vitest.dev/). Each package with tests has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Only three packages currently have test suites: `core` (48 suites), `eeg-module` (10 suites), and `tab-module` (1 suite).
+Tests use [Vitest](https://vitest.dev/). Each package has its own `vitest.config.ts`; test files live under `tests/` and are named `*.test.ts`. Every package carries a suite except `wav-reader`, which has a `test` script and no test files — and because Vitest exits non-zero on finding none, that one package fails a run across the whole workspace. `core` is much the largest at 77 files, followed by `eeg-module` at 22.
 
 ```bash
 # Run tests for a specific package (from the package directory)
@@ -82,9 +82,8 @@ cd epicurrents/core && vitest run
 vitest run --coverage
 
 # From the workspace root
-npm run test:core
-npm run test:eeg
-npm run test:tab
+npm run test                 # every workspace that has a test script
+npm run test:core            # one of the three per-package shortcuts
 ```
 
 ### How the test configuration works
