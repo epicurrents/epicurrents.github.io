@@ -75,6 +75,10 @@ To check a relay without a shell on the host, run the **Send a test email** oper
 | `RECORDINGS_STAGING_PATH` | `recordings_staging/` | Temporary staging area for files being processed |
 | `RECORDINGS_IMPORT_PATH` | `recordings_import/` | Source directory for the `import_recordings` bulk import command |
 | `RECORDINGS_TRASH_RETENTION_DAYS` | `30` | Days before soft-deleted recordings are permanently purged |
+| `RECORDINGS_LINKED_HOST_PATH` | `./linked` | Host directory mounted read-only at `/data/linked` in the web and worker containers, for recordings registered in place |
+| `RECORDINGS_LINKED_ROOTS` | *(empty)* | Container paths files may be linked from, comma-separated; set to `/data/linked` to enable linking. Empty disables it |
+
+A dataset too large to copy can be registered in place rather than imported: `import_recordings --link --source-deidentified` reads EDF/BDF files under a linked root and writes the same database rows an import does, but never copies, rewrites or deletes the files. Linking is for a superuser, on a deployment whose users are all entitled to the source data, because the files are served as they are: the platform's de-identification pass does not run on them, and `--source-deidentified` records the operator's assertion that they are already de-identified. A linked file that changes size or is modified after it was linked is refused to every reader until it is linked again.
 
 ## Cache and task queue
 
