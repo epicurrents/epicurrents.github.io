@@ -57,6 +57,6 @@ The platform includes no analytics, telemetry, or error-reporting services.
 
 - **Lawful basis and the privacy notice.** The tables above are the raw material; the notice itself is per-deployment.
 - **Processor agreements** with the email provider and any other services the deployment adds, and controller-to-controller arrangements with federation peers.
-- **Backups.** Encrypted backups retain erased data until snapshots rotate out (about six months at default settings). Record erasure-request dates; if an older snapshot is ever restored, re-run the erasure afterwards.
+- **Backups.** Encrypted backups retain erased data until snapshots rotate out (about six months at default settings). An append-only off-site repository is the exception: pruning only marks its archives as deleted, and the data stays until the repository is compacted from the off-site side, so it keeps erased data indefinitely unless its administrator runs `borg compact` on a schedule. Record erasure-request dates; if an older snapshot is ever restored, re-run the erasure afterwards.
 - **The preserved-originals volume.** When original-upload preservation is enabled, that volume is outside the platform's reach by design — the erasure command lists the affected entries, and removing them is a manual operator step.
 - **Log and SIEM retention** downstream of the deployment, if logs are shipped off the host.
