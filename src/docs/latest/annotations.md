@@ -90,9 +90,11 @@ Coded annotations have several advantages over free-text labels:
 - **De-identification** — this is perhaps the most significant advantage for research. EDF+ files often embed rich clinical narratives in their annotation channels (physician notes, patient names, medical history). The platform strips this text at ingest, but the clinical meaning can be preserved by converting text annotations to coded form first. A recording that originally contained `"Patient reports aura, history of JME"` can be exported as `{ icd10: "G40.3" }` — the key information is retained while all identifying free text is discarded.
 - **Multi-scheme support** — the same event can carry codes from multiple standards simultaneously, accommodating both clinical reporting requirements and research workflows.
 
-### EEG coded events
+### Coded events
 
-The `eeg-module` ships with `EegEvent.CODED_EVENTS`, a comprehensive catalogue of standardised event codes for routine EEG, mapped to their DICOM and IEEE equivalents where available. Categories include activation procedures (hyperventilation, photic stimulation, eyes open/closed), background activity, sleep stages, and common EEG findings. These serve as a reference and can be extended per project using `EegEvent.addCodedEvents()`.
+Core ships `GenericBiosignalEvent.CODED_EVENTS`, a catalogue of event codes every biosignal modality shares: technical events, interventions, what was observed of the patient at the bedside, and disturbances from the surroundings. The `eeg-module` adds its activation procedures in `EegEvent.CODED_EVENTS` (hyperventilation, photic stimulation per frequency, eyes open and closed, sensory stimuli). Each term is mapped to its DICOM, IEEE and HED-SCORE equivalents where those standards have one.
+
+The catalogue records what happened during the recording that the signal cannot show on its own. What a reader concludes from the signal, such as a spike, a seizure or a sleep stage, is a finding, and findings are coded in HED-SCORE rather than in this catalogue. A project adds terms to a category with `extendEvents()`.
 
 ## Locking
 
