@@ -24,16 +24,25 @@ The [DICOM reader](docs/dicom-reader) can also provide EEG data when the recordi
 
 ## Channel recognition
 
-The EEG module matches source channels to electrode positions using a configurable setup. Channels are matched by label against the setup's channel name patterns (case-insensitive, supporting common variants like `EEG Fp1`, `Fp1-Ref`, etc.).
+The EEG module matches source channels to the positions of the active setup by label, case-insensitively. Each setup channel takes the first source channel its pattern matches that no earlier setup channel has taken. A source channel no setup channel matches is not displayed.
 
-Channels that are not matched to any electrode position in the active setup are treated as polygraphic channels. The module checks for common polygraphic labels and classifies them automatically:
+An electrode label is read as an optional prefix, the electrode name, and an optional reference:
 
-| Label pattern | Recognised type |
+- **Prefix** — `EEG`, with or without a separator (`EEG Fp1`, `EEG_Fp1`, `EEGFp1`), or one of the generic input prefixes `POL` and `ECG`. Some systems put these on every polygraphic input, including spare inputs carrying extra electrodes, so `POL T9` and `ECG T9` are read as T9. A prefix naming another modality (`EMG F7`, `EOG Fp1`) is not read as an electrode.
+- **Electrode** — the whole token, so FT9 is never read as T9, F10 as F1 or FCz as Cz. Trailing primes and a `+` polarity mark are allowed (`EEG Fp1'`, `Fp1+`). The pre-1991 temporal names T3/T4/T5/T6 are read as T7/T8/P7/P8.
+- **Reference** — anything after a `-` (`Fp1-Ref`, `Fp1-A1`). It is never read as an electrode of its own, so `Fp1-Cz` is not matched as Cz.
+
+Polygraphic channels are matched by the same prefix rules, with the modality named either as the prefix or as the channel name itself (`ECG EOG+` is an EOG channel):
+
+| Label | Recognised as |
 |---|---|
-| `EKG`, `ECG` | Cardiac |
-| `EMG` | Electromyography |
-| `EOG` | Eye movement |
-| `Resp`, `Airflow` | Respiration |
+| `ECG`, `EKG`, `ECG1`, `ECG II`, a bare lead name (`II`), or a stored bipolar pair (`ECG L-ECG R`, `ECG1-ECG2`) | Cardiac, single channel |
+| `ECG L` / `ECG R`, `ECGL` / `ECGR`, `EKG Left` / `EKG Right` | Cardiac electrodes, from which the montages derive a bipolar trace free of the EEG reference |
+| `EOG` | Eye movement, single channel |
+| `LOC` / `ROC`, `E1` / `E2`, `EOG L` / `EOG R`, `EOGL` / `EOGR` | Left and right eye, from which the montages derive a bipolar trace |
+| `EMG…`, `Chin`, `Submental`, `Musc…` | Electromyography |
+| `Resp…`, `Chest`, `Thorax`, `Abdomen`, `Airflow`, `Flow`, `Nasal` | Respiration |
+| `Photic`, `Flash`, `Strobe`, including `EEG Photic-Ref` | Photic stimulation |
 | `EDF Annotations` | Annotation channel (never displayed as a signal) |
 
 Polygraphic channels are displayed in the viewer when their type is supported, with colours distinct from the EEG channels.

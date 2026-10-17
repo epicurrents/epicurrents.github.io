@@ -4,7 +4,7 @@
 
 The default EEG module is designed for viewing normal-density EEG recordings based on the international 10-20-system. It has the following features out-of-the-box:
 - Reconstructing EEG signals in the following 10-20 montages:
-  * As recorded (with only 10-20 system EEG channels displayed).
+  * As recorded (with only the 10-20 system electrodes and the inferior temporal extras displayed).
   * Average reference (identical to "as recorded" if the source signals are average referenced).
   * Double banana (longitudinal bipolar).
   * Laplacian (source density).
@@ -85,7 +85,7 @@ Setting an active montage automatically stops signal caching from the previous m
 The following are included out of the box and loaded automatically when a recording is opened:
 
 **Setups:**
-- `default:10-20` — labelled *Default IFCN 25*: the 19 electrodes of the 10-20 system, the inferior chain (F9/F10, T9/T10, P9/P10), and the polygraphic channels the module recognises. Electrodes a recording does not carry go unmatched, so the same setup serves a plain 10-20 record and an extended one. The `name` still reads `default:10-20` — it keys `defaultMontages`, every montage identifier and every host that injects against it, so it is left alone until the setup is reworked properly.
+- `default:10-20` — labelled *Default IFCN-25*: the 19 electrodes of the 10-20 system, the inferior chain (F9/F10, T9/T10, P9/P10), FT9/FT10 and TP9/TP10, and the polygraphic channels the module recognises. FT9/FT10 and TP9/TP10 are positions of their own, matched because clinical recordings commonly carry them in place of or beside the IFCN chain; the as-recorded and average-reference montages show all five inferior electrodes of a side as one group in front-to-back order. Electrodes a recording does not carry go unmatched, so the same setup serves a plain 10-20 record and an extended one, and the montages built over it reduce to their traditional 10-20 form. The `name` still reads `default:10-20` — it keys `defaultMontages`, every montage identifier and every host that injects against it, so it is left alone until the setup is reworked properly.
 - `default:10-10` — labelled *Default 10-10*: the 74 electrodes of the 10-10 system, including the AF, FC, CP and PO rows, the full midline chain and the earlobe references, for a recording whose montages reach past the 19 electrodes of the 10-20 system. It ships with an as-recorded montage only; the derived montages of the larger array are not bundled.
 
   **This setup is registered but not selected by default.** `defaultSetups` names the 10-20 setup alone, because giving every recording 74 electrodes of channel matching it may have no signals for is a cost a deployment should choose. A deployment with a high-density array adds it:
