@@ -103,6 +103,25 @@ const resource = runtime?.APP?.activeDataset?.activeResources?.[0] ?? null
 
 This is safe to call at any point after `waitForEventBus()` has resolved. It returns `null` if no recording is open.
 
+## Showing a panel in the viewer's window
+
+The viewer shows its analysis tools and report in a detachable window: a Picture-in-Picture window where the browser offers one, otherwise a non-modal window over the page. A host page can show its own panels in the same window with `DetachedWindow` from `@epicurrents/interface/window`. There is one such window per page, whichever application opens it: opening one closes the other, and the owner of the closed one receives `close`.
+
+```vue
+<DetachedWindow
+    inline
+    name="review"
+    :open="detached"
+    resizable
+    title="Review"
+    @close="detached = false"
+>
+    <ReviewPanel />
+</DetachedWindow>
+```
+
+A button in the window's corner moves it between the page and Picture-in-Picture, and a window opens the way it was last shown, remembered by its `name`. A Picture-in-Picture window's corner button covers the top right of the content, whose width the window publishes as `--epicurrents-window-actions-width` for anything the content places there. With `inline` the content is shown in place while the window is closed and moves into the window and back without being remounted, so its state survives the move. Picture-in-Picture needs a user activation, so set `open` from a click; a window opened otherwise falls back to the in-page one. The window copies the page's stylesheets into Picture-in-Picture, but content that listens for events on `window` must listen on its own element's `ownerDocument.defaultView`, since events in the Picture-in-Picture window never reach the page's.
+
 ## Using the `ViewerPlugin` interface
 
 For deeper integration, the platform's `ViewerView.vue` exposes a `ViewerPlugin` hook that is called at key points in the viewer lifecycle. This is preferred over raw event subscriptions when you need to run setup logic after the viewer has fully initialised.

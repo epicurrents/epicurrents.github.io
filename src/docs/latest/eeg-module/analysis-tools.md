@@ -19,6 +19,8 @@ After selecting the desired segments the analysis tool can be opened by using a 
 - `E`: Segment examination tool.
 - `T`: Voltage field topogram.
 
+The tools open in a window of their own: a Picture-in-Picture window, which stays on top and can be moved outside the browser, for example to a second screen, or a window over the viewer, moved by its title bar. The button in the window's corner moves it from one to the other, and the tools open the same way the next time. Picture-in-Picture is available in Chromium-based browsers; elsewhere the window is always over the viewer. The viewer stays usable while the window is open, but its keyboard shortcuts work only while the viewer itself has focus. A page shows one such window at a time, so opening the report, or a panel of the page the viewer is embedded in, closes the analysis window.
+
 In a [cascade montage view](docs/eeg-module/eeg-viewer#cascade-montage-view), selections are sized to one channel band (rather than the full viewport) and a drag that crosses row boundaries is split into one bar per affected row. All bars share the same underlying selection — clicking any of them opens the analysis window for the full selected time range.
 
 ### Fast-Fourier transform tool
