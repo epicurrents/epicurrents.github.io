@@ -136,6 +136,22 @@ A target's result may carry a `receipt`, a file for the sender to keep: `{ data,
 
 A target is offered only for a recording opened from a local file. A recording loaded from a URL or through a connector already exists somewhere, and sending it on would copy it. `app.getSignalExportTargets(resource)` answers which targets a resource may go to, and `unregisterSignalExportTarget(name)` removes one. Targets may be registered at any time, for example from a `ViewerPlugin`'s `onAppReady` after the host has fetched what its destinations accept; the menu follows the `signal-export-targets-changed` event.
 
+### Context menu actions (optional)
+
+A host can add entries to the menu that opens when the user right-clicks a plot or an annotation in it. An action names the menus it appears in, a label the host has already translated, and a function run with what the menu was opened on:
+
+```javascript
+app.registerContextMenuAction('discuss', {
+    icon: 'message-dots',
+    label: 'Open the conversation',
+    targets: ['annotation'],
+    isAvailable: (context) => threads.has(context.annotation.id),
+    run: (context) => openThread(context.annotation.id),
+})
+```
+
+The context carries the resource, the annotation for the `annotation` target, the channel name where the menu was opened on one, and the recording time in seconds. The menu closes before `run` is called. The interface reads the registered actions each time it opens a menu, so an action may be registered or removed with `unregisterContextMenuAction(name)` at any time.
+
 ### 4. Register services (optional)
 
 Services provide optional capabilities that run in a separate web worker — Python evaluation via Pyodide, ONNX inference, etc. They are loaded on demand and the application works without them if they are not registered.
