@@ -30,7 +30,7 @@ A study module handles the display and interaction for one modality. It contribu
 | Package | npm | Modality |
 |---|---|---|
 | `eeg-module` | `@epicurrents/eeg-module` | EEG — signal display, montages, annotations, analysis tools |
-| `emg-module` | `@epicurrents/emg-module` | EMG — electromyography |
+| `emg-module` | `@epicurrents/emg-module` | EMG — signal display with audio playback, and a cascade view that stacks consecutive pages of one channel as rows and draws them in during playback |
 | `ncs-module` | `@epicurrents/ncs-module` | NCS — nerve conduction studies |
 | `doc-module` | `@epicurrents/doc-module` | Document viewing |
 | `tab-module` | `@epicurrents/tab-module` | Tabular data |
