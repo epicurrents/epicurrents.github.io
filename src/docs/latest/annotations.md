@@ -98,7 +98,7 @@ The catalogue records what happened during the recording that the signal cannot 
 
 ## Locking
 
-Annotations support two levels of write protection.
+Annotations support two levels of write protection, and a resource can also be held against additions for a while.
 
 ### Annotation-level lock
 
@@ -112,12 +112,17 @@ Setting `resource.annotationsLocked = true` on a biosignal resource locks the en
 
 This is the appropriate level for read-only reference sets — for example, a validated ground-truth annotation set loaded alongside a recording for comparison.
 
+### Resource hold
+
+Setting `resource.annotationsHold` to a reason string holds the resource against adding and removing events and labels; setting it back to `null` releases it. While held, `annotationsLocked` reads `true`, so every place the interface checks the lock refuses an addition, and the interface announces the reason in place of opening the annotation editor. Unlike the resource-level lock, a hold locks no existing annotation and can be released, so an application uses it while nothing added to the resource would be kept — for example, while a review leaves the reader no set of their own to write into — and releases it when that changes. Releasing a hold never releases a resource-level lock.
+
 ### Difference in scope
 
 | | Add new annotation | Modify annotation properties | Edit `text` | Remove annotation |
 |---|---|---|---|---|
 | Annotation locked | ✓ allowed | ✗ blocked | ✓ allowed | ✗ blocked |
 | Resource locked | ✗ blocked | ✗ blocked | ✗ blocked | ✗ blocked |
+| Resource held | ✗ blocked | ✓ allowed | ✓ allowed | ✗ blocked |
 
 ## Creating annotations
 
