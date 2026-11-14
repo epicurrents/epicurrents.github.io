@@ -130,6 +130,10 @@ export const documentation = {
                 },
             ],
         },
+        {
+            name: 'PSG module',
+            path: 'psg-module',
+        },
     ],
     'File readers': [
         {

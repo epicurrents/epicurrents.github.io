@@ -73,6 +73,9 @@ To check a relay without a shell on the host, run the **Send a test email** oper
 |---|---|---|
 | `RECORDINGS_UPLOAD_PATH` | `recordings_uploads/` | Permanent storage for processed recordings |
 | `RECORDINGS_STAGING_PATH` | `recordings_staging/` | Temporary staging area for files being processed |
+| `COMPUTE_ARTIFACT_CACHE_PATH` | `artifact_cache/` | Where the versions a project's reconstruction stages build from each recording are kept (`/data/artifacts`, the `artifact-data` volume, in the stack). Rebuildable, so no backup includes it; removed with the recording |
+| `COMPUTE_ARTIFACT_CACHE_SWEEP_GRACE_HOURS` | `24` | Age past which a file in the artifact cache that no recording version names is removed |
+| `COMPUTE_STAGE_STALE_HOURS` | `6` | A correction stage left running longer than this is taken as stopped and failed, so the recording can be retried |
 | `RECORDINGS_IMPORT_PATH` | `recordings_import/` | Source directory for the `import_recordings` bulk import command |
 | `RECORDINGS_TRASH_RETENTION_DAYS` | `30` | Days before soft-deleted recordings are permanently purged |
 | `RECORDINGS_LINKED_HOST_PATH` | `./linked` | Host directory mounted read-only at `/data/linked` in the web and worker containers, for recordings registered in place |

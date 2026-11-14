@@ -112,6 +112,8 @@ These are textbook derivations any deployment might want. A montage that belongs
 
 The name in each list is the montage's own name, not its full identifier: a montage is registered as `<setup>:<name>` (`default:10-20:laplacian`), and the `eeg.defaultMontage` setting is matched against the trailing segment. Keying the setting by name rather than by position is deliberate — the set of montages available to a deployment changes, and a stored preference has to keep pointing at the same montage when it does. The default-montage dropdown in the settings view is built at render time from the default montages, the module's own extras and anything the host injected, so a montage added by either route appears there without a code change.
 
+`EegRecording.montagesReady` turns true once initial setup has added every montage the recording makes for itself, just before the `INITIAL_SETUP` 'after' event, and is never reset. Wait on it rather than counting montages against `defaultMontages`: a recording subclass decides which montages it makes, as the [PSG module](docs/psg-module) replaces the 10-20 defaults with montages of its own, so the count cannot be derived from the settings.
+
 ## Custom setups and montages
 
 Deployment-specific electrode layouts and montage definitions can be injected via the module configuration. They are applied to every recording that is opened, without modifying core module code.
@@ -135,6 +137,37 @@ app.registerModule('eeg', eegRuntime, {
 **From a configuration file** (when loading from a URL or embedded JSON in the platform): the `applyConfiguration` method on the EEG runtime processes a `EegModuleConfiguration` object, fetching any URL-referenced montage or setup files on demand.
 
 Injected montages are added to a recording before its channel layout is applied and before `eeg.defaultMontage` is resolved, so they behave like the built-in ones: they are laid out with the user's spacing settings, and one of them can be the deployment's default montage. (Cascade montages are the exception — they are added after the layout pass on purpose, because a cascade stacks N rows of a single channel and computes its own equidistant offsets that a group layout would overwrite.)
+
+## Group heights and per-channel display
+
+A montage template lays its channels out in groups through `layout`, the number of channels in each group. Two further options let a montage that mixes signal types draw each type the way it is read.
+
+**Group heights.** `groupHeights` gives each channel of a group a relative height, one entry per `layout` group. A channel in a group of height 2 takes twice the room of a channel in a group of height 1; a missing, zero or negative entry is 1, so a montage without the option lays out as before. The weight is per channel, so a group missing some of its channels on a given recording shrinks rather than spreading the rest over its share. The same option is accepted by `ConfigChannelLayout` and by `calculateSignalOffsets` in core, and a montage keeps its heights with its saved layout when the layout is reapplied with new spacing settings.
+
+```json
+{
+    "name": "staging",
+    "label": "Sleep staging",
+    "layout": [6, 2, 1, 1],
+    "groupHeights": [2, 1.5, 0.5, 1],
+    "channels": [ ... ]
+}
+```
+
+**Per-channel display.** A template channel may carry display settings of its own, which `mapMontageChannels` copies onto the montage channel:
+
+| Property | Type | Description |
+|---|---|---|
+| `sensitivity` | `number` | Sensitivity per cm, independent of the recording's sensitivity. For a channel whose range has nothing to do with the main signal's, such as nasal pressure beside EEG. |
+| `displayRange` | `[number, number]` | The values at the bottom and the top of the channel's band. The trace is scaled so the range fills the band, in place of a sensitivity. For a channel read against a fixed scale, such as SpO2 between 50 and 100 %, or one not centred on its isoelectric line. |
+| `highpassFilter`, `lowpassFilter`, `notchFilter` | `number` | Filters in Hz that replace the recording's for this channel; zero switches the filter off. |
+| `polarity` | `-1 \| 0 \| 1` | Display polarity of the channel, if not the recording's default. |
+
+Both `sensitivity` and `displayRange` are in the unit the viewer reads the signal in, which is the file's unit after the recording's signal scaling: volts for a channel recorded in µV or mV, so an SpO2 channel in `%` takes `[50, 100]` as it stands.
+
+A channel with a display range is drawn by the range alone: the sensitivity control, the channel's scale and the display polarity do not affect it, since the range already names its bottom and top. The range is also available on the montage channel at runtime as `BiosignalChannel.displayRange` (null for a channel drawn by sensitivity); a range whose two values are equal is refused.
+
+> **Note:** a range-mode trace is not clipped to its band. A value outside the range is drawn past the band's edge, over the neighbouring channels.
 
 ## Default filters
 

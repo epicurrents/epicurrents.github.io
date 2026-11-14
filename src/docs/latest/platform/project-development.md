@@ -82,6 +82,17 @@ class MyProjectConfig(AppConfig):
 
 Subclass `EDFHeaderMiddleware` (isometric, header-only transforms) or `EDFSignalMiddleware` (per-record transforms, may change channel layout) from `federation.middleware`. Register instances in the ingest pipeline via `RECORDING_PIPELINES` in your `settings.py`, or in the FUSE pipeline by passing a `MiddlewarePipeline` to `mount_federation_fs`.
 
+### Processing a recording after upload
+
+A project that corrects or analyses every recording registers that work from `ready()` rather than reacting to saves:
+
+- **Reconstruction stages** (`recordings.pipeline.register_reconstruction_stage`) change the signal — an artefact correction, a repair. They run one after another once ingest has finished, each on the previous one's output, and the result becomes the recording's *default version*, which the viewer opens. The uploaded recording itself is never rewritten.
+- **Derive jobs** (`compute.derive.register_derive_job`) read the default version and write the project's own rows — a quality mask, a table of indices. They run in parallel after the stages.
+
+While stages run, the recording is `processing`; while only jobs run it is `available` and can already be opened; once everything has finished it is `ready`. A failed stage or job is shown on the recording's jobs and does not fail the recording. The recording's author can disable, re-enable or reorder its stages, which reruns them.
+
+> **Important:** platform 0.2 changed what `ready` means. A project that filters on `status="ready"` to mean *the file can be read* should accept `available` too; one that means *everything has finished* keeps `ready`. Pin `requires_platform = ">=0.2,<0.3"` once the project has been checked against that.
+
 ### API endpoints
 
 Add a `urls.py` to your project — its `api` object is mounted at `/project/api/v1/` automatically. Use standard Django Ninja patterns; the scaffolded template at `projects/example/` carries a working one, including the staff and superuser guards.
