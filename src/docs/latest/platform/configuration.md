@@ -47,6 +47,7 @@ Failed login attempts are counted per username in the Django cache. After 10 con
 | Variable | Default | Description |
 |---|---|---|
 | `RECORDINGS_MAX_UPLOAD_SIZE` | `2147483648` | Maximum upload size in bytes (2 GiB) |
+| `RECORDINGS_DIRECT_UPLOAD` | `True` | When `False`, the upload endpoint accepts only an EDF or BDF file prepared in the viewer (identification blank, no annotation channel, no text in a signal's transducer, unit or prefiltering field, labels the platform stores or `MISC_<n>`) and refuses anything else, formats needing conversion included, before it is staged. A project may let named accounts keep the direct route. `import_recordings` is unaffected |
 
 Uploads exceeding this limit are rejected mid-stream and the partial staging file is cleaned up.
 

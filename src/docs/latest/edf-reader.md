@@ -84,12 +84,14 @@ The viewer's file menu then opens the export dialog, and `exporter.exportActiveR
 
 | Option | Type | Description |
 |---|---|---|
-| `deidentify` | `boolean` | Blank the subject identifiers in the header and remove event and label text. Defaults to `true`. |
+| `deidentify` | `boolean` | Blank the subject identifiers in the header, write each signal's transducer field blank and remove event and label text. Defaults to `true`. |
 | `deidentifySidecar` | `boolean` | De-identify the sidecar as well. Defaults to `false`, so the sidecar keeps the original metadata. |
 | `dither` | `boolean` | Add noise of under one digital step to each sample before it is rounded, from a cryptographic source, so that the same recording never exports to the same bytes. This stops an export from being found by re-encoding a copy of the original and comparing bytes or hashes; it does not stop correlating the signal with the original. A destination that identifies a file by its hash should hand the sender a receipt, since a second export will not reproduce it. Defaults to `false`. |
 | `embedFooter` | `boolean` | Carry the sidecar as a footer inside the EDF file, marked in the header's reserved field, so the recording travels as one file. The footer is de-identified whenever the file is. |
 | `removeMetadataKeys` | `string[]` | Leave every property with one of these names out of the sidecar and the footer, at any depth. De-identification blanks `subject` and empties event and label `text`; this removes the keys themselves, for a destination that refuses them. |
 | `selection` | `SignalExportSelection` | Reduce the recording before encoding: a time range, an ordered set of channels under output labels, one output rate and an amplitude range. |
+
+The prefiltering field of every signal is written from the parsed filter values only, as `HP:<n>Hz LP:<n>Hz N:<n>Hz` in that order, whether or not the file is de-identified; a filter that is absent, zero or not a number is left out, and nothing of the source's own wording of the field is carried over. Channel labels and units are written as the recording has them. A destination that refuses free text in a header, such as the platform's submission gate, therefore accepts a de-identified export whose labels it knows; rename or leave out a channel it does not, through `selection`.
 
 A selection is applied with core's `applyExportSelection`. The range is in recording time; an end that falls inside an interruption moves to the edge of the data. Events and interruptions are clipped to the range and moved to start from its beginning, and an event keeps only the channels the selection keeps (an event left with none is dropped). Downsampling uses an anti-aliasing low-pass, and a downsampled channel's recorded low-pass is lowered to match. The output rate must be a whole number of hertz, since the file is written in one-second records, and the file holds whole records only.
 
