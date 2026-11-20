@@ -4,23 +4,22 @@
 
 The Pyodide service (`@epicurrents/pyodide-service`) embeds a full Python interpreter inside the browser via [Pyodide](https://pyodide.org), and exposes it to the rest of the application as a regular Epicurrents service. Once registered, any module or interface component can submit Python code to it for execution and receive the result asynchronously.
 
-This unlocks analysis routines that rely on scientific libraries which have no comparable JavaScript equivalent — primarily `numpy`, `scipy`, `matplotlib`, and `mne`. The built-in EEG module uses it for:
+This unlocks analysis routines that rely on scientific libraries which have no comparable JavaScript equivalent — primarily `numpy`, `scipy`, `matplotlib`, and `mne`. The interface's EEG module uses it for:
 
-- Welch's-method power spectral density (PSD)
-- Distributed and dipole source localisation (sLORETA, eLORETA, dSPM, MNE, MUSIC)
-- Bandpass / highpass / lowpass / notch filtering of derived signals
+- Source localisation: a single-dipole fit at the EEG cursor, offered in the analysis window. The script also implements distributed inverses (sLORETA, eLORETA, dSPM, MNE), which the tool does not offer because they need averaged data to be meaningful.
+- Optionally, the montage signal path: with the interface's `usePyodideBiosignal` setup option, and shared memory available, the derivation and bandpass / highpass / lowpass / notch filtering of montage signals run in the interpreter through `biosignal.py` instead of the JavaScript montage workers.
 
 You can also load arbitrary Python scripts at runtime to run your own algorithms — see [Writing custom scripts](#writing-custom-scripts).
 
-The service is **optional**. If it is not registered, the application falls back to JavaScript-side filtering and analysis features that depend on Python are simply not available.
+The service is **optional**. If it is not registered, signal processing stays in the JavaScript montage workers, which is also the default with the service registered, and analysis features that depend on Python are simply not available.
 
 ## Worker architecture
 
-Pyodide runs inside a dedicated web worker (`pyodide.worker.ts`). Communication uses the same commission/promise pattern as the rest of the library — every method call on `PyodideService` generates a UUID-keyed message that the worker replies to with the same UUID.
+Pyodide runs inside a dedicated web worker (`pyodide.worker.ts`), which is built as an ES module and must be started as a module worker (`type: 'module'`). Communication uses the same commission/promise pattern as the rest of the library — every method call on `PyodideService` generates a UUID-keyed message that the worker replies to with the same UUID.
 
 The first commission after registration is `setup-worker`, which:
 
-1. Loads `pyodide.js` from a CDN (or a local path you provide).
+1. Imports `pyodide.mjs` from the `indexURL` distribution: the pinned CDN release by default, or a self-hosted copy you provide.
 2. Initialises the WASM runtime.
 3. Loads the default packages (`numpy`, `scipy`) plus any extras supplied via `config.packages`.
 4. Resolves once the interpreter is ready to accept code.
@@ -32,7 +31,7 @@ app.registerService('pyodide', new PyodideService())
 
 const pyodide = app.runtime.SERVICES.get('pyodide') as PythonInterpreterService
 await pyodide.setupWorker({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
+    indexURL: 'https://cdn.jsdelivr.net/pyodide/v314.0.2/full/',   // the default; omit to use it
     packages: ['matplotlib', 'mne'],
 })
 ```
@@ -99,8 +98,13 @@ The package ships with `biosignal.py`, a Python module pre-loaded into Pyodide t
 | `biosignal_refresh_channels(specs)` | Batched preload primitive for callers that read many small windows from the same channels |
 | `biosignal_set_default_filters()` | Configures the default Butterworth filter cutoffs |
 | `biosignal_set_filter()` | Configures a single filter (highpass / lowpass / notch) |
+| `biosignal_set_montage_filters()` | Sets the channel filters of the active montage |
+| `biosignal_filter_signal(sig, fs, filters)` | Filters one signal with a Butterworth filter, forward and backward |
+| `biosignal_get_filter_coefficients(btype, Wn, fs, N)` | Returns the SOS coefficients for a filter |
 | `biosignal_add_montage()` / `biosignal_set_montage()` | Register and activate named montages |
+| `biosignal_set_output()` | Sets the output buffers that processing results are written to |
 | `biosignal_calculate_signals()` | Computes channels and writes the result back into a JS-side output buffer |
+| `set_series_canvas()` / `biosignal_set_topomap_canvas()` | Set the canvas elements for the series and topomap plots |
 
 ### SAB input and the slice-refresh model
 
@@ -141,12 +145,12 @@ When the JS heap [fallback path](docs/memory-management#path-b-js-heap-fallback)
 
 ## Built-in analysis scripts
 
-The EEG module bundles several ready-to-use scripts that consume the `biosignal.py` input arrays:
+Ready-to-use EEG scripts ship in two places: the interface's EEG module carries the ones its tools load, and the `eeg-module` package carries scripts for a host to load itself.
 
-| Script | Module | Purpose |
+| Script | Location | Purpose |
 |---|---|---|
-| `psd.py` | `interface/src/app/modules/eeg/scripts/` | Welch's method PSD and squared FFT coefficients |
-| `eeg_source_localize.py` | `eeg-module/src/pyodide/scripts/` | Distributed and dipole source localisation (sLORETA, eLORETA, dSPM, MNE, MUSIC). Requires a pre-computed lead field matrix supplied from the server. |
+| `source_localize.py` | `interface/src/app/modules/eeg/scripts/` | Single-dipole and distributed source localisation (sLORETA, eLORETA, dSPM, MNE), loaded by the source localisation tool. Requires a pre-computed lead field matrix supplied from the server. |
+| `psd.py` | `interface/src/app/modules/eeg/scripts/` | Power spectral density by Welch's method and the periodogram |
 | `eeg_filter_signal.py` | `eeg-module/src/pyodide/scripts/` | One-shot Butterworth filter application for arbitrary signal arrays |
 
 The source localisation script is intentionally designed so that the heavy `mne.make_forward_solution()` computation (which requires compiled MNE-C code that does not run in Pyodide) happens server-side via the platform's `compute` app, while the inverse computation and all visualisation run entirely in the browser.
@@ -220,5 +224,5 @@ A script that needs persistent state across calls (e.g. precomputed coefficients
 ## Related concepts
 
 - [Memory management](docs/memory-management) — the `SharedArrayBuffer` memory manager and `BiosignalMutex` discipline that supply the Python side's input
-- [EEG module — Analysis tools](docs/eeg-module/analysis-tools) — PSD, source localisation, and other features that use the Pyodide service. The voltage field topogram used to be one of them; it is now computed natively and needs no Python.
+- [EEG module — Analysis tools](docs/eeg-module/analysis-tools) — source localisation and other features that use the Pyodide service. The voltage field topogram is computed natively and needs no Python.
 - [Implementation — App lifecycle](docs/implementation#app-lifecycle) — where `registerService` fits in the startup sequence

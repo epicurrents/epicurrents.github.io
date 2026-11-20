@@ -6,16 +6,20 @@ Epicurrents is capable of opening files both from the local file system and from
 
 Files from the local file system can be opened either individually or in sets. When opening files in sets the application expects all files to be of same `modality` and `format`.
 
-To open files from the file system, click `File` on the top menu bar and select the correct modality and file type to open. This should present you with additional options:
-- `Open <format> file`: Opens a single file from the local file system.
-- `Open <format> files from folder`: Opens all files of this type from the selected folder.
-- `Open <format> from URL`: Opens a single file from the given URL. Note that the file must be directly available at the given URL; e.g. in case of EDF files the url should end in `.edf`.
+To open files, click `File` on the top menu bar. The menu has a section for each modality, headed by the modality's name. Within a section, the ways of opening one format are grouped into a submenu named after the format (for example `Open EDF`), which holds the options:
+- `From file`: Opens a single file from the local file system.
+- `From folder`: Opens all files of this type from the selected folder.
+- `From URL`: Opens a single file from the given URL. The URL must point directly at the file itself, not at a web page that links to it.
 
-Epicurrents utilizes the FileSystemAPI to open multiple files from the file system. This API is available by default on Chromium-based browsers. Availability in other browsers may vary.
+A format that can be opened only one way is listed as a single item with its full label. Exporters (`To file`) come last in each section. Below the modality sections, `Send recording to` lists the export targets the host application has registered, if any, and `Connectors` → `Add a connector` opens the dialog for adding a [WebDAV file source](docs/getting-started/opening-files#webdav-file-sources).
+
+A single file is opened with the browser's file picker (`showOpenFilePicker`) where the browser provides it, and with a standard file input otherwise. A folder is opened with a directory file input (`webkitdirectory`).
 
 ## WebDAV file sources
 
 To open files from a password-protected remote source, Epicurrents can connect to these sources using the WebDAV protocol. These connections can be used to import datasets from the remote source.
+
+The connector dialog asks for a name and the source URL. Its source type is either `Filesystem` (a WebDAV file tree) or `Database`; for a filesystem source the `Index` switch indexes the contents of all contained folders. If the server requires basic authentication, a username and password can be given; this is available only when both the application and the source are served over HTTPS, unless the deployment's setup allows insecure authentication.
 
 ### Source modes
 
@@ -33,4 +37,4 @@ Read-write gives the user full access to the data on the resource. This mode sho
 
 #### Write only
 
-Write only is a "pseudo mode" in the sense that the user should have both read and write permissions on the server, but the connection is only used to write new data. This mode can be used for creating unique annotation sets on the source. If the user creates multiple sets of annotations for the same resource, each set can be saved as a separate version or newer sets can overwrite the previous ones. Default behaviour is to save each set as a separate version.
+Write only is a "pseudo mode" in the sense that the user should have both read and write permissions on the server, but the connection is only used to write new data. This mode can be used for creating unique annotation sets on the source. If the user creates multiple sets of annotations for the same resource, each set can be saved as a separate version or newer sets can overwrite the previous ones. Default behaviour is to overwrite the previous file with the newer set.

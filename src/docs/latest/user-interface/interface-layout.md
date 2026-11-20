@@ -2,11 +2,12 @@
 
 ## Components overview
 
-The interface is composed of four main components:
+The interface is composed of five main components:
 - `Viewport`: This contains the visualization of the selected study (for example EEG channels) and is always visible.
-- `Menubar`: The menubar on top of the window contains a set of global controls (i.e. they are available irrespective of a study being open or not) and study-specific controls. It can be hidden.
-- `Dataset`: The left hand panel contains controls for creating and opening datasets, as well as opening files within a dataset. This component can be hidden, however a set of quick actions are always visible on the left edge of the *Viewport* controls bar.
-- `Footer`: The footer bar on the bottom of the page displays information about on-going processes in different application modules and contains a system status menu.
+- `Menubar`: The menubar on top of the window contains a set of global controls, available whether or not a study is open, and study-specific controls. It is always visible.
+- `Controls`: The [controls bar](docs/user-interface/interface-layout#viewport-controls) directly above the viewport. It can be hidden.
+- `Dataset`: The left hand panel contains controls for creating and opening datasets, as well as opening files within a dataset. This component can be hidden, however a set of quick actions are visible on the left edge of the controls bar.
+- `Footer`: The footer bar on the bottom of the page displays information about on-going processes in different application modules and contains a system status menu. It can be hidden.
 
 ## The viewport component
 
@@ -21,13 +22,15 @@ Common to all viewports are a set of three icons at the left end of the controls
 - `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
 - `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
 
+The same actions have hotkeys: `` ` `` (backquote) toggles the dataset navigator, `` Alt+` `` opens the next item and `` Alt+Shift+` `` the previous one.
+
 ## The menubar component
 
 The menubar contains a mix of controls that depend on both the modules that are active in the application as well as the resource that is currently open.
 
-### Files menu
+### File menu
 
-The files menu contains controls for opening and writing files as well as registering connectors for file sources. The actual contents depend on the set of `file readers` and `study modules` that are active in the application.
+The file menu contains controls for opening and writing files as well as registering connectors for file sources. The actual contents depend on the set of `file readers` and `study modules` that are active in the application; see [opening files](docs/getting-started/opening-files#direct-file-sources) for its structure.
 
 ### Edit menu
 
@@ -35,7 +38,7 @@ The edit menu contains controls for undoing and redoing actions if the currently
 
 ### Display menu
 
-The display menu contains controls for hiding or showing each of the interface components. It also allows switching the view if a resource supports multiple views.
+The display menu's `Components` section shows or hides the `Controls`, `Navigator` and `Footer` components. In the biosignal view it also has a `Biosignal` section with a `Trends` submenu and an `Invert signal polarity` toggle.
 
 ### Settings menu
 
@@ -43,11 +46,11 @@ User preferences can be opened via the settings menu.
 
 ### Help menu
 
-The help menu gives access to both external and in-app instructions, as well as general app information.
+The help menu gives access to the in-app `Instructions` and the external `Online manual`.
 
 ### The three-dot menu
 
-The three-dot menu `[[icon:ellipsis]]` at the right edge of the menu bar contains options to set the application into full-screen mode or expanded mode, in which all other components but the `viewport` will be hidden.
+The three-dot menu `[[icon:ellipsis]]` at the right edge of the menu bar contains options to set the application into full-screen mode or expanded mode (`Expand viewer`), which hides the controls, the dataset navigator and the footer. The menubar stays visible, and `Collapse viewer` in the same menu returns to the normal layout.
 
 ## The dataset component
 
@@ -59,7 +62,7 @@ The dataset selector contains currently available datasets and an options to cre
 
 ### Dataset inspector
 
-Resources from the active dataset are listed in the dataset inspector. In addition to the name of the resource, the inspector shows basic information about each resource (such as the length of the recording and number of electrodes). Clicking on a resource toggles it, i.e. sets it active is it was inactive before and vice versa. Only one resource can be active at a time (for now).
+Resources from the active dataset are listed in the dataset inspector, grouped under a header for each modality. In addition to the name of the resource, the inspector shows basic information about each resource, depending on its type: the number of signals, the duration, the page count or the date. Clicking on a resource sets it active, and the close button (`[[icon:xmark]]`) on the item closes it. Only one resource can be active at a time. A study the dataset lists without having loaded it yet is loaded when it is opened.
 
 ### Dataset footer
 

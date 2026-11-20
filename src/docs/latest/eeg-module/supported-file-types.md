@@ -12,6 +12,8 @@ The EEG module works with any file reader that returns compatible biosignal data
 | **BDF** | BioSemi Active Two and similar | 24-bit integer samples; used by active electrode systems |
 | **BDF+** | BioSemi with annotations | 24-bit with TAL annotations and optional discontinuities |
 
+EDF recordings open from a file, a folder or a URL. The EEG editions also register an EDF exporter, which writes the open recording out as a de-identified EDF file.
+
 ## Annotation handling
 
 EDF+ and BDF+ files may contain an annotation channel (the EDF+ TAL channel) with time-stamped clinical notes, event markers, and gap boundaries. These are parsed by the EDF reader during loading and handed to the EEG module as `BiosignalEvent` objects, which appear as vertical markers in the EEG navigator and annotation sidebar.
@@ -20,7 +22,7 @@ The platform's ingest pipeline strips annotation text from the stored file by de
 
 ## DICOM
 
-The [DICOM reader](docs/dicom-reader) can also provide EEG data when the recording is stored in the DICOM neurophysiology format (WG-32 standard). Single-file routine EEG is supported. DICOM recordings are handled by the same EEG module after import.
+The [DICOM reader](docs/dicom-reader) can also provide EEG data when the recording is stored in the DICOM neurophysiology format (WG-32 standard). Single-file routine EEG is supported. The EEG editions register DICOM importers alongside the EDF ones, opening a recording from a file, a folder or a URL. DICOM recordings are handled by the same EEG module after import.
 
 ## Channel recognition
 

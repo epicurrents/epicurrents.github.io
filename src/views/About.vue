@@ -28,9 +28,9 @@
         <h2>About this site</h2>
         <p>
             The Epicurrents documentation site is created with WebAwesome. The actual documentation is written using
-            Markdown. Additions and imprevements to the documentation are welcome and can be suggested by Opening
+            Markdown. Additions and improvements to the documentation are welcome and can be suggested by opening
             issues or pull requests in the documentation repository on
-            <a href="https://github.com/epicurrents/epicurrents.guthub.io" target="_blank">GitHub</a>.
+            <a href="https://github.com/epicurrents/epicurrents.github.io" target="_blank">GitHub</a>.
         </p>
         <h2>Disclaimer</h2>
         <p>

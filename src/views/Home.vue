@@ -21,11 +21,6 @@ limitations under the License.`
             Epicurrents is an open-source, modular and extensible library for reading, processing and displaying
             neurophysiological signal data in the web browser.
         </blockquote>
-        <wa-callout>
-            <wa-icon slot="icon" name="circle-info" variant="regular"></wa-icon>
-            This is an initial release of the documentation and is constantly updated to cover
-            more features of the library.
-        </wa-callout>
         <h2>Core features</h2>
         <ul class="features">
             <li>
@@ -74,7 +69,7 @@ limitations under the License.`
         <h3>Study modules</h3>
         <p>
             This section contains documentation on the study modules that are included in the library. Included modules
-            determine which study modalities can be processend and viewed in the application.
+            determine which study modalities can be processed and viewed in the application.
         </p>
         <h3>File readers</h3>
         <p>

@@ -22,11 +22,25 @@ The [user interface](docs/user-interface) section contains all the information n
 
 Instructions on using the EEG module, including supported file types, record browsing and available analysis tools can be found under the [EEG module](docs/eeg-module) heading.
 
+### PSG module
+
+Polysomnography support, built on the EEG module, is described in the [PSG module](docs/psg-module) section.
+
 ## File readers
+
+### DICOM reader
+
+Reading neurophysiological data stored in DICOM files is covered in the [DICOM reader](docs/dicom-reader) section.
 
 ### EDF reader
 
 Instructions on using the EDF/BDF file reader can be found in the [EDF reader](docs/edf-reader) section.
+
+## Services
+
+### Pyodide service
+
+The [Pyodide service](docs/pyodide-service) section describes running Python code in the browser through Pyodide.
 
 ## Implementing the library
 

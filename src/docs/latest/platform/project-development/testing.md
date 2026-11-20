@@ -5,12 +5,12 @@
 The core platform test suite lives in `<app>/tests/` directories (e.g. `recordings/tests/`, `library/tests/`) and is entirely independent of any project plugin. Run it with:
 
 ```bash
-pytest --ignore=federation/tests/test_fuse_fs.py \
-       --ignore=recordings/converters \
-       --ignore=projects
+pytest
 ```
 
-The `--ignore=projects` flag ensures no project conftest accidentally influences the platform run. The `federation/tests/test_fuse_fs.py` file is excluded because it requires `libfuse2` — it runs in a separate environment where that library is available.
+A bare `pytest` is the canonical invocation. The root `conftest.py` decides what the platform suite collects: project and plugin trees and vendored converter checkouts are pruned from discovery, and the FUSE tests skip themselves on a machine without a usable libfuse (libfuse2 / macFUSE).
+
+The platform suite runs with no project or plugin active. Settings named by `EPICURRENTS_PROJECT` and `EPICURRENTS_PLUGINS` are merged into the configuration, so on a checkout with a project active the platform suite would run that project's configuration and fail every test of a default it changes. Blank both, as CI does; inside the stack that is `docker compose run --rm -e EPICURRENTS_PROJECT= -e EPICURRENTS_PLUGINS= ...`. Run a project's suite separately, as below.
 
 The platform uses `epicurrents.settings.test_platform` (set in `pytest.ini`) which provides:
 
@@ -105,24 +105,25 @@ DJANGO_SETTINGS_MODULE=projects.myproject.settings_test pytest projects/myprojec
 
 ### Platform job
 
-The base `test` CI job ignores the `projects/` directory entirely:
+The base `test` CI job runs a bare `pytest`; the root `conftest.py` prunes project trees from it:
 
 ```yaml
 test:
   env:
     DJANGO_SETTINGS_MODULE: epicurrents.settings.test_platform
   steps:
-    - run: |
-        pytest \
-          --ignore=federation/tests/test_fuse_fs.py \
-          --ignore=recordings/converters \
-          --ignore=projects \
-          --cov --cov-fail-under=70 -q
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.14'
+        cache: pip
+    - run: pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+    - run: pytest --cov --cov-fail-under=70 -q
 ```
 
 ### Project job
 
-Add a separate job for each project plugin. The explicit `DJANGO_SETTINGS_MODULE` in the job env overrides `pytest.ini`:
+Add a separate job for each project plugin. The explicit `DJANGO_SETTINGS_MODULE` in the job env overrides `pytest.ini`. Run `python manage.py check` before the suite: it validates the project's `requires_platform` pin and the erasure and subject-export registries against the project's real models, which the tests themselves would not notice:
 
 ```yaml
 test-myproject:
@@ -130,13 +131,12 @@ test-myproject:
     DJANGO_SETTINGS_MODULE: projects.myproject.settings_test
   steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: true
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.14'
         cache: pip
-    - run: pip install -r requirements.txt -r requirements-dev.txt
+    - run: pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+    - run: python manage.py check
     - run: pytest projects/myproject/tests/ -q
 ```
 
@@ -155,10 +155,11 @@ test-myproject:
         path: projects/myproject
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.14'
         cache: pip
-    - run: pip install -r requirements.txt -r requirements-dev.txt
+    - run: pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
     - run: pip install -r projects/myproject/requirements.lock   # if the project has its own
+    - run: python manage.py check
     - run: pytest projects/myproject/tests/ -q
 ```
 

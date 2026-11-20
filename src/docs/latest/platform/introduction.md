@@ -24,12 +24,19 @@ The platform is designed to be extended with *project plugins* — self-containe
 
 See [Project development](docs/platform/project-development) for both integration patterns.
 
+*Plugins* are the composable counterpart: any number can be enabled at once through `EPICURRENTS_PLUGINS` (comma-separated), and they compose with whichever project is active rather than owning the primary interface.
+
 ## API layout
 
 | Prefix | Purpose |
 |---|---|
-| `/api/v1/` | Core platform (health, recordings, library, annotations, federation, user, activity, notifications) |
-| `/project/api/v1/` | Active project plugin endpoints (mounted when `EPICURRENTS_PROJECT` is set) |
-| `/annotations/api/v1/` | Annotation CRUD (events, interruptions, labels) |
-| `/recordings/api/v1/` | File upload, download, status, soft-delete |
+| `/api/v1/` | Core platform: health, and under it `user/`, `activity/`, `notifications/`, `library/`, `federation/` and `maintenance/` |
+| `/recordings/api/v1/` | Recording upload, download, status, soft-delete |
+| `/annotations/api/v1/` | Annotation CRUD (annotations, events, interruptions, labels) and classification codes |
+| `/media/api/v1/` | Non-signal media files: upload, download, soft-delete |
+| `/compute/api/v1/` | Server-side computation, such as EEG lead fields |
+| `/project/api/v1/` | Active project's API endpoints (mounted when `EPICURRENTS_PROJECT` is set) |
+| `/project/<name>/` | Active project's plain Django views, such as a project page or viewer |
+| `/plugin/<name>/api/v1/` | Each enabled plugin's API endpoints |
+| `/plugin/<name>/` | Each enabled plugin's plain Django views |
 | `/.well-known/` | Federation public key document |

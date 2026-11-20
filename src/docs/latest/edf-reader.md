@@ -80,7 +80,7 @@ const loader = new EegStudyLoader('EegEdfLoader', ['eeg'], new EdfImporter(), ex
 app.registerStudyExporter('eeg/edf-export', 'Export as de-identified EDF', 'file', loader)
 ```
 
-The viewer's file menu then opens the export dialog, and `exporter.exportActiveResource(options)` returns `{ edf, sidecar, fileName }` for a host that runs the export itself.
+The viewer's file menu then opens the export dialog, and `exporter.exportActiveResource(options)` returns `{ edf, sidecar, fileName }` for a host that runs the export itself. `exporter.exportStudyToFileSystem(options)` encodes the active recording the same way and downloads the EDF file and its sidecar (`<name>.edf` and `<name>.edf.json`) in one step. `exporter.convertResource(resource, options)` converts a recording that is not the active one, such as a study loaded only to be converted: it caches the resource's raw signals without activating it, which skips the shared-memory allocation and the montages, and returns `{ edf, sidecar }`, or `null` if caching or encoding failed.
 
 | Option | Type | Description |
 |---|---|---|

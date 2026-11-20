@@ -9,7 +9,7 @@ The platform selects its settings module based on `DJANGO_MODE`:
 | `development` | `epicurrents.settings.development` | From `.env` | SQLite (default) or Postgres via `DB_DEV_*` |
 | `production` | `epicurrents.settings.production` | Always `False` | Postgres via `DB_*` |
 
-Docker Compose always sets `DJANGO_MODE=production` for the `web` and `celery` services. The development mode is intended for running the Django server directly on the host outside Docker.
+The base `docker-compose.yml` runs the Django services with `DJANGO_MODE=development` against the stack's Postgres (`DB_DEV_ENGINE=postgres`). The `docker-compose.prod.yml` overlay sets `DJANGO_MODE=production`; `scripts/bootstrap.sh` and `scripts/update.sh` always apply it. Development mode also serves for running the Django server directly on the host.
 
 ## Database
 
@@ -17,8 +17,8 @@ Docker Compose always sets `DJANGO_MODE=production` for the `web` and `celery` s
 
 | Variable | Default | Description |
 |---|---|---|
-| `DB_NAME` | — | Database name |
-| `DB_USERNAME` | — | Database user |
+| `DB_NAME` | `epicurrents` | Database name |
+| `DB_USERNAME` | `epicurrents` | Database user |
 | `DB_PASSWORD` | — | Database password |
 | `DB_HOSTNAME` | `db` | Database host (the Docker service name) |
 | `DB_PORT` | `5432` | Database port |
@@ -34,9 +34,13 @@ Set `DB_DEV_ENGINE=sqlite` (default) or `DB_DEV_ENGINE=postgres`. For SQLite onl
 | Variable | Default | Description |
 |---|---|---|
 | `SECURE_SSL_REDIRECT` | `True` | Redirect all HTTP requests to HTTPS |
-| `SECURE_HSTS_SECONDS` | `31536000` | HSTS max-age (1 year, with subdomains) |
+| `SECURE_HSTS_SECONDS` | `300` | HSTS max-age. Deliberately short while a deployment is being proven; once the certificate has renewed at least once on the real domain, raise it in steps: `3600`, `604800`, `31536000` |
+| `SECURE_HSTS_INCLUDE_SUBDOMAINS` | `True` | Add `includeSubDomains` to the HSTS header |
+| `SECURE_HSTS_PRELOAD` | `False` | Add `preload` to the HSTS header. Turn it on only after the year-long max-age has served without incident and every subdomain is HTTPS-only; preload-list submission is effectively irreversible |
+| `SESSION_COOKIE_SECURE` | `True` | Send the session cookie over HTTPS only |
+| `CSRF_COOKIE_SECURE` | `True` | Send the CSRF cookie over HTTPS only |
 
-`SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and `SECURE_CONTENT_TYPE_NOSNIFF` are always enabled in production.
+The two cookie flags can be turned off for a staging deployment served over plain HTTP; production logs a warning at boot while either is off. `SECURE_CONTENT_TYPE_NOSNIFF` is always enabled in production.
 
 ### Login rate limiting
 
@@ -47,7 +51,6 @@ Failed login attempts are counted per username in the Django cache. After 10 con
 | Variable | Default | Description |
 |---|---|---|
 | `RECORDINGS_MAX_UPLOAD_SIZE` | `2147483648` | Maximum upload size in bytes (2 GiB) |
-| `RECORDINGS_DIRECT_UPLOAD` | `True` | When `False`, the upload endpoint accepts only an EDF or BDF file prepared in the viewer (identification blank, no annotation channel, no text in a signal's transducer, unit or prefiltering field, labels the platform stores or `MISC_<n>`) and refuses anything else, formats needing conversion included, before it is staged. A project may let named accounts keep the direct route. `import_recordings` is unaffected |
 
 Uploads exceeding this limit are rejected mid-stream and the partial staging file is cleaned up.
 
@@ -55,16 +58,20 @@ Uploads exceeding this limit are rejected mid-stream and the partial staging fil
 
 | Variable | Default | Description |
 |---|---|---|
+| `EMAIL_BACKEND` | `django.core.mail.backends.console.EmailBackend` | Mail backend. The default writes every message to the container log; set `django.core.mail.backends.smtp.EmailBackend` for delivery through the relay below |
+| `EMAIL_DISABLED` | `False` | Acknowledge a deployment that sends no mail, which silences the boot warning production logs while the console backend is in use |
 | `EMAIL_HOST` | `localhost` | SMTP server hostname |
 | `EMAIL_PORT` | `587` | SMTP port |
 | `EMAIL_USE_TLS` | `True` | Enable STARTTLS |
 | `EMAIL_USE_SSL` | `False` | Enable implicit SSL (mutually exclusive with TLS) |
 | `EMAIL_HOST_USER` | — | SMTP username |
 | `EMAIL_HOST_PASSWORD` | — | SMTP password |
-| `EMAIL_FROM` | `noreply@epicurrents.local` | `From:` address for transactional email |
+| `EMAIL_FROM` | `EMAIL_HOST_USER`, else `noreply@epicurrents.local` | `From:` address for transactional email |
 | `EMAIL_TIMEOUT` | `20` | Seconds to wait on the relay. Django's default is no deadline; mail is sent inside the workers, so a stalled relay would hold a worker child indefinitely |
 
 Three kinds of message go out: the invitation a new account is created with, the password reset a user asks for, and maintenance job notices to superusers. Without a relay configured they all go to the container log, where an account created by invitation cannot be signed in to at all — so a deployment that adds accounts through the administration pages needs this section filled in before it adds the first one.
+
+`FRONTEND_URL` (default `http://localhost:5173`) is the base URL the links in these messages are built from. Production refuses to start while it is still that default; set it to the address users reach the platform at, such as `https://eeg.example.com`.
 
 To check a relay without a shell on the host, run the **Send a test email** operation from the Maintenance tab. It mails every active superuser and reports what the relay said, naming no address; if delivery fails it shows the SMTP error class, which distinguishes bad credentials from a rejected sender domain. It refuses to report success while mail is still going to the container log.
 
@@ -108,8 +115,9 @@ Video, audio and image files open in the viewer, in an edition built with the na
 | Variable | Default | Description |
 |---|---|---|
 | `REDIS_CACHE_URL` | `redis://redis:6379/2` | Redis URL for the Django cache backend |
+| `CELERY_BROKER_URL` | `redis://redis:6379/0` | Redis URL for the Celery broker. The compose files set it with `REDIS_PASSWORD` |
 
-The Celery broker uses `redis://redis:6379/0` (hardcoded). Keeping the cache on database `/2` avoids any cross-contamination with task queue state.
+Keeping the cache on database `/2` avoids any cross-contamination with task queue state.
 
 ## Web push (VAPID)
 
@@ -149,7 +157,7 @@ After rotating, remote instance administrators must re-fetch your public key bef
 |---|---|
 | `ANNOTATION_EXPORT_ALL_ANNOTATORS_REQUIRES_SUPERUSER` | Whether exporting annotations across all annotators is reserved for superusers (default `True`). Set to `False` where the staff tier is the deployment's research-coordinator tier, which restores staff-wide export. Everyone outside the tier exports their own annotations only. |
 
-`ANNOTATION_CODE_STRICT_VOCABULARY` is not an environment variable. Whether an unregistered coding standard is rejected belongs with the code that registers the vocabularies, so a project sets it in its own settings module; see [Annotations](project-development/annotations.md) in the project development guide.
+`ANNOTATION_CODE_STRICT_VOCABULARY` is not an environment variable. Whether an unregistered coding standard is rejected belongs with the code that registers the vocabularies, so a project sets it in its own settings module; see [Annotations](docs/platform/project-development/annotations) in the project development guide.
 
 ## Logging
 

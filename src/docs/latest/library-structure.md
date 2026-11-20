@@ -2,7 +2,7 @@
 
 ## Package overview
 
-Epicurrents is structured as a pseudo-monorepo. Each package is independently versioned and published to npm under the `@epicurrents` namespace. You install only what you need.
+Epicurrents is structured as a pseudo-monorepo. Each package is independently versioned in its own repository under the `@epicurrents` namespace, and an application includes only what it needs. The builder clones, builds and links the packages and assembles them into editions. A few packages have no public repository; the tables below mark them as not published, and no public edition includes them.
 
 ### Core
 
@@ -21,20 +21,22 @@ File readers parse a specific binary format into a structured signal representat
 | `wav-reader` | `@epicurrents/wav-reader` | WAV audio (RIFF/WAVE, 16-bit PCM) |
 | `htm-reader` | `@epicurrents/htm-reader` | Markdown and HTML documents |
 | `pdf-reader` | `@epicurrents/pdf-reader` | PDF documents |
-| `api-reader` | `@epicurrents/api-reader` | Remote API URL import |
+| `csv-reader` | `@epicurrents/csv-reader` | CSV files, read by the accelerometry module. Not part of a public edition. |
+| `api-reader` | `@epicurrents/api-reader` (not published) | Remote API URL import |
 
 ### Study modules
 
-A study module handles the display and interaction for one modality. It contributes Vue components (viewer, controls, footer), Vuex actions, and settings. Modules are registered with the application before launch.
+A study module handles the resources and settings of one modality. The Vue components (viewer, controls, footer) and Vuex actions for a modality come from the interface's matching module. Both are registered with the application before launch.
 
 | Package | npm | Modality |
 |---|---|---|
 | `eeg-module` | `@epicurrents/eeg-module` | EEG — signal display, montages, annotations, analysis tools |
-| `psg-module` | `@epicurrents/psg-module` | Polysomnography — sleep studies, built on `eeg-module` and opened in its viewer (see [PSG module](docs/psg-module)) |
+| `psg-module` | `@epicurrents/psg-module` (not published) | Polysomnography — sleep studies, built on `eeg-module` and opened in its viewer (see [PSG module](docs/psg-module)) |
 | `emg-module` | `@epicurrents/emg-module` | EMG — signal display with audio playback, and a cascade view that stacks consecutive pages of one channel as rows and draws them in during playback |
-| `ncs-module` | `@epicurrents/ncs-module` | NCS — nerve conduction studies |
+| `acc-module` | `@epicurrents/acc-module` | Accelerometry, from CSV and EDF files. Not part of a public edition. |
+| `ncs-module` | `@epicurrents/ncs-module` | NCS — nerve conduction studies. Experimental: it has no finished importer and is not registered in any edition. |
 | `doc-module` | `@epicurrents/doc-module` | Document viewing |
-| `tab-module` | `@epicurrents/tab-module` | Tabular data |
+| `tab-module` | `@epicurrents/tab-module` | Tabular data. Experimental: it has no finished importer and is not registered in any edition. |
 
 ### Services
 
@@ -42,14 +44,14 @@ Services extend the application with capabilities that run in a separate web wor
 
 | Package | npm | Description |
 |---|---|---|
-| `pyodide-service` | `@epicurrents/pyodide-service` | Python-in-browser via [Pyodide](https://pyodide.org). Unlocks spectral analysis, source localisation, and other scipy/MNE-based tools. |
+| `pyodide-service` | `@epicurrents/pyodide-service` | Python-in-browser via [Pyodide](https://pyodide.org). Unlocks source localisation and other scipy/MNE-based tools. |
 | `onnx-service` | `@epicurrents/onnx-service` | ONNX model inference for ML-assisted annotation. |
 
 ### Interface
 
 | Package | npm | Description |
 |---|---|---|
-| `interface` | `@epicurrents/interface` | Default Vue 3 viewer application. Assembles all the above into a ready-to-use UI. Can be used as a standalone app or embedded inside a larger page. |
+| `interface` | `@epicurrents/interface` (not on npm) | Default Vue 3 viewer application. Assembles all the above into a ready-to-use UI. Its repository is public, and the builder builds it into each edition, which can be used as a standalone app or embedded inside a larger page. |
 
 ### Utility packages
 
@@ -69,7 +71,7 @@ These are standalone utility libraries with no dependency on the core runtime.
 | Runtime | `RuntimeStateManager` | Central state store: `APP`, `MODULES`, `SERVICES`, `SETTINGS`, `WORKERS`, `INTERFACE` maps. Mutation-event pattern — every setter dispatches scoped events. |
 | Asset | `BaseAsset` | Root type for everything in the system — has `id`, `name`, `modality`, `state`, and an event API. |
 | Resource | `DataResource` | A loadable asset with a lifecycle: `added → loading → loaded → ready → destroyed`. |
-| Module | `ResourceModule` / `RuntimeResourceModule` | Pluggable modality support registered with `registerModule(name, module)`. Contributes Vue components and Vuex actions at runtime via `hotUpdate()`. |
+| Module | `ResourceModule` / `RuntimeResourceModule` | Pluggable modality support registered with `registerModule(name, module)`. The interface's module for the same modality contributes Vue components and Vuex actions at runtime via `hotUpdate()`. |
 | Service | `GenericService` / `AssetService` | Web worker abstraction. Every method call creates a commission (UUID-keyed Promise) and posts a message to the worker; the worker replies with the same UUID to resolve it. |
 | Study loader | `GenericStudyLoader` / `StudyLoader` | Knows how to take a parsed file header and produce a typed `DataResource` (e.g. `EegRecording`). |
 | Study importer | `GenericStudyImporter` | Parses a file header and produces a `StudyContext`. The entry point for "open file". |

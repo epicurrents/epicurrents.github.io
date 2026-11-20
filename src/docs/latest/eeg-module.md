@@ -10,7 +10,7 @@ The default EEG module is designed for viewing normal-density EEG recordings bas
   * Laplacian (source density).
   * Transverse bipolar.
   * Cz reference.
-- Viewing select polygraphic channels (EKG, EMG, EOG, respiration) *if* they are correctly labeled in the source file.
+- Viewing select polygraphic channels (EKG, EMG, EOG, respiration, photic stimulation) *if* they are correctly labeled in the source file.
 - Optional polygraphic *cascade* view — N time-shifted slices of a single polygraphic channel stacked vertically, for at-a-glance scanning of long segments.
 - Adjusting signal sensitivity for all channels or each channel individually.
 - Adjusting signal filters (high-pass, low-pass and notch) for all channels or each channel individually.
@@ -28,6 +28,11 @@ Before browsing EEG recordings, it may be necessary to check that some basic set
 
 EEG module settings can be found under the `EEG` tab on the settings screen.
 
+#### Memory management
+
+- **Use the application memory manager with EEG resources** — caches EEG signals in shared memory. Applies only to files opened after the setting is changed.
+- **Unload cached signal data when EEG resources are closed** — releases a recording's cached signals when it is closed.
+
 #### Display settings
 
 Display options affect the general look of EEG signals. Options include:
@@ -42,6 +47,12 @@ This setting decides which way a trace is drawn and nothing else; the sample val
 - `On`: Traces are drawn using the browser's WebGL antialiasing. Due to technical limitations the traces can only be drawn at 1px thickness. Antialiasing can improve perceived contrast between the trace and background on high-density displays.
 - `Off`: Traces are drawn without antialising applied (default).
 
+#### Montage, navigator and trend options
+
+- **Default montage** — the montage a new recording opens in (`eeg.defaultMontage`, *As recorded* by default). See [built-in setups and montages](#built-in-setups-and-montages).
+- **Display time elapsed from the recording start** — the navigator's time format (on by default).
+- **Open the trend strip when a recording is opened** (`eeg.trends.showStrip`, off by default) and the default trend type (`eeg.trends.defaultType`, aEEG by default). Only the selected trend is computed, so the default type also decides what a recording spends time calculating.
+
 #### Color options and presets
 
 Color of the three main signal modalities (EEG, EKG and EOG) can be set individually. For EEG, separate colors can be applied to signals on the right hemisphere, left hemisphere and midline.
@@ -54,7 +65,7 @@ The EEG viewer supports individual display of a number of grid lines. For the ti
 
 ## Correcting a recording exported with a reversed sign
 
-Some recordings are written out with the phase of every signal inverted. This is a property of the file rather than a display preference, so it is corrected in the signal data: `Display > Correct inverted signal polarity` negates every sample as it is read, and a checkmark on the entry shows when a recording is being read that way.
+Some recordings are written out with the phase of every signal inverted. This is a property of the file rather than a display preference, so it is corrected in the signal data: `Display > Invert signal polarity` negates every sample as it is read, and a checkmark on the entry shows when a recording is being read that way.
 
 Because the correction applies to the data, everything downstream follows it — the plotted traces, the analysis tools, montage derivations, trends, and any computation reading the signals. Toggling it discards the samples already cached and reads them again, so the view refills before it redraws.
 
@@ -88,15 +99,7 @@ The following are included out of the box and loaded automatically when a record
 - `default:10-20` — labelled *Default IFCN-25*: the 19 electrodes of the 10-20 system, the inferior chain (F9/F10, T9/T10, P9/P10), FT9/FT10 and TP9/TP10, and the polygraphic channels the module recognises. FT9/FT10 and TP9/TP10 are positions of their own, matched because clinical recordings commonly carry them in place of or beside the IFCN chain; the as-recorded and average-reference montages show all five inferior electrodes of a side as one group in front-to-back order. Electrodes a recording does not carry go unmatched, so the same setup serves a plain 10-20 record and an extended one, and the montages built over it reduce to their traditional 10-20 form. The `name` still reads `default:10-20` — it keys `defaultMontages`, every montage identifier and every host that injects against it, so it is left alone until the setup is reworked properly.
 - `default:10-10` — labelled *Default 10-10*: the 74 electrodes of the 10-10 system, including the AF, FC, CP and PO rows, the full midline chain and the earlobe references, for a recording whose montages reach past the 19 electrodes of the 10-20 system. It ships with an as-recorded montage only; the derived montages of the larger array are not bundled.
 
-  **This setup is registered but not selected by default.** `defaultSetups` names the 10-20 setup alone, because giving every recording 74 electrodes of channel matching it may have no signals for is a cost a deployment should choose. A deployment with a high-density array adds it:
-
-  ```ts
-  app.registerModule('eeg', eegRuntime, {
-      defaultSetups: ['default:10-20', 'default:10-10'],
-  })
-  ```
-
-  The order is the order they are registered in, and the first one becomes the recording's canonical setup.
+  **This setup is registered but not selected by default.** The EEG module setting `eeg.defaultSetups` names the 10-20 setup alone, because giving every recording 74 electrodes of channel matching it may have no signals for is a cost a deployment should choose. A deployment with a high-density array adds `'default:10-10'` to that list. The order is the order they are registered in, and the first one becomes the recording's canonical setup.
 
 **Default montages**, listed in `defaultMontages` and added to every recording:
 - `rec` — As recorded: source channels only, no re-referencing
@@ -118,23 +121,27 @@ The name in each list is the montage's own name, not its full identifier: a mont
 
 Deployment-specific electrode layouts and montage definitions can be injected via the module configuration. They are applied to every recording that is opened, without modifying core module code.
 
-**Inline configuration** (when registering the module programmatically):
+The EEG module configuration (`EegModuleConfiguration`) is given in the launch configuration under `modules.eeg`, and the interface's EEG module applies it with its `applyConfiguration` method when the interface loads its modules:
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
-    extraSetups: [
-        { name: 'my-clinic-cap', channels: [ /* channel definitions */ ] }
-    ],
-    extraMontages: {
-        'standard-1020': [
-            { name: 'cz-reference', label: 'Cz ref', /* ... */ },
-            '/montages/laplacian-extended.json',  // URL to a JSON file
-        ],
+await createEpicurrentsApp({
+    modules: {
+        eeg: {
+            extraSetups: [
+                { name: 'my-clinic-cap', channels: [ /* channel definitions */ ] },
+            ],
+            extraMontages: {
+                'default:10-20': [
+                    { name: 'cz-reference', label: 'Cz ref', /* ... */ },
+                    '/montages/laplacian-extended.json',  // URL to a JSON file
+                ],
+            },
+        },
     },
-})
+}, register)
 ```
 
-**From a configuration file** (when loading from a URL or embedded JSON in the platform): the `applyConfiguration` method on the EEG runtime processes a `EegModuleConfiguration` object, fetching any URL-referenced montage or setup files on demand.
+`modules.eeg` can also be a URL, in which case the whole configuration is fetched from that JSON document. Montage and setup entries given as URLs are fetched as the configuration is applied, resolved against the asset path. The examples further down this page show only the `modules.eeg` object.
 
 Injected montages are added to a recording before its channel layout is applied and before `eeg.defaultMontage` is resolved, so they behave like the built-in ones: they are laid out with the user's spacing settings, and one of them can be the deployment's default montage. (Cascade montages are the exception — they are added after the layout pass on purpose, because a cascade stacks N rows of a single channel and computes its own equidistant offsets that a group layout would overwrite.)
 
@@ -174,13 +181,14 @@ A channel with a display range is drawn by the range alone: the sensitivity cont
 The filters a recording opens with can be set per deployment, in Hz. Each key replaces the default of the matching filter control, and an omitted key keeps the built-in default (0.3 Hz highpass, 70 Hz lowpass, notch off):
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
+// modules.eeg
+{
     filters: {
         highpass: 0.16,
         lowpass: 70,
         notch: 50,
     },
-})
+}
 ```
 
 - `0` turns a filter off, so a deployment can disable a filter that is on by default.
@@ -195,7 +203,8 @@ The [trend strip](docs/eeg-module/eeg-viewer#trend-strip) computes its values ov
 The aEEG, ratio and spectrogram trends each build one trend per entry in a derivation list, and pdBSI averages an index over a list of homologous electrode pairs. `aeeg.derivations` doubles as the fallback for the other two, so an array where all three read the same signal declares it once:
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
+// modules.eeg
+{
     aeeg: {
         derivations: [
             {
@@ -226,7 +235,7 @@ app.registerModule('eeg', eegRuntime, {
     trends: {
         pdbsi: { epochLength: 2, band: [1, 4] },
     },
-})
+}
 ```
 
 - `candidates` are tried in order and the first one that resolves wins, so a list can cover several electrode arrays at once. Each entry resolves by three strategies in turn: an empty `reference` matches the named channel on its own; otherwise a single channel named like the pair is tried — in either direction, so both `'c3-p3'` and `'p3-c3'` resolve, since the amplitude trends rectify — and then the two electrodes individually, with the subtraction applied at compute time. Electrode names are matched whole and case-insensitively, so `C3` is never served by a channel named `C3A2`.
@@ -259,9 +268,10 @@ A *cascade montage* is a special-purpose view that takes one source channel and 
 Cascade montages are registered against a setup (the same way as regular montages) and ship as part of the EEG module configuration:
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
+// modules.eeg
+{
     cascadeMontages: {
-        'standard-1020': [
+        'default:10-20': [
             {
                 id: 'ekg',
                 label: 'EKG cascade',
@@ -275,7 +285,7 @@ app.registerModule('eeg', eegRuntime, {
             },
         ],
     },
-})
+}
 ```
 
 Per-entry fields:
@@ -290,28 +300,27 @@ The cascade configuration mirrors the `extraMontages` shape (setup name → list
 
 ## Annotation event filtering
 
-EDF+ files often contain annotation labels that are specific to the recording system — internal event markers, status codes, or vendor-specific strings that are not meaningful to the end user. The EEG module supports two configuration options to handle these before they reach the UI:
+EDF+ files often contain annotation labels that are specific to the recording system — internal event markers, status codes, or vendor-specific strings that are not meaningful to the end user. Two EEG module settings, `eeg.events.ignorePatterns` and `eeg.events.convertPatterns`, handle these before they reach the UI. They are fields of the module's settings rather than of the `modules.eeg` configuration:
 
 **`ignorePatterns`** — a list of regular expressions, as strings. Any annotation label matching one of them is silently discarded. Useful for suppressing recording-system internal events.
 
 **`convertPatterns`** — a list of `[pattern, replacement]` pairs, where `pattern` is a regular expression string and `replacement` names the event properties to write. An annotation whose label matches is kept and rewritten rather than discarded, which is what normalises a vendor's event codes into clinical terminology.
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
-    events: {
-        ignorePatterns: ['^\\$', '^Recording (start|end)$'],
-        convertPatterns: [
-            ['^PHOTIC (\\d+)$', {
-                label: 'Photic stimulation $1 Hz',
-                class: 'activation',
-                channels: [],
-                priority: 0,
-                text: '',
-                type: 'event',
-            }],
-        ],
-    },
-})
+// The eeg.events settings value
+{
+    ignorePatterns: ['^\\$', '^Recording (start|end)$'],
+    convertPatterns: [
+        ['^PHOTIC (\\d+)$', {
+            label: 'Photic stimulation $1 Hz',
+            class: 'activation',
+            channels: [],
+            priority: 0,
+            text: '',
+            type: 'event',
+        }],
+    ],
+}
 ```
 
 Four things about the rewrite are worth knowing before writing one:

@@ -28,27 +28,28 @@ Cross-Origin-Embedder-Policy: require-corp
 
 The browser exposes `window.crossOriginIsolated === true` only when both are present. Without isolation `SharedArrayBuffer` is `undefined`, and the library transparently falls back to Path B. No client-side code changes are needed to handle the fallback.
 
-Configure the application with `useSAB: true` to opt into the SAB path when isolation is available:
+The SAB path is taken when the `app.useMemoryManager` setting is on at launch. The interface's `createEpicurrentsApp` sets it from its `useSAB` setup option, which is on by default, and turns it off when the page is not isolated. The pool size is the `app.maxLoadCacheSize` setting, in bytes, with a default of 1000 MiB; the interface sets it from its `signalCacheMaxSize` setup option, in MiB, which defaults to 500:
 
 ```ts
-const app = new Epicurrents({
-    containerId: 'viewer',
+await createEpicurrentsApp({
     useSAB: true,
-    signalCacheMaxSize: 1000,   // MB
-})
+    signalCacheMaxSize: 1000,   // MiB
+}, register)
 ```
 
-`signalCacheMaxSize` controls the single SAB pool size used by the memory manager. The default is 1000 MB. Each open recording requests a slice of this pool sized to its full signal length in float32 samples. When `signalCacheMaxSize` is too small for the active recording, the load fails with an out-of-memory error rather than silently falling back.
+Using the core directly, the same is set with `app.configure({ 'app.useMemoryManager': true, 'app.maxLoadCacheSize': 1000*1024*1024 })` before `app.launch()`. On a page started with `createEpicurrentsApp`, the `memory` URL parameter sets the size in MiB, and `memory=0` turns the SAB path off.
+
+A recording whose signal data fits inside `app.maxLoadCacheSize` is cached whole. A larger one is cached as a rolling window of blocks around the view, sized so that three blocks fit inside the budget and capped by the `app.dataBlockDuration` setting, so a large recording loads rather than failing for want of memory.
 
 ## Path A — SharedArrayBuffer
 
 ### The memory manager
 
-`ServiceMemoryManager` ([source](https://github.com/epicurrents/core/blob/main/src/assets/service/ServiceMemoryManager.ts)) is created during `app.launch()` if `useSAB` is on. It allocates one large `SharedArrayBuffer` (`signalCacheMaxSize` MB) and acts as a sub-allocator:
+`ServiceMemoryManager` ([source](https://github.com/epicurrents/core/blob/main/src/assets/service/ServiceMemoryManager.ts)) is created during `app.launch()` if `app.useMemoryManager` is on. It allocates one large `SharedArrayBuffer` of `app.maxLoadCacheSize` bytes and acts as a sub-allocator:
 
-- Each service that opens a recording calls `allocate(amount, service)` to reserve a contiguous byte range inside the pool.
+- Each service that opens a recording calls `allocate(amount, service)` to reserve a contiguous byte range inside the pool. When the pool lacks the room, the manager unloads the least recently used services until the request fits.
 - The first 32 bits of the pool are reserved as a global master lock so allocations and frees are mutually exclusive across threads.
-- When a service finishes (recording closed, resource destroyed), `freeMemory(service)` releases its range and the manager can rearrange remaining allocations to keep free space contiguous.
+- When a service finishes (recording closed, resource destroyed), `release(...services)` frees its range and the manager rearranges the remaining allocations to keep free space contiguous.
 
 The same SAB is then passed by reference (via `postMessage` with the buffer in the transfer list) to every worker that needs to touch the recording's samples, so each worker sees the same underlying memory.
 
@@ -124,21 +125,21 @@ There is no locking — `BiosignalCache` is single-threaded by design. The forma
 `GenericBiosignalResource` holds two properties:
 
 - `_mutexProps: MutexExportProperties | null` — the SAB path's exported handle, populated when the memory manager allocates a slice
-- `_cacheProps: BiosignalCache | null` — the JS-heap fallback, populated when no memory manager is available
+- `_cacheProps: SignalDataCache | null` — the JS-heap fallback (a `BiosignalCache`), populated when no memory manager is available
 
-`get dataCache()` returns whichever is non-null. Downstream code (`MontageService.setupWorker`, the Pyodide service's `setInputMutex`) inspects which it received and wires the corresponding setup commission to the montage worker.
+`get dataCache()` returns whichever is non-null. A montage is wired to the one it is given: `setupServiceWithInputMutex` couples its worker to the mutex and `setupServiceWithCache` hands it the cache, each through the matching `MontageService` setup commission. The Pyodide service's `setInputMutex` couples the interpreter to the mutex the same way.
 
 Falling back to Path B is automatic. The resource lifecycle (`added → loading → loaded → ready`) is identical on both paths. The user-visible difference is only performance.
 
 ## Sizing and tuning
 
-`signalCacheMaxSize` (configured at `Epicurrents` construction time) is the total SAB pool size in megabytes. As a rule of thumb:
+`app.maxLoadCacheSize` (set before launch, or through the interface's `signalCacheMaxSize`) is the total SAB pool size. The size a recording needs to be cached whole is, as a rule of thumb:
 
 ```
 required MB ≈ (channels × sampling_rate × duration_seconds × 4) / (1024 × 1024)
 ```
 
-For a 32-channel routine EEG at 256 Hz, 1 hour of data needs `(32 × 256 × 3600 × 4) / 1024^2 ≈ 113 MB`. The default of 1000 MB comfortably holds many recordings open simultaneously. Long intensive-monitoring recordings (multi-day, high channel count, high sample rate) may need to raise this.
+For a 32-channel routine EEG at 256 Hz, 1 hour of data needs `(32 × 256 × 3600 × 4) / 1024^2 ≈ 113 MB`. The defaults (1000 MiB in the core, 500 MiB through the interface) hold several such recordings at once, and the least recently used one is unloaded when another needs the room. Long intensive-monitoring recordings (multi-day, high channel count, high sample rate) are cached as a rolling window instead; raising the pool size lets more of such a recording be cached at once.
 
 The pool is allocated once at launch. If browser memory is tight when the pool size is set very high, the `SharedArrayBuffer` constructor throws and Epicurrents falls back to Path B even when isolation is available. Watch the log for `Failed to allocate a shared array buffer for memory management.`
 
@@ -152,16 +153,17 @@ When wiring a new reader against the mutex, always check both bounds before read
 
 Each recording goes through a lifecycle — `added → loading → loaded → ready` — and can be activated and deactivated multiple times during a session (for example, when the user switches between open recordings). The cache infrastructure must be cleanly reset between activations so that a freshly allocated SAB slice is fully populated from the file, rather than silently returning the zero-filled buffer from the previous allocation.
 
-### The two-level design
+### Teardown levels
 
-Currently `GenericBiosignalResource` has two teardown levels:
+`GenericBiosignalResource` tears its cache down at three levels:
 
-| Level | Method | What it frees |
+| Level | Method | What it does |
 |---|---|---|
-| Partial | `releaseCache()` | SAB allocation returned to the memory manager; typed array views nulled; in-progress caching processes stopped |
-| Full | `destroy()` | Everything: events, interruptions, montages, channel list, subscriptions |
+| 1 | `releaseSignalArrays()` | The montages and the reader service drop their signal-array views and cancel caching in flight, and `signalCacheStatus` is reset to `[0, 0]`. The SAB allocation and the mutex layout are kept, so the mutex can be rebound to a buffer cheaply with `BiosignalMutex.initSignalBuffers(..., overwrite=true)`. |
+| 2 | `releaseBuffers()` | The worker-side mutexes of the service and every montage are torn down, all their ranges are released from the memory manager in one call, and `signalCacheStatus` is reset. The service is then not ready, and the cache needs a fresh setup before it is used again. `EegRecording` also clears its events, interruptions, labels and videos. |
+| 3 | `destroy()` | `releaseBuffers()`, then every montage is destroyed, which terminates its worker, the service is destroyed, and the channels, events, filters, interruptions, montages and setup are cleared. |
 
-`releaseCache()` is called when a recording is deactivated so its SAB slice can be reused; `destroy()` is called when the recording object itself is discarded.
+`unload()` runs `releaseBuffers()` between the `'before'` and `'after'` phases of the resource's UNLOAD event. A dataset unloads a resource it drops that no other dataset holds. An `EegRecording` with the module's `unloadOnClose` setting on unloads itself in the background when it is closed, and `awaitDeactivation` lets the next allocation wait for that release to finish; with the setting off, the default, a closed recording keeps its cache and gives up only its montage workers. `destroy()` is called when the recording object itself is discarded.
 
 ### Montage workers
 
@@ -171,26 +173,13 @@ Two consequences for code that drives a montage directly. The first read after a
 
 ### Cross-activation state leaks
 
-The most common source of bugs at this layer is **cross-activation state** — fields that belong logically to one SAB occupancy session but live on the recording object and are not reset when the buffer is freed. If any such field survives `releaseCache()`, the next activation can misread it and skip caching, leaving the buffer permanently empty.
+The most common source of bugs at this layer is **cross-activation state** — fields that belong logically to one SAB occupancy session but live on the recording object and are not reset when the buffer is freed. If any such field survives `releaseSignalArrays()` or `releaseBuffers()`, the next activation can misread it and skip caching, leaving the buffer permanently empty.
 
 Three categories to watch:
 
 - **Caching-process bookkeeping** — anything that tracks which ranges are "already cached" must be cleared when the SAB is freed; otherwise the new, zero-filled buffer is considered fully loaded.
 - **`signalCacheStatus`** — the `[start, end]` progress indicator must be reset to `[0, 0]` synchronously as part of teardown, before any macro tasks that could deliver stale progress updates from the old session.
 - **ACTIVATE listener phase** — `GenericAsset.isActive` dispatches an ACTIVATE event for *both* the `'before'` and `'after'` phases. Any subclass that performs setup work (requesting memory, wiring the mutex, starting caching) inside an ACTIVATE listener **must** guard with `if (!this._isActive) return` at the top of the handler. Without the guard the setup runs in the `'before'` phase when `_isActive` is still `false`, and the `'after'` phase sees an already-initialised resource and skips caching.
-
-### Planned improvement: three-level lifecycle
-
-The two-level design conflates releasing the SAB byte range (which should preserve the mutex field definitions for a cheap re-wire on next activation) with tearing down the mutex object entirely (needed only when the channel layout changes). A planned three-level split would make this explicit:
-
-| Level | What it does |
-|---|---|
-| `releaseSignalArrays()` | Free the SAB range; null the typed array views; reset caching state. The `BiosignalMutex` object survives, retaining its field-definition knowledge so re-activation needs only a cheap `reinitialize(newBuffer, bufferStart)` call and a lightweight `reinitialize-input-buffer` commission to each montage worker. |
-| `unloadCache()` | Level 1 + null the mutex entirely. Use when the channel layout changes between activations or when switching cache backends. |
-| `destroy()` | Full recording teardown, unchanged. |
-
-The main benefit of Level 1 is that `signalCacheStatus` is reset **synchronously** as part of the teardown rather than at the end of `releaseBuffers()`, eliminating the macro-task race that could restore a stale non-zero value before the next activation begins.
-
 ## Related concepts
 
 - [Pyodide service](docs/pyodide-service) — how the Python-side reader handles SAB input under Pyodide's WASM memory constraints

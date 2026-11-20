@@ -13,14 +13,16 @@ The first three icons on the bar belong to the dataset navigator:
 - `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
 
 The controls toolbar above the signals apply general settings on the recording level or to preconfigured channel types. Controls include:
-- **Montage**: A list of preconfigured montages to display the signals in.
-- **Sensitivity**: Signal sensitivity in uV/cm units; larger values will attenuate signal amplitudes and smaller values will increase them.
-- **Timescale**: Controls the amount of time displayed on the screen. The dynamic 3cm/second is recommended for general EEG viewing, but a list of static number of seconds per screen is also provided.
-- **Filters**: Settings for high-pass, low-pass and band-reject filters can be chosen from a predefined list of options. The `Low` option applies to the lower (highpass) filter, the `High` to the higher (lowpass) filter, and `Notch` to the band-reject filter (either 50 Hz or 60 Hz to filter AC artifact). A frequency outside the list — one the deployment configured as a default, for example — is shown as `Custom` at its place in the list and can be reselected there. See [Default filters](docs/eeg-module#default-filters) for configuring the defaults.
+- **Montage**: A list of preconfigured montages to display the signals in, with `Raw signals` at the bottom of the list for the source channels without a montage. The keys `1` to `4` switch to the first four montages.
+- **Sensitivity**: Signal sensitivity in uV/cm units; larger values will attenuate signal amplitudes and smaller values will increase them. `Alt+↑` steps to the next smaller value and `Alt+↓` to the next larger one.
+- **Timebase**: Controls the amount of time displayed on the screen. The dynamic 3cm/second is recommended for general EEG viewing, but a list of static number of seconds per screen is also provided.
+- **Filters**: Settings for high-pass, low-pass and band-reject filters can be chosen from a predefined list of options. The `Low` option applies to the lower (highpass) filter, the `High` to the higher (lowpass) filter, and `Notch` to the band-reject filter. With the `eeg.notchDefaultFrequency` setting at its default of 50 Hz, `Notch` is an on/off toggle for that frequency, which the `N` key also toggles; with the setting unset, it is a dropdown with off, 50 Hz and 60 Hz. A frequency outside the list — one the deployment configured as a default, for example — is shown as `Custom` at its place in the list and can be reselected there. See [Default filters](docs/eeg-module#default-filters) for configuring the defaults.
 
 On the right end of the controls bar is a set of tool buttons:
-- The `[[icon:magnifying-glass]]` **inspection tool** allows selecting (by `[[icon:mouse]]` dragging) an EEG signal segment for closer inspection in the [EEG analysis window](docs/eeg-module/analysis-tools). Alternatively, the `I` key can be used to toggle the inspection tool.
-- The `[[icon:message-dots]]` opens the **annotation display** on the right end of the viewer. Optionally, the `A` key can be used to toggle the drawer.
+- The `[[icon:magnifying-glass-waveform]]` **inspection tool** allows selecting (by `[[icon:mouse]]` dragging) an EEG signal segment for closer inspection in the [EEG analysis window](docs/eeg-module/analysis-tools). Alternatively, the `I` key can be used to toggle the inspection tool.
+- The `[[icon:highlighter]]` **annotate tool** creates an annotation where the signal is clicked or dragged over (see [creating annotations](docs/annotations#creating-annotations)). It is disabled while the recording's annotations are locked. `Shift+A` repeats the last saved annotation over the selection, or at the cursor with nothing selected.
+- The `[[icon:message-middle]]` opens the **annotation display** on the right end of the viewer. Optionally, the `A` key can be used to toggle the drawer when no selection is active.
+- The `[[icon:file-lines]]` opens the **report window**. The `R` key toggles it as well.
 
 ### Channel labels
 
@@ -52,9 +54,9 @@ Double-clicking [`[[icon:mouse]]`] on the navigator will browse to that point in
 
 The trend strip is an optional band rendered just above the navigator, showing one or more derived signals computed over the full recording. Each *trend* compresses an entire epoch of EEG into a single value (or a pair of values) per epoch, so the full recording fits on one horizontal line and lets the user spot long-term patterns at a glance.
 
-The strip is hidden by default. Toggle it from the `Display` → `Biosignal` → `Trend strip` menu item; the menu shows a check mark while the strip is visible. Toggling on expands the bottom compartment to make room for the strip; toggling off collapses it back to the navigator's natural height. The same red view-position marker that appears on the navigator is mirrored on the trend strip so the user can see where the current page sits in the wider trend.
+The strip is hidden by default, unless the `eeg.trends.showStrip` setting opens it with the recording. Toggle it from the `Display` → `Trends` → `Display trend` menu item in the menu's Biosignal section; the menu shows a check mark while the strip is visible. The same submenu selects the trend type shown in the strip, one at a time: aEEG, the band ratios (TAR / DAR / DTABR), pdBSI or the spectrogram. Toggling on expands the bottom compartment to make room for the strip; toggling off collapses it back to the navigator's natural height. The same red view-position marker that appears on the navigator is mirrored on the trend strip so the user can see where the current page sits in the wider trend.
 
-Four trend types are implemented — amplitude-integrated EEG, a power spectrogram, a frequency-band ratio and the pairwise derived brain symmetry index — and none of them computes until the strip asks for it, because the per-epoch work shares a worker with the signal requests that fill the first page. A deployment can have the aEEG trend start on its own as soon as caching begins, for a display where the trend is the point rather than an aid; the other three always wait to be opened.
+Four trend types are implemented — amplitude-integrated EEG, a power spectrogram, a frequency-band ratio and the pairwise derived brain symmetry index. Only the selected trend is computed, and only once the strip is opened, because the per-epoch work shares a worker with the signal requests that fill the first page. A deployment can have the aEEG trend start on its own as soon as caching completes, for a display where the trend is the point rather than an aid; the other three always wait for the strip.
 
 **Amplitude-integrated EEG (aEEG)** is the default:
 - For each epoch the signal is band-pass filtered (2–15 Hz), an amplitude envelope is computed, and the minimum and maximum envelope width within the epoch are recorded. The epoch length is not fixed: it scales with the length of the recording, so an excerpt is summarised more finely than a multi-day study. It runs 2 s for a routine EEG, 5 s past 45 minutes and 10 s past an hour and a half, and longer still for a recording of several hours. The cog in the strip's controls sets it per trend for the session — leave the field empty to go back to scaling with the recording — and a deployment can pin it or redefine the ladder through the trend settings.
@@ -92,7 +94,7 @@ Filter and sensitivity changes made while a cascade is active stay with the casc
 
 ## Browsing an EEG
 
-There are five means to browse an EEG:
+There are six means to browse an EEG:
 
 1. Using the arrow keys `←` and `→`, or `Page up` and `Page down`. Arrow keys move the view by one second and page up/down keys by up to 10 seconds, limited by how much can fit on your screen. If you don't have page up/down keys on your keyboard, holding down the `Shift` key while pressing an arrow key will have the same effect.
 2. Rolling the mouse wheel will scroll the EEG by up to 10 seconds at a time (roll down to move forward and up to move backward).

@@ -30,4 +30,4 @@ Epicurrents is hosted on NPM under the namespace @epicurrents. To install the mo
 
 ## Building from source
 
-Most modules include build configuration for Webpack, with the exception of the default interface module that uses Vite. Please see the [Development](docs/development) section for more details.
+Every module, including the default interface, is built with Vite. Please see the [Development](docs/development) section for more details.

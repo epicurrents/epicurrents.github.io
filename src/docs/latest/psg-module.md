@@ -28,7 +28,7 @@ app.registerStudyImporter('psg/edf-file', 'Open polysomnography (EDF)', 'file', 
 app.registerStudyImporter('psg/edf-url', 'Open polysomnography from URL', 'url', psgLoader)
 ```
 
-The builder's `psg` edition does this for you, with the EEG module active beside it.
+The builder carries a registrar for the `psg` modality (`setup/modules/psg.ts`) that does this, and an edition activates it by listing `psg` beside `eeg` in its `activeModules`. The package is not published, so no public edition includes it; an edition that does is a local profile, built by someone with access to the package's repository.
 
 A polysomnography must be a continuous recording. `PsgStudyLoader` puts a study with interruptions (EDF+D) into the `error` state, the same rule the platform applies at ingest.
 

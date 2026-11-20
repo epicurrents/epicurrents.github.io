@@ -31,9 +31,11 @@ The graph includes guidelines for the four commonly used frequency ranges:
 - `Delta`: below **4 Hz**.
 - `Theta`: from **4 Hz** to below **8 Hz**.
 - `Alpha`: from **8 Hz** to below **13 Hz**.
-- `Beta`: from **13 Hz** upward (also including higher ranges).
+- `Beta`: from **13 Hz** to below **30 Hz**.
 
-There is no minimum length for a selection, but selecting longer segments allow for more detailed analysis. For segments under 1 seconds the analysis may be unreliable.
+The graph runs up to 30 Hz. Beside it, a table lists each band's relative power as a percentage and its peak frequency, with the largest values in bold.
+
+A drag shorter than the `eeg.minSignalSelection` setting (0.2 s by default) is cancelled rather than selected. Selecting longer segments allows for more detailed analysis; for segments under 1 second the analysis may be unreliable.
 
 ![fast-fourier-transform-tool](/img/fast-fourier-transform-tool.png)
 
@@ -47,7 +49,7 @@ Below the FFT tool is a `signal properties` display that shows the selected sign
 
 The examination tool makes it possible to more closely examine a selected signal segment.
 
-Left-clicking [`[[icon:mouse]]`] on the signal plot will place a marker. By placing multiple markers, the time elapsed between each consecutive marker and the frequency of three or more markers are displayed. Markers can be dragged to a new position. Markers can be remove individually by right-clicking [`[[icon:mouse]]`] and all markers can be removed with the `Clear` button.
+Left-clicking [`[[icon:mouse]]`] on the signal plot will place a marker; up to eight markers can be placed. Each marker is listed with its time and voltage and the time and voltage difference to the previous marker. With three or more markers, the frequency they mark is displayed as a mean with its range. Markers can be dragged to a new position. Markers can be removed individually by right-clicking [`[[icon:mouse]]`] and all markers can be removed with the `Clear` button.
 
 ![signal-examination-tool](/img/signal-examination-tool.png)
 
@@ -88,15 +90,25 @@ The map's appearance is configured under the `Voltage field topogram` heading of
 - **Colour saturation of the mid range** — at `0` the colour is proportional to the voltage, which is the clearest setting for focal findings such as spikes. Raising it lifts low-amplitude structure into view — a diffuse asymmetry, a background gradient — at the cost of making a focal field appear to spread further than it does.
 - **Colours** — the colours of the most negative and most positive values and of the midpoint. The default poles stay distinguishable for the common forms of colour vision deficiency, and the midpoint is deliberately neutral; a hue there reads as a third category.
 
+## Trends
+
+Long-term changes over a whole recording are shown by the trend strip rather than by an analysis tool: amplitude-integrated EEG, a power spectrogram, a frequency-band ratio and the pairwise derived brain symmetry index, each computed per epoch over the full recording and drawn above the navigator. The trends are computed in the browser and need no Python integration. See [trend strip](docs/eeg-module/eeg-viewer#trend-strip) for using them and [trend derivations](docs/eeg-module#trend-derivations) for configuring them for an electrode array other than 10-20.
+
 ## Python tools
 
 The Python integration (using the Pyodide service) unlocks more advanced EEG analysis tools. As the service significantly increases the memory requirement of the application it should be employed only when the features are required.
 
-### Power spectrum analysis tool
+### Source localisation (experimental)
 
-Python integration includes a power spectrum tool that computes the frequency characteristics of every channel on the currently visible display. This tool can be useful for visualizing hemispheric asymmetries and includes a set of basic indices on the right side of the graph.
+The `Source` tab of the analysis window estimates the cortical source of a discharge at the EEG cursor by fitting a single equivalent dipole. It is offered only when the Pyodide service is registered, and it is experimental: the result is an aid to reading the field, not a localisation to report.
 
-Channels on the right hemisphere are colored blue, channels on the left are red, and midline channels are green.
+The forward model cannot be computed in the browser, so the tool fetches a lead field precomputed on the server for the standard montage matching the recording's electrode array. If none has been computed for that array, the tab says so and asks for an administrator to compute it; on the platform this is done in the `compute` app.
 
-![signal-power-spectrum-tool](/img/signal-power-spectrum-tool.png)
-_Power spectrum of a photic stimulation run._
+To use the tool, place the EEG cursor on the peak of the discharge (double-click [`[[icon:mouse]]`] on the signal, then fine-tune with the `arrow` keys), open the `Source` tab and press `Analyze`. The controls beside the plot set:
+- **SNR** — the assumed signal-to-noise ratio of the data.
+- **Window** — the length in seconds of the segment around the cursor that is passed to the analysis.
+- **View** — `2D` draws the fitted dipole in three orthogonal projections (axial, coronal, sagittal); `3D` draws it in three dimensions from three viewpoints (superior, anterior, lateral).
+
+The dipole is fitted to the field-power peak nearest the cursor, searched within 50 ms either side of it, rather than to the whole window, so a window long enough to show the discharge in context does not pull the fit towards background activity. Its orientation is taken from the data. The result names the electrode nearest to the dipole's negative maximum on the cortex, and the goodness of fit as a percentage of the variance explained.
+
+The fit assumes a spherical head model and a single source, so a widespread or multifocal field, or a low goodness of fit, means the location should not be relied on. Like the topogram, the tool needs a common-reference montage: a bipolar derivation would be matched to the lead field of a single electrode and give a spatially wrong result, and the tool warns when one is in use.

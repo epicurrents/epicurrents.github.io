@@ -4,7 +4,7 @@
 
 Epicurrents is distributed as a set of npm packages under the `@epicurrents` namespace. The core package provides the runtime, state management, and base types. Modality support (EEG, EMG, etc.), file readers (EDF, DICOM, etc.), and optional services (Python, ONNX) are separate packages that you register at startup — none of them are required, and you include only what your application needs.
 
-All packages are written in TypeScript and publish type declarations. They can be used in any modern bundler (Vite, Webpack, esbuild).
+All packages are written in TypeScript and ship ES-module builds with type declarations, exposed through each package's `exports` map, plus their web workers as standalone bundles. The packages and the viewer editions are built with Vite, which is the bundler the reference setup is written for.
 
 ## Installation
 
@@ -23,38 +23,32 @@ npm install @epicurrents/eeg-module
 npm install @epicurrents/emg-module
 
 # Add optional services
-npm install @epicurrents/pyodide-service   # Python-in-browser (spectral analysis, source localisation)
+npm install @epicurrents/pyodide-service   # Python-in-browser (source localisation)
 npm install @epicurrents/onnx-service      # ONNX machine learning inference
 ```
 
-The default viewer interface is a separate package that wraps all the modules into a ready-to-use Vue 3 application:
-
-```bash
-npm install @epicurrents/interface
-```
+The default viewer interface (`@epicurrents/interface`) wraps the modules into a ready-to-use Vue 3 application. It is not published to npm: it is built in the Epicurrents builder workspace, which clones and links every package and bundles a chosen edition into an embeddable library and a standalone viewer (see [Building the application](docs/building-the-application) and [Standalone viewer](docs/implementation#standalone-viewer)).
 
 ## App lifecycle
 
-Initialising an Epicurrents application always follows the same sequence regardless of which modules you use.
+Initialising an Epicurrents application always follows the same sequence regardless of which modules you use. The interface's `createEpicurrentsApp(config, register)` runs steps 1, 5 and 6 for you and calls `register` with the application in between, where a setup registers its modules, importers and services; `setups/full.example.ts` in the interface is the worked reference. The steps below show what happens underneath.
 
 ### 1. Instantiate
 
 ```ts
 import { Epicurrents } from '@epicurrents/core'
 
-const app = new Epicurrents({
-    containerId: 'viewer',   // id of the DOM element to mount the interface into
-    useSAB: true,            // use SharedArrayBuffer for zero-copy inter-thread signal transfer
-})
+const app = new Epicurrents()
 ```
 
-The constructor sets three globals on `window`:
+The constructor takes no arguments; configuration is applied with `app.configure()` before launch and with the configuration passed to `launch()`. It sets these globals on `window`:
 
 ```ts
 window.__EPICURRENTS__ = {
     APP:       app,             // the Epicurrents instance
-    EVENT_BUS: app.eventBus,   // the typed application event bus
-    RUNTIME:   app.runtime,    // the RuntimeStateManager
+    EVENT_BUS: app.eventBus,    // the typed application event bus
+    RUNTIME:   app.runtime,     // the RuntimeStateManager
+    SETUP:     {},              // the interface setup, written by the host or the interface
 }
 ```
 
@@ -62,34 +56,47 @@ These globals are used by external components (e.g. project-specific panels embe
 
 ### 2. Register modules
 
-Register a study module for each modality you want to support. Each module knows how to display recordings of one type and contributes its own Vuex actions, Vue components, and settings to the application.
+Register a study module for each modality you want to support. `registerModule(name, module)` takes the module's `runtime` and `settings`, which every module package exports, so the package namespace can be passed as it is. Each module contributes its runtime state and settings to the application; the matching Vue components and store actions come from the interface's own module for that modality, which a setup registers with the `registerInterfaceModule(name, module)` function `createEpicurrentsApp` passes to its `register` callback.
 
 ```ts
-import { runtime as eegRuntime } from '@epicurrents/eeg-module'
+import * as eegModule from '@epicurrents/eeg-module'
 
-app.registerModule('eeg', eegRuntime)
+app.registerModule('eeg', eegModule)
 ```
 
-Modules can receive a configuration object to customise their behaviour:
+A module's settings fields are addressed as `<module>.<field>` once it is registered, and their defaults can be changed with `app.configure()` before launch:
 
 ```ts
-app.registerModule('eeg', eegRuntime, {
-    extraMontages: { 'standard-1020': ['/montages/my-custom.json'] },
-    hotkeys: { fft: 'F', examine: 'E' },
-})
+app.configure({ 'eeg.useMemoryManager': true })
+```
+
+Interface-level options for a module, such as extra montages or hotkeys, go in the `modules` field of the setup passed to `createEpicurrentsApp`:
+
+```ts
+await createEpicurrentsApp({
+    modules: {
+        eeg: {
+            extraMontages: { 'default:10-20': ['/montages/my-custom.json'] },
+            hotkeys: { fft: { code: 'KeyF', key: 'f' } },
+        },
+    },
+}, register)
 ```
 
 ### 3. Register study importers
 
-A study importer ties a file format to a modality. The importer parses the file header and produces a `StudyContext` that the module's study loader then converts into a `DataResource`.
+A study importer ties a file format to a modality. A reader package supplies the importer, which parses the file, and the module wraps it in a study loader, which turns the parsed study into a `DataResource`. `registerStudyImporter(name, label, mode, loader)` registers the loader under a name; `mode` is one of `'file'`, `'folder'`, `'study'` or `'url'`, and the label is what the file menu shows.
 
 ```ts
+import * as eegModule from '@epicurrents/eeg-module'
 import { EdfImporter } from '@epicurrents/edf-reader'
 
-app.registerStudyImporter('edf', 'EDF/BDF recording', 'eeg', new EdfImporter())
+const eegLoader = new eegModule.EegStudyLoader('EegEdfLoader', ['eeg'], new EdfImporter())
+app.registerStudyImporter('eeg/edf-file', 'Open EDF file', 'file', eegLoader)
+app.registerStudyImporter('eeg/edf-url', 'Open EDF from URL', 'url', eegLoader)
 ```
 
-You can register multiple importers for different formats, all pointing to the same module, or to different modules.
+One loader can be registered under several names, one per mode, and you can register loaders for different formats pointing to the same module or to different modules. A reader that runs in a worker is given its worker with `setWorkerOverride`; see the reference setup for the pattern.
 
 ### Exporters and export targets (optional)
 
@@ -159,44 +166,39 @@ Services provide optional capabilities that run in a separate web worker — Pyt
 ```ts
 import { PyodideService } from '@epicurrents/pyodide-service'
 
-app.registerService('PYODIDE', new PyodideService())
+const pyodide = new PyodideService()
+app.registerService('pyodide', pyodide)
+pyodide.setupWorker({ packages: ['matplotlib', 'mne'] })
 ```
+
+The service takes its worker from the application's `pyodide` worker override when it is constructed, so set that with `app.setWorkerOverride('pyodide', factory)` first; see [Pyodide service](docs/pyodide-service).
 
 ### 5. Register the interface
 
-Pass the interface constructor to the application. The interface is not instantiated until `launch()` is called.
-
-```ts
-import { DefaultInterface } from '@epicurrents/interface'
-
-app.registerInterface(DefaultInterface)
-```
+`registerInterface(constructor)` gives the application the interface class to use. The interface is not instantiated until `launch()` is called. `createEpicurrentsApp` registers the interface's `DefaultInterface`, which is not exported separately.
 
 ### 6. Launch
 
 ```ts
-await app.launch()
+await app.launch({ containerId: 'viewer' })
 ```
 
-`launch()` creates the interface instance, mounts the Vue application into the container element, sets up the memory manager (if `useSAB` was enabled and cross-origin isolation is available), and resolves once all modules and WebAwesome components are registered and the UI is ready.
+`launch(config)` sets up the memory manager when the `app.useMemoryManager` setting is on and the page is cross-origin isolated, creates the interface instance with the configuration, and resolves with `true` once the interface reports ready, or `false` if it could not be created. The default interface mounts into the element with the id `epicurrents`, or `epicurrents-<containerId>` when `containerId` is given. `createEpicurrentsApp` passes its whole setup as the configuration, and sets `app.useMemoryManager` from its `useSAB` option beforehand.
 
 ### 7. Load a study
 
 ```ts
-await app.loadStudy('edf', {
-    files: [{ url: 'https://example.com/recording.edf', role: 'data', modality: 'eeg' }],
-    name: 'Patient 001',
-})
+const resource = await app.loadStudy('eeg/edf-url', 'https://example.com/recording.edf', { name: 'Recording 1' })
 ```
 
-The first argument is the importer name registered in step 3. The second is a `StudySource` object describing the files. The returned promise resolves once the recording header has been parsed and the resource is in `'ready'` state.
+`loadStudy(loader, source, options?)` takes the importer name registered in step 3 and the source: a URL, a list of URLs, or a `FileSystemItem` for files and folders the user opened. The options are the study loader's, among them `name` and `dataset`, which adds the resource to a dataset other than the active one. The returned promise resolves with the resource once the study has been loaded and added to the dataset, or with `null` if loading failed; preparing the resource starts at that point and continues in the background.
 
 ### 8. Preparing a recording before it is shown (optional)
 
 A recording reaches `'ready'` with its header parsed and its worker acquired, but with no signal data behind it — the buffer allocation, montage construction and cache fill all run when the resource is *activated*. For an application that already knows which recording comes next, that cost can be moved to a moment where the user is looking at something else:
 
 ```ts
-const next = await app.loadStudy('edf', nextSource)
+const next = await app.loadStudy('eeg/edf-url', nextUrl)
 await next.preload()          // allocate, build montages, fill the cache — without activating
 // …later, when the user is ready:
 runtime.setActiveResource(next)   // now costs a redraw rather than a load
@@ -238,33 +240,33 @@ A dataset built from a data source that only names its files loads up to `app.ea
 
 ## Embedding with a `ViewerPlugin`
 
-When the viewer is embedded inside a larger application (such as the Epicurrents platform), project-specific behaviour is injected through a `ViewerPlugin` object that hooks into the viewer lifecycle without modifying core code.
+The Epicurrents platform embeds the viewer in its own frontend, and a platform project or plugin injects its behaviour through a `ViewerPlugin` object that hooks into the viewer lifecycle without modifying core code. `ViewerPlugin` is a platform type (`frontend/src/projects/types.ts`), not part of the viewer packages. Its viewer hooks are:
 
 ```ts
 interface ViewerPlugin {
-    // Merged into the Epicurrents setup object before launch
+    // Merged into the setup passed to createEpicurrentsApp(), over the base setup the platform builds
     extraSetup?: Record<string, unknown>
 
-    // Called once after app.launch() resolves — use to register extra event listeners,
-    // inject settings, or set up panels that live outside the viewer iframe
-    onAppReady?(app: EpicurrentsApp, bus: EventBus): void | Promise<void>
+    // Called once createEpicurrentsApp() has resolved and the event bus is available, before any
+    // study loads — use to register event listeners, export targets or context menu actions
+    onAppReady?: (epic: EpicurrentsApp, bus: EventTarget) => void | Promise<void>
 
-    // Called once the studies loaded up front are ready — use to pre-select a recording
-    // or navigate to a specific time position. Studies that are only listed are not included
-    onStudiesReady?(app: EpicurrentsApp, studies: StudyContext[]): void | Promise<void>
+    // Called once the studies loaded up front are ready, in the order they were passed to the
+    // viewer. Studies that are only listed are not included
+    onStudiesReady?: (epic: EpicurrentsApp, studies: DataResource[]) => void | Promise<void>
 }
 ```
 
-The plugin is passed to the viewer mount call:
+The interface also carries the platform-side extensions — routes, navigation links, icons, a `viewerPanel` overlay component, annotation code metadata and session resolution. A project supplies its plugin as the `plugin` export of its frontend entry (`projects/<name>/frontend/index.ts`), which the build selects from `VITE_PROJECT`. A platform plugin exports one the same way, and the enabled plugins named in `VITE_PLUGINS` are combined by `mergePlugins` (`frontend/src/plugins/base.ts`): setups are merged in order, hooks are chained and each awaited in turn. The viewer view runs the plugins' hooks before the project's, and merges the project's `extraSetup` last, so the project has the last word.
 
 ```ts
-mountViewer(containerEl, {
-    plugin: {
-        onAppReady(app, bus) {
-            bus.addEventListener('property-change:activeResources', onResourceChanged)
-        },
+import type { ViewerPlugin } from '#projects/types'
+
+export const plugin: ViewerPlugin = {
+    onAppReady (epic, bus) {
+        bus.addEventListener('property-change:activeResources', onResourceChanged)
     },
-})
+}
 ```
 
 ## Storing user settings on a backend
@@ -293,13 +295,13 @@ Behaviour once it is set:
 
 Leaving the setting empty (its default) keeps everything on the device and makes no network requests.
 
-## Standalone HTML file
+## Standalone viewer
 
-The interface can also be built as a single self-contained HTML file for offline use. Load it directly in a browser — no server required. Some features (federation, push notifications, remote API sources) are unavailable without network access, but local file opening and all analysis tools work.
+An edition build writes, under `dist/<edition>/`, the embeddable library (`epicurrents-lib.*`, for mounting into a host page) together with an `index.html` that makes the same directory servable as a standalone viewer. The workers are inlined into the library, so the directory is everything the viewer needs and can be served from any static web server; serve it with the headers below to enable shared memory. See [Building the application](docs/building-the-application).
 
 ## Cross-origin isolation and SharedArrayBuffer
 
-`useSAB: true` enables zero-copy signal transfer between the format worker, the montage worker, and the main thread via `SharedArrayBuffer`. This requires the page to be served with the following HTTP headers:
+The `useSAB` setup option (on by default), which sets the `app.useMemoryManager` setting, enables zero-copy signal transfer between the format worker, the montage worker, and the main thread via `SharedArrayBuffer`. This requires the page to be served with the following HTTP headers:
 
 ```
 Cross-Origin-Opener-Policy: same-origin

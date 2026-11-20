@@ -2,17 +2,21 @@
 
 ## General settings
 
-Settings on the general tab affect either the general functionality of the application or all applicable study modalities.
+Settings on the general tab affect either the general functionality of the application or all applicable study modalities. Each active module that has settings of its own adds a tab of its own after the general tab.
 
 ### Saving preferences across sessions
 
-By default all settings are stored only for the current session. A session changes whenever the page is opened in a new tab, but survives page reloads in the same tab. It is possible to save settings information in a more persistent storage using a cookie. Enabling the `Use a cookie to store my settings locally` implies that the user gives their consent to the use of cookies.
+By default all settings are stored only for the current session. A session changes whenever the page is opened in a new tab, but survives page reloads in the same tab. Enabling the `Use a cookie to store my settings locally` switch saves the settings persistently in the browser's local storage instead, and implies that the user consents to this.
 
 All stored settings only apply to the device **and** the browser in question — unless the deployment has configured a user-settings backend, in which case the same settings are also saved to your account and follow you between browsers and machines. That happens automatically and needs no consent toggle: the settings go to the server you are already signed in to, not into browser storage. See [Storing user settings on a backend](docs/implementation#storing-user-settings-on-a-backend) for the deployment side.
 
 ### Require Alt for hotkey actions
 
 By default, hotkey actions only require pressing the key in question. It is possible to change this functionality to require the `Alt` key (or `Opt` key on Mac) to be pressed for the action to be triggered. Note that this may conflict with actions on the browser itself.
+
+### Mains AC frequency
+
+The mains power frequency used by the default filters can be set to `50Hz` or `60Hz`, or left unset (`-`). Setting it removes the option to choose the AC filter frequency, so set it only if every dataset can carry a mains artefact of this frequency alone.
 
 ### Signal scaling
 

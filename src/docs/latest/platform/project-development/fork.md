@@ -32,7 +32,7 @@ git remote add upstream https://github.com/epicurrents/platform
 
 ### 2. Initialise submodules
 
-The platform carries the viewer and the documentation site as submodules. Initialise them after cloning:
+The platform carries the viewer builder (`frontend/viewer`, the viewer's source workspace) and the documentation site as submodules. The viewer the signed-in SPA loads is not built from that submodule: it is the release edition pinned in `frontend/viewer-pin.json`, which `manage.py vendor_viewer` installs. Initialise the submodules after cloning:
 
 ```bash
 git submodule update --init --recursive
@@ -60,15 +60,18 @@ class MyProjectConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "projects.myproject"
     label = "myproject"
+    requires_platform = ">=0.2,<0.3"
 
     def ready(self):
         pass
 ```
 
-And an initial (empty) migration:
+`requires_platform` names the platform versions the project was tested against; `manage.py check` refuses to boot a platform outside the range.
+
+And an initial (empty) migration, generated inside the container rather than on the host:
 
 ```bash
-EPICURRENTS_PROJECT=myproject python manage.py makemigrations myproject
+EPICURRENTS_PROJECT=myproject docker compose run --rm --no-deps --entrypoint python web manage.py makemigrations myproject
 ```
 
 ### 4. Configure the environment
@@ -90,7 +93,7 @@ Start the stack:
 docker compose up -d
 ```
 
-Your project's models, endpoints, and settings are now active. Edit files in `projects/myproject/` as you would any Django app — the bind-mounted volume means changes are picked up on the next request without restarting.
+Your project's models, endpoints, and settings are now active. Edit files in `projects/myproject/` as you would any Django app — the bind-mounted volume means the development server picks up changes on the next request without restarting. The workers do not reload; after changing code they run, use `docker compose restart celery celery-beat`.
 
 ## Receiving platform updates
 

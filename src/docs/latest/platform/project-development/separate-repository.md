@@ -46,13 +46,15 @@ class MyProjectConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "projects.myproject"
     label = "myproject"
-    requires_platform = ">=0.1,<0.2"
+    requires_platform = ">=0.2,<0.3"
 
     def ready(self):
         pass
 ```
 
-`requires_platform` is the range of platform versions your project supports. A system check verifies it before `runserver` and `migrate`, so an unsatisfied pin stops the boot rather than failing somewhere later.
+`requires_platform` is the range of platform versions your project supports. A system check verifies it before `runserver` and `migrate`, so an unsatisfied pin stops the boot rather than failing somewhere later. While the platform is on `0.x` the minor is the breaking bump, so cap the range at the next minor.
+
+If the project needs Python packages the platform does not have, list them in `requirements.txt` at the project root and generate the hash-pinned lock beside it with `scripts/lock-requirements.sh --project myproject`, run from the platform checkout. The lock is resolved against the platform's own lock, so re-run the command whenever the platform's `requirements.lock` changes; the image build refuses a lock that has drifted.
 
 ### 2. Put it where the platform looks
 
@@ -90,13 +92,13 @@ There is nothing to do on the platform side afterwards. This is the practical di
 
 ## Updating the platform
 
-Because the platform does not track your project, updating it touches nothing of yours:
+A deployment running from a git checkout updates with:
 
 ```bash
-git pull origin main
-docker compose run --rm --no-deps web python manage.py migrate
-docker compose restart web celery
+scripts/update.sh --from repo
 ```
+
+It takes a pre-update snapshot, pulls the platform, rebuilds the frontend and the images, applies migrations and recreates the stack; `scripts/update.sh --rollback` restores the snapshot. The project checkout is fast-forwarded too when it tracks an upstream branch, and left as it is when it is pinned to a tag or commit (see [Pinning a project version](#pinning-a-project-version)). A project checkout that has diverged from its upstream stops the update rather than being merged.
 
 Read the platform changelog before pulling. When a release changes something inside the compatibility surface it bumps the platform version, and your project's `requires_platform` range is what decides whether the new version is one you have tested against. Widening the range to make a failing pin pass asserts a compatibility nobody checked; test first, then widen.
 

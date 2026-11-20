@@ -44,31 +44,51 @@ A project or plugin that owns a coding standard can register a validator from it
 ```python
 from annotations.vocabularies import register_vocabulary
 
-register_vocabulary("hed", label="HED", version="8.3.0", validator=my_validator)
+register_vocabulary(
+    "epicurrents.myproject.mark",
+    label="Evaluation marks",
+    version="1",
+    validator=validate_mark,  # (value, meta) -> None, raises ValueError
+    term_name=mark_name,      # optional: a term's display name
+    closed=True,              # an enumerated set of terms, no free placeholders
+)
 ```
 
-The validator receives `(value, meta)` and raises `ValueError` when the pair violates the vocabulary; the codes API rejects such writes with 422. The platform ships no vocabularies of its own — an unregistered `standard` is accepted unvalidated unless the deployment sets `ANNOTATION_CODE_STRICT_VOCABULARY = True` in its project settings, which rejects every unregistered standard. Validation applies to API writes only; server-side code (ingest, management commands) is not gated.
+The validator receives `(value, meta)` and raises `ValueError` when the pair violates the vocabulary; the annotations API rejects such writes with 422. The other keyword arguments:
+
+| Argument | Meaning |
+|---|---|
+| `closed` | The validator accepts only an enumerated set of terms. Ingest accepts a code a file declares only under a closed vocabulary, since under an open one the file chooses the value |
+| `confined` | Every part of a value comes from a domain the validator declares — terms, identifiers from a closed set, numbers in a declared range — and never typed text. `closed` implies it |
+| `canonicalise` | Rewrites a value into the one spelling the standard stores, before validation, for a grammar that admits several spellings of the same meaning |
+| `write_meta` | Returns the `meta` a server-side writer stamps on a code of this standard, for a vocabulary whose validator pins its `meta` |
+| `term_name` | Returns a term's display name, which ingest writes as the name of a row it creates from a code |
+
+`annotations.vocabularies.validate_code(standard, value, meta)` runs the registered validator and returns the value in the vocabulary's canonical spelling; a writer stores what it returns, never what it was given.
+
+The platform registers its own closed vocabularies: `epicurrents.biosignal` and `epicurrents.eeg` (what was done, given and observed during a recording, from the sets the viewer ships) and `epicurrents.psg` (sleep stages and scored events). `hed` is registered by the `hedscore` plugin when it is enabled. An unregistered `standard` is accepted unvalidated unless the deployment sets `ANNOTATION_CODE_STRICT_VOCABULARY = True` in its project settings, which rejects every unregistered standard.
+
+API writes are validated. Ingest writes only codes of closed vocabularies: the events a file arrives with are translated into registered terms, and an event that does not translate becomes a text-free placeholder. A project's own endpoint or management command is not gated by the platform and calls `validate_code` itself.
 
 ### Example: evaluation marks
 
 A teaching project can use `Code` to attach an instructor's evaluation results to student annotation events without touching `AnnotationBase`:
 
 ```python
-from annotations.models import Code, Event
-from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+
+from annotations.codes import replace_codes
+from annotations.vocabularies import validate_code
 
 _MARK_STANDARD = "epicurrents.myproject.mark"
 
-# Set a mark with an optional numeric score
-Code.objects.update_or_create(
-    content_type=ContentType.objects.get_for_model(Event),
-    object_id=str(event.pk),
-    standard=_MARK_STANDARD,
-    defaults={
-        "value": "correct",  # 'correct' | 'incorrect' | 'reference'
-        "meta": {"score": 8.5},
-    },
-)
+# Set a mark with an optional numeric score, keeping the event's other codes
+meta = {"score": 8.5}
+value = validate_code(_MARK_STANDARD, "correct", meta)  # 'correct' | 'incorrect' | 'reference'
+codes = {code.standard: (code.value, code.meta) for code in event.codes.all()}
+codes[_MARK_STANDARD] = (value, meta)
+with transaction.atomic():
+    replace_codes(event, codes)
 
 # Read the mark back
 code = event.codes.filter(standard=_MARK_STANDARD).first()
@@ -77,13 +97,15 @@ if code:
     score = code.meta.get("score") if code.meta else None
 ```
 
+`replace_codes` from `annotations.codes` is the sanctioned writer: it makes the parent's codes exactly the mapping it is given (a code it is not handed is deleted) and saves rows one at a time, so every change reaches the audit trail. It validates nothing; the calling path decides which codes it accepts first. Clients writing through the annotations API send codes inline with the event, interruption or label they belong to, as a `codes` object keyed by standard.
+
 ### Exposing marks through the project API
 
 Do **not** expose `Code` rows or the `standard` string directly to API consumers.  Instead wrap the interaction in a dedicated endpoint that:
 
 1. Validates the `value` against an allowed set
 2. Resolves the annotation by its `object_hash` (not by PK)
-3. Uses `update_or_create` keyed on `(content_type, object_id, standard)` to prevent duplicates
+3. Writes the code through `replace_codes` inside the write's transaction, which keeps one code per standard
 
 ```python
 # In projects/myproject/urls.py
@@ -95,12 +117,10 @@ _PROJECT_MARK_STANDARD = "epicurrents.myproject.mark"
 def patch_annotation_mark(request, token: str, payload: AnnotationMarkIn):
     """PATCH body: { object_hash, mark, score? }"""
     ...
-    Code.objects.update_or_create(
-        content_type=event_ct,
-        object_id=str(event.pk),
-        standard=_PROJECT_MARK_STANDARD,
-        defaults={"value": payload.mark, "meta": meta},
-    )
+    codes = {code.standard: (code.value, code.meta) for code in event.codes.all()}
+    codes[_PROJECT_MARK_STANDARD] = (payload.mark, meta)
+    with transaction.atomic():
+        replace_codes(event, codes)
 ```
 
 Callers send `{ mark: 'correct', score: 8.5 }` — the `epicurrents.myproject.mark` standard is an implementation detail they never see.

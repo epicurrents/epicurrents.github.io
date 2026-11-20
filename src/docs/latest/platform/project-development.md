@@ -14,12 +14,19 @@ Projects live under `projects/<name>/` in the repository root and are activated 
 projects/
   <name>/
     __init__.py
-    apps.py         # required — AppConfig (name="projects.<name>", label="<name>")
+    .gitignore      # the project's own; the platform's ignore rules do not cross into it
+    .gitattributes
+    apps.py         # required — AppConfig (name="projects.<name>", label="<name>", requires_platform)
     models.py       # custom models with FKs/GenericFKs to platform models
     migrations/     # Django migrations for your models
     settings.py     # optional — settings overrides merged on top of base settings
     middleware.py   # optional — EDFHeaderMiddleware / EDFSignalMiddleware subclasses
     urls.py         # optional — extra Ninja endpoints, mounted at /project/api/v1/
+    public_urls.py  # optional — plain Django views, mounted at /project/<name>/
+    requirements.txt  # optional — Python dependencies the platform does not have
+    requirements.lock # required with requirements.txt — scripts/lock-requirements.sh --project <name>
+    env-additions   # optional — .env values a release introduces, appended on update
+    frontend/       # optional — the project's frontend plugin (views, icons, nav links)
     settings_test.py  # test settings extending test_platform
     tests/
       __init__.py
@@ -35,8 +42,10 @@ When a project's `settings.py` is present, its values are merged onto the base s
 | Setting type | Behaviour |
 |---|---|
 | `INSTALLED_APPS`, `MIDDLEWARE`, `AUTH_PASSWORD_VALIDATORS`, `AUTHENTICATION_BACKENDS`, `PASSWORD_HASHERS` | Project list **appended** (duplicates skipped) |
-| `CELERY_BEAT_SCHEDULE` | Project dict **merged** (project wins on key conflicts) |
+| `CELERY_BEAT_SCHEDULE`, `TEXT_HYGIENE_PATTERNS` | Project dict **merged** (project wins on key conflicts) |
 | Everything else | Project value **replaces** the base value |
+
+Precedence is `common < plugins < project < .env`: enabled plugins' settings are merged first, the project's on top of them, and an environment variable still wins over both.
 
 The project app (`projects.<name>`) is always added to `INSTALLED_APPS` automatically by the loader, regardless of whether `settings.py` exists.
 
@@ -70,6 +79,7 @@ class MyProjectConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "projects.myproject"
     label = "myproject"
+    requires_platform = ">=0.2,<0.3"
 
     def ready(self):
         from epicurrents.permissions import register_read_permission_extension
@@ -92,6 +102,8 @@ A project that corrects or analyses every recording registers that work from `re
 While stages run, the recording is `processing`; while only jobs run it is `available` and can already be opened; once everything has finished it is `ready`. A failed stage or job is shown on the recording's jobs and does not fail the recording. The recording's author can disable, re-enable or reorder its stages, which reruns them.
 
 > **Important:** platform 0.2 changed what `ready` means. A project that filters on `status="ready"` to mean *the file can be read* should accept `available` too; one that means *everything has finished* keeps `ready`. Pin `requires_platform = ">=0.2,<0.3"` once the project has been checked against that.
+
+`requires_platform` is verified by a system check at `manage.py check`, which runs before `runserver` and `migrate`: an unsatisfied pin blocks the boot and an absent one warns. While the platform is on `0.x` the minor is the breaking bump, so a cap is the next minor (`<0.3`), never `<1`.
 
 ### API endpoints
 
