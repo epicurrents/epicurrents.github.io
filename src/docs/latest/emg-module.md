@@ -33,7 +33,7 @@ The navigator below the trace shows the whole recording, with the visible page m
 
 The buttons on its right:
 
-- `[[icon:backward-fast]]` rewinds playback and returns to the start of the recording. It is disabled while audio is playing.
+- `[[icon:backward-step]]` rewinds playback and returns to the start of the recording. It is disabled while audio is playing.
 - `[[icon:play]]` / `[[icon:pause]]` starts and pauses audio playback. The `Space` key does the same.
 - `[[icon:chevron-left]]` / `[[icon:chevron-right]]` move one page backward or forward.
 
@@ -59,6 +59,9 @@ The `[[icon:play]]` button starts playback from the beginning of the visible pag
 
 The audio is built from the cached signal, so playback is available once the recording has loaded.
 
+![emg-single-channel](/img/emg-single-channel.png)
+_An EMG signal shown as a single running channel._
+
 ## Cascade view
 
 The cascade shows the first channel of the recording as a stack of rows, each row one page long and each starting where the row above it ends. It is built the first time it is opened, once the recording has signal data cached, and has ten rows by default.
@@ -70,6 +73,9 @@ The cascade shows the first channel of the recording as a stack of rows, each ro
 - Double-clicking [`[[icon:mouse]]`] a row leaves the cascade for the page holding the clicked time.
 
 Changing the row count in the settings rebuilds the rows in place.
+
+![emg-channel-casscade](/img/emg-channel-cascade.png)
+_The same file shown on a 10-row cascade display._
 
 ## Settings
 

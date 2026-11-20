@@ -74,7 +74,7 @@ Two views are drawn side by side from the same values, using the same colour sca
 - **Voltage field map** — the familiar flat map, viewed from above with the nose pointing up. It is drawn for any montage that meets the requirements above.
 - **Scalp surface** — the same field projected onto an anatomical head surface, which can be rotated by dragging [`[[icon:mouse]]`]. This view needs a surface map prepared in advance for the recording's electrode array, and the module ships two: the classic 19-electrode 10-20 array, and the IFCN standardised array, which adds the inferior temporal chain (F9/F10, T9/T10, P9/P10) to those 19. The richest of the two that the recording can feed is used automatically. If neither matches, the view reports that no surface field map is available for the montage and the flat map is displayed alone.
 
-![scalp-surface-field-map](/img/scalp-surface-field-map.png)
+![scalp-surface-field-map](/img/scalp-surface-field-map.png)\
 _The same field on the scalp surface view._
 
 **The two views are not meant to look identical.** They are computed from the same voltages at the same instant, but over different head models: the flat map interpolates over a sphere fitted to the electrode positions, while the surface view interpolates onto the anatomical scalp of an averaged head. Anatomy that a sphere does not have — the temporal flattening, the occipital slope, the frontal curvature — shifts a maximum by a few millimetres and stretches the surrounding field differently in each view. The pair should be read for agreement about where a field is centred and how it is signed, not for a pixel-by-pixel match.
@@ -93,6 +93,14 @@ The map's appearance is configured under the `Voltage field topogram` heading of
 ## Trends
 
 Long-term changes over a whole recording are shown by the trend strip rather than by an analysis tool: amplitude-integrated EEG, a power spectrogram, a frequency-band ratio and the pairwise derived brain symmetry index, each computed per epoch over the full recording and drawn above the navigator. The trends are computed in the browser and need no Python integration. See [trend strip](docs/eeg-module/eeg-viewer#trend-strip) for using them and [trend derivations](docs/eeg-module#trend-derivations) for configuring them for an electrode array other than 10-20.
+
+![trends-aeeg](/img/trends-aeeg.png)
+
+![trends-aeeg-si](/img/trends-aeeg-si.png)
+_Amplitude-integrated EEG trend for both hemispheres separately and superimposed._
+
+![trends-spectrogram](/img/trends-spectrogram.png)
+_Spectrogram trend for both hemispheres separately._
 
 ## Python tools
 
