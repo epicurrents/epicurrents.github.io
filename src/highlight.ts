@@ -3,8 +3,12 @@
  *
  * Only the languages the pages use are registered, so the bundle does not carry every grammar highlight.js ships.
  * A fence with no language, or one not registered here, is left plain: guessing the language of a short snippet
- * goes wrong often enough to be worse than no colour. Colours come from `highlight.css`.
+ * goes wrong often enough to be worse than no colour. A block that names a language is also wrapped in an element
+ * carrying its display name, which `highlight.css` draws as a label in the block's corner. The label is outside the
+ * `pre`, so it stays put when a long line scrolls the block, and it is drawn by CSS, so copying the code leaves it out.
  */
+
+import type MarkdownIt from 'markdown-it'
 
 import hljs from 'highlight.js/lib/core'
 import bash from 'highlight.js/lib/languages/bash'
@@ -30,12 +34,30 @@ hljs.registerAliases(['dotenv', 'env'], { languageName: 'ini' })
 hljs.registerAliases(['vue'], { languageName: 'xml' })
 
 /**
+ * Display names for the labels, by fence language. highlight.js has names of its own, but they describe the
+ * grammar a block is read with, which for `dotenv` and `vue` is not what the block is.
+ */
+const LABELS: Record<string, string> = {
+    bash: 'Shell',
+    dotenv: '.env',
+    javascript: 'JavaScript',
+    js: 'JavaScript',
+    json: 'JSON',
+    python: 'Python',
+    sh: 'Shell',
+    ts: 'TypeScript',
+    typescript: 'TypeScript',
+    vue: 'Vue',
+    yaml: 'YAML',
+}
+
+/**
  * Highlight a fenced code block for markdown-it.
  * @param code - The block's content.
  * @param lang - The language named after the opening fence, or an empty string.
  * @returns The highlighted HTML, or an empty string to have markdown-it escape the block as plain text.
  */
-export default function highlight (code: string, lang: string) {
+function highlight (code: string, lang: string) {
     if (!lang || !hljs.getLanguage(lang)) {
         return ''
     }
@@ -43,5 +65,23 @@ export default function highlight (code: string, lang: string) {
         return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value
     } catch {
         return ''
+    }
+}
+
+/**
+ * Highlight the fenced code blocks of `md` and label each one that names a language.
+ * @param md - The markdown-it instance the pages are rendered with.
+ */
+export default function codeBlocks (md: MarkdownIt) {
+    md.set({ highlight })
+    const fence = md.renderer.rules.fence!
+    md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const html = fence(tokens, idx, options, env, self)
+        const lang = tokens[idx].info.trim().split(/\s+/)[0]
+        if (!lang) {
+            return html
+        }
+        const label = md.utils.escapeHtml(LABELS[lang] ?? lang)
+        return `<div class="code-block" data-lang="${label}">${html}</div>`
     }
 }
