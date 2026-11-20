@@ -14,6 +14,7 @@ Three families of data subjects, with different mechanics:
 |---|---|---|
 | **Account holders** — clinicians, researchers, students with accounts | Username, name, email, password hash, external-login identity, push-notification device registrations | The user account and its linked rows |
 | **Recording subjects** — patients whose data is uploaded | Signal recordings (EDF/BDF, and vendor study formats converted to EDF at ingest) and the corrected versions a project builds from them, uploaded filenames, clinical annotation text, attached media, DICOM data (dicom project) | Recording, media, and annotation storage; corrected versions in the artifact cache |
+| **Recording subjects** — as described by a dataset | The subject field values a dataset's managers set for each member, from the fields the dataset declares (a choice such as an age band, or a number) | With the dataset membership; values are kept out of the audit trail |
 | **Third parties** — people incidentally mentioned | Free-text mentions in notes or search queries | Prevented where possible: search queries are stored hashed, credential and identifier fields are masked out of audit records |
 
 The platform keeps a tamper-evident audit trail of data changes. Identifier and credential fields are excluded from audit records at write time (masked), so the permanent trail does not accumulate password hashes, encryption keys, patient-identifying filenames, or session credentials.
@@ -44,6 +45,7 @@ The flows an operator needs on their processor list and in their privacy notice:
 | Destination | What flows there |
 |---|---|
 | **Federated peer instances** | Recordings shared under a federation grant. Peers are separate controllers, not processors. Recordings are de-identified by default when served to a peer (de-identified header, stripped annotation text); serving raw bytes requires an explicit opt-out by the person granting access. The de-identification covers the annotation records a peer reads through the API as well as the text inside the signal file. |
+| **Anyone, without an account** (when the public dataset listing is enabled) | The datasets their authors have listed: name, description, licence, the labels of the subject fields shown, the published datasets the recordings were taken from, the share link, and through it the recordings themselves, de-identified. A reader without an account is served no author, no sequential key of a member and no time more exact than the month. Off by default, and limited to recordings whose author names the published dataset they were taken from; the platform does not verify that statement. |
 | **Email provider** (operator-chosen SMTP) | Recipient addresses and account emails such as password-reset links. |
 | **Browser push services** (Google, Mozilla, Apple) | A per-device delivery endpoint and message timing. Message content is end-to-end encrypted; the push service cannot read it. |
 | **External login provider** (Microsoft Entra, when enabled) | Login events; the provider returns the user's identity to the platform. |

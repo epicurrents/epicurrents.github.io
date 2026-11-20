@@ -54,6 +54,7 @@ All events are `CustomEvent` instances. The relevant data is in `event.detail`.
 | `property-change:events` | `GenericBiosignalResource` | `newValue: BiosignalEvent[]` | Annotation created, moved, or deleted |
 | `add-dataset` | `RuntimeStateManager` | `payload: dataset object` | New dataset loaded |
 | `set-active-resource` | `RuntimeStateManager` | `payload: DataResource \| null` | Active resource changed |
+| `replace-resource` | `GenericDataset`, `RuntimeStateManager` | `payload: { previous, next }` (resource contexts) | A listed study was loaded and took the listing's place |
 
 ## Event detail shape
 
@@ -102,6 +103,20 @@ const resource = runtime?.APP?.activeDataset?.activeResources?.[0] ?? null
 ```
 
 This is safe to call at any point after `waitForEventBus()` has resolved. It returns `null` if no recording is open.
+
+## Opening a dataset
+
+The platform's viewer page lists the members of a dataset and loads each one when the user opens it, using the viewer's listing API (see step 9 on the [Implementation](docs/implementation#app-lifecycle) page). A recording that has finished processing is listed with the duration and channel count the platform recorded at ingest, which costs no request per member. This needs a viewer edition built from `@epicurrents/core` 2.3.0 or later.
+
+Three kinds of item are loaded up front instead, up to the viewer's `app.eagerStudyLoadLimit` (default 50), with the rest listed:
+
+- every member of a dataset whose `preload_members` flag is set, or of one a project's `resolveSessionDatasets` returns with `preload: true`, which holds for that session link only;
+- every item of a `?files=` or `?media=` link, which names a selection the user made;
+- an item the platform holds no metadata for: a media file, or a recording still being processed.
+
+A project's `onStudiesReady` receives only the studies loaded up front. A workflow that works across every member of a dataset, such as stepping through a session's recordings in order, flags the dataset or returns `preload` for it; the platform refuses the flag on a dataset with more members than `LIBRARY_DATASET_PRELOAD_LIMIT`. A panel that keeps a reference to a resource should follow `replace-resource`, because a listed study that loads is replaced by a new resource object.
+
+A `?dataset=` link may carry a dataset browser query: the filters `modality`, `tag`, `subject.<key>`, `subject.<key>.min` and `.max`, and `sort`. The viewer then opens only the recordings the browser lists under that query, in its order. The browser's "Open matching in viewer" button builds this link.
 
 ## Showing a panel in the viewer's window
 

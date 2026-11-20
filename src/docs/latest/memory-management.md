@@ -163,6 +163,12 @@ Currently `GenericBiosignalResource` has two teardown levels:
 
 `releaseCache()` is called when a recording is deactivated so its SAB slice can be reused; `destroy()` is called when the recording object itself is discarded.
 
+### Montage workers
+
+A montage's worker is started on demand. `MontageService` records its setup, its input wiring, its interruptions and its filters, and starts the worker on the first request that needs one (`getSignals`, `setFilters`, `mapChannels`), replaying what it recorded before the request is posted. A recording that goes out of view releases the workers of all its montages after giving requests in flight up to a second to be answered, and holds threads for its reader and its trends only. It keeps the recorded setup, so the next request starts a worker set up as before.
+
+Two consequences for code that drives a montage directly. The first read after activation or after a montage switch includes the worker's start. And a module that precaches montages starts its workers at construction, since they fill an output buffer whether or not anything reads it.
+
 ### Cross-activation state leaks
 
 The most common source of bugs at this layer is **cross-activation state** — fields that belong logically to one SAB occupancy session but live on the recording object and are not reset when the buffer is freed. If any such field survives `releaseCache()`, the next activation can misread it and skip caching, leaving the buffer permanently empty.

@@ -206,6 +206,36 @@ runtime.setActiveResource(next)   // now costs a redraw rather than a load
 
 > **Note:** `preload()` holds a second recording's buffer and worker for as long as it is queued. Release a queued recording you decide not to show — `dataset.removeResource(resource)` followed by `resource.destroy()` — rather than letting it accumulate.
 
+### 9. Listing a study without loading it (optional)
+
+A loaded study holds its reader, and with shared memory a worker, until its dataset is destroyed, so an application that opens a few hundred recordings at once runs out of threads before the user has looked at any of them. A host that already knows what a set contains can list each study instead and let the viewer load it when it is opened:
+
+```ts
+const listing = app.addDeferredStudy({
+    loader: 'edf',
+    name: 'Recording 12',
+    source: 'https://example.com/recording-12.edf',
+    properties: [['duration', 1200], ['signals', 21]],
+    onLoaded: async (resource) => {
+        // Runs once the loaded resource has taken the listing's place and finished preparing.
+    },
+})
+```
+
+Nothing is fetched and no worker is started. The returned resource is a listing: it appears in the navigator under `name` with the `properties` given, its state is `added`, and `isReady` stays false. `properties` are only displayed and never read for loading, so the host decides whether its values are reliable enough to show. `addDeferredStudy` returns `null` when no importer or module matches the study, and takes the dataset to list in as `{ dataset }`, by default the active one.
+
+Opening a listing in the interface loads it. A host does the same with `openDeferredResource`:
+
+```ts
+const resource = await app.openDeferredResource(listing)
+```
+
+The study is loaded as `loadStudy` would load it, the loaded resource takes the listing's place in the dataset at the same position, and the promise resolves with it once it is prepared and `onLoaded` has run. A failed load resolves with `null` and leaves an error resource in the place. Calls made while a load is running share it, and loads through one importer run one at a time. A resource that is not a listing is returned as it is, and `isDeferredResource` from `@epicurrents/core/util` tells the two apart.
+
+A listing is never the active resource: `setActiveResource` refuses one, and the interface opens it and activates what was loaded. Anything holding a reference to the listing should follow the `replace-resource` event, dispatched on the dataset and the runtime with the `previous` and `next` resource contexts, since the loaded resource is a different object.
+
+A dataset built from a data source that only names its files loads up to `app.eagerStudyLoadLimit` studies (default 50) and lists the rest.
+
 ## Embedding with a `ViewerPlugin`
 
 When the viewer is embedded inside a larger application (such as the Epicurrents platform), project-specific behaviour is injected through a `ViewerPlugin` object that hooks into the viewer lifecycle without modifying core code.
@@ -219,8 +249,8 @@ interface ViewerPlugin {
     // inject settings, or set up panels that live outside the viewer iframe
     onAppReady?(app: EpicurrentsApp, bus: EventBus): void | Promise<void>
 
-    // Called once studies are loaded and ready — use to pre-select a recording
-    // or navigate to a specific time position
+    // Called once the studies loaded up front are ready — use to pre-select a recording
+    // or navigate to a specific time position. Studies that are only listed are not included
     onStudiesReady?(app: EpicurrentsApp, studies: StudyContext[]): void | Promise<void>
 }
 ```
