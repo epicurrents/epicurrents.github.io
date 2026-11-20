@@ -33,14 +33,54 @@ export const documentation = {
         {
             name: 'Deployment',
             path: 'platform/deployment',
+            subitems: [
+                {
+                    name: 'Updating',
+                    path: 'platform/operations/updating',
+                },
+                {
+                    name: 'Backups',
+                    path: 'platform/operations/backups',
+                },
+            ],
         },
         {
             name: 'Configuration',
             path: 'platform/configuration',
         },
         {
+            name: 'Using the platform',
+            path: 'platform/using-the-platform',
+            subitems: [
+                {
+                    name: 'Library',
+                    path: 'platform/using-the-platform/library',
+                },
+                {
+                    name: 'Datasets',
+                    path: 'platform/using-the-platform/datasets',
+                },
+                {
+                    name: 'Profile',
+                    path: 'platform/using-the-platform/profile',
+                },
+                {
+                    name: 'Administration',
+                    path: 'platform/using-the-platform/administration',
+                },
+            ],
+        },
+        {
+            name: 'Datasets and pools',
+            path: 'platform/datasets-and-pools',
+        },
+        {
             name: 'Data protection',
             path: 'platform/data-protection',
+        },
+        {
+            name: 'Plugins',
+            path: 'platform/plugins',
         },
         {
             name: 'Project development',
@@ -128,11 +168,27 @@ export const documentation = {
                     name: 'Analysis tools',
                     path: 'eeg-module/analysis-tools',
                 },
+                {
+                    name: 'Findings and reports',
+                    path: 'eeg-module/findings-and-reports',
+                },
             ],
         },
         {
             name: 'PSG module',
             path: 'psg-module',
+        },
+        {
+            name: 'EMG module',
+            path: 'emg-module',
+        },
+        {
+            name: 'Document module',
+            path: 'document-module',
+        },
+        {
+            name: 'Media module',
+            path: 'media-module',
         },
     ],
     'File readers': [
@@ -145,6 +201,10 @@ export const documentation = {
             name: 'EDF reader',
             path: 'edf-reader',
 
+        },
+        {
+            name: 'WAV reader',
+            path: 'wav-reader',
         },
     ],
     'Services': [

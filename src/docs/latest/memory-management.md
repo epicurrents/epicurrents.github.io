@@ -12,8 +12,8 @@ Copying the full signal across each boundary on every read is expensive — a 32
 
 | Path | When it's used | How signals travel between threads |
 |---|---|---|
-| [Path A — SharedArrayBuffer](#path-a-sharedarraybuffer) | `useSAB: true` **and** cross-origin isolation is active **and** `SharedArrayBuffer` is supported by the browser | Single SAB shared between all workers; the format worker writes, the montage worker reads, no copies |
-| [Path B — JS heap fallback](#path-b-js-heap-fallback) | `useSAB: false`, or cross-origin isolation is not configured | Signal records are passed between workers as transferable `ArrayBuffer`s on every cache update |
+| [Path A — SharedArrayBuffer](#path-a:-sharedarraybuffer) | `useSAB: true` **and** cross-origin isolation is active **and** `SharedArrayBuffer` is supported by the browser | Single SAB shared between all workers; the format worker writes, the montage worker reads, no copies |
+| [Path B — JS heap fallback](#path-b:-js-heap-fallback) | `useSAB: false`, or cross-origin isolation is not configured | Signal records are passed between workers as transferable `ArrayBuffer`s on every cache update |
 
 Both paths use the same `MontageProcessor` for the actual signal math, so the only thing that changes is how the raw samples reach it.
 
@@ -41,7 +41,7 @@ Using the core directly, the same is set with `app.configure({ 'app.useMemoryMan
 
 A recording whose signal data fits inside `app.maxLoadCacheSize` is cached whole. A larger one is cached as a rolling window of blocks around the view, sized so that three blocks fit inside the budget and capped by the `app.dataBlockDuration` setting, so a large recording loads rather than failing for want of memory.
 
-## Path A — SharedArrayBuffer
+## Path A: SharedArrayBuffer
 
 ### The memory manager
 
@@ -101,7 +101,7 @@ Montage worker
 
 The montage worker's read path never crosses a copy boundary until the final `postMessage` of the per-frame result, which is intentionally already filter-applied and downsampled — only the displayed-channel × visible-samples slice is copied.
 
-## Path B — JS heap fallback
+## Path B: JS heap fallback
 
 When `SharedArrayBuffer` is unavailable, `BiosignalCache` is used instead. It holds a single `SignalCachePart`:
 

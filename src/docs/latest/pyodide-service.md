@@ -108,7 +108,7 @@ The package ships with `biosignal.py`, a Python module pre-loaded into Pyodide t
 
 ### SAB input and the slice-refresh model
 
-The service receives raw samples through the [SharedArrayBuffer](docs/memory-management#path-a-sharedarraybuffer) memory manager, via the same `MutexExportProperties` handle used by the montage worker. However Pyodide cannot alias an external `SharedArrayBuffer` directly into Python-visible memory: both `JsBuffer.to_py()` and `JsBuffer.to_memoryview()` materialise a *snapshot* at the moment of conversion. Every read into a Python `numpy` array is a copy.
+The service receives raw samples through the [SharedArrayBuffer](docs/memory-management#path-a:-sharedarraybuffer) memory manager, via the same `MutexExportProperties` handle used by the montage worker. However Pyodide cannot alias an external `SharedArrayBuffer` directly into Python-visible memory: both `JsBuffer.to_py()` and `JsBuffer.to_memoryview()` materialise a *snapshot* at the moment of conversion. Every read into a Python `numpy` array is a copy.
 
 To minimise the cost, `biosignal.py` uses **lazy allocation** plus **on-demand slice refresh**:
 
@@ -141,7 +141,7 @@ await pyodide.runCode(
 
 `specs` is a list of `[channel_idx, start, end]` triples. `start` may be less than the data offset and `end` may exceed the channel length — both are clamped to valid SAB bounds, and out-of-bounds positions retain zeros from lazy allocation (callers handle their own padding).
 
-When the JS heap [fallback path](docs/memory-management#path-b-js-heap-fallback) is active (no `SharedArrayBuffer`), the Pyodide service is not wired up to montage-side signal data and the slice-refresh model does not apply.
+When the JS heap [fallback path](docs/memory-management#path-b:-js-heap-fallback) is active (no `SharedArrayBuffer`), the Pyodide service is not wired up to montage-side signal data and the slice-refresh model does not apply.
 
 ## Built-in analysis scripts
 

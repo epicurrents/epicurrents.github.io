@@ -19,8 +19,8 @@ All viewports have a `controls` bar on the top. Like the viewport itself, the co
 
 Common to all viewports are a set of three icons at the left end of the controls bar that provide quick actions for the current `dataset`:
 - `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
-- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
-- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
+- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled when the open item is the first in the dataset.
+- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled when the open item is the last in the dataset.
 
 The same actions have hotkeys: `` ` `` (backquote) toggles the dataset navigator, `` Alt+` `` opens the next item and `` Alt+Shift+` `` the previous one.
 

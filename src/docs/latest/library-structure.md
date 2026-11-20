@@ -18,9 +18,9 @@ File readers parse a specific binary format into a structured signal representat
 |---|---|---|
 | `edf-reader` | `@epicurrents/edf-reader` | EDF, EDF+C, EDF+D, BDF, BDF+ (European/BioSemi data formats) |
 | `dicom-reader` | `@epicurrents/dicom-reader` | DICOM neurophysiology (WG-32: routine EEG) |
-| `wav-reader` | `@epicurrents/wav-reader` | WAV audio (RIFF/WAVE, 16-bit PCM) |
-| `htm-reader` | `@epicurrents/htm-reader` | Markdown and HTML documents |
-| `pdf-reader` | `@epicurrents/pdf-reader` | PDF documents |
+| `wav-reader` | `@epicurrents/wav-reader` | WAV audio (RIFF/WAVE, 16-bit PCM); see [WAV reader](docs/wav-reader) |
+| `htm-reader` | `@epicurrents/htm-reader` | Markdown and HTML documents; see [Document module](docs/document-module) |
+| `pdf-reader` | `@epicurrents/pdf-reader` | PDF documents; see [Document module](docs/document-module) |
 | `csv-reader` | `@epicurrents/csv-reader` | CSV files, read by the accelerometry module. Not part of a public edition. |
 | `api-reader` | `@epicurrents/api-reader` (not published) | Remote API URL import |
 
@@ -32,10 +32,10 @@ A study module handles the resources and settings of one modality. The Vue compo
 |---|---|---|
 | `eeg-module` | `@epicurrents/eeg-module` | EEG — signal display, montages, annotations, analysis tools |
 | `psg-module` | `@epicurrents/psg-module` (not published) | Polysomnography — sleep studies, built on `eeg-module` and opened in its viewer (see [PSG module](docs/psg-module)) |
-| `emg-module` | `@epicurrents/emg-module` | EMG — signal display with audio playback, and a cascade view that stacks consecutive pages of one channel as rows and draws them in during playback |
+| `emg-module` | `@epicurrents/emg-module` | EMG — signal display with audio playback, and a cascade view that stacks consecutive pages of one channel as rows and draws them in during playback (see [EMG module](docs/emg-module)) |
 | `acc-module` | `@epicurrents/acc-module` | Accelerometry, from CSV and EDF files. Not part of a public edition. |
 | `ncs-module` | `@epicurrents/ncs-module` | NCS — nerve conduction studies. Experimental: it has no finished importer and is not registered in any edition. |
-| `doc-module` | `@epicurrents/doc-module` | Document viewing |
+| `doc-module` | `@epicurrents/doc-module` | Markdown, HTML and PDF documents (see [Document module](docs/document-module)) |
 | `tab-module` | `@epicurrents/tab-module` | Tabular data. Experimental: it has no finished importer and is not registered in any edition. |
 
 ### Services
@@ -51,7 +51,7 @@ Services extend the application with capabilities that run in a separate web wor
 
 | Package | npm | Description |
 |---|---|---|
-| `interface` | `@epicurrents/interface` (not on npm) | Default Vue 3 viewer application. Assembles all the above into a ready-to-use UI. Its repository is public, and the builder builds it into each edition, which can be used as a standalone app or embedded inside a larger page. |
+| `interface` | `@epicurrents/interface` (not on npm) | Default Vue 3 viewer application. Assembles all the above into a ready-to-use UI. Its repository is public, and the builder builds it into each edition, which can be used as a standalone app or embedded inside a larger page. It includes the native media module for video, audio and images (see [Media module](docs/media-module)). |
 
 ### Utility packages
 

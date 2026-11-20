@@ -151,6 +151,6 @@ Annotations are not stored inside the EDF file. They are managed separately and 
 
 - **Platform backend** — the Epicurrents platform stores annotations through its annotations REST API. The viewer does not write the annotations edited in it to the server by itself; a project integration can persist them through that API.
 - **Dataset output (WebDAV)** — with the `annotations.saveToDataset` setting on (off by default), every change to the annotations writes `<resource name>_annotations.json` to the active dataset's output connector, such as a WebDAV source. An existing file is overwritten by default; the dataset's output conflict resolution can instead refuse the write, or rename or version the existing copy first.
-- **Export** — annotations can be exported manually as a JSON file from the annotations menu, or as part of a structured report.
+- **Export** — annotations can be exported manually as a JSON file from the annotations menu.
 
 The exported file is a JSON object in one of two formats. The Epicurrents format carries `events` and `labels` as arrays of `serialize()` output in the shape of the properties table above, with `format: 'epicurrents'`, the active `montage` and the recording `startTime`. The MNE format follows the structure of an MNE `Annotations` object (`onset`, `duration`, `description`, `ch_names`, `orig_time`), with the event's display name as its description.

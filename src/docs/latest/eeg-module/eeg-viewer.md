@@ -9,8 +9,8 @@ _EEG controls row above the EEG viewer._
 
 The first three icons on the bar belong to the dataset navigator:
 - `[[icon:bars]]` Toggles the dataset navigator; if the navigator is visible clicking this hides it and vice versa.
-- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled if there is no preceding item (i.e. the currently open item is the first item in the dataset).
-- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled if there is no following item (i.e. the currently open item is the last item in the dataset).
+- `[[icon:angle-up]]` Selects the item that is above the currently open item in the dataset navigation. This control is disabled when the open item is the first in the dataset.
+- `[[icon:angle-down]]` Selects the item that is below the currently open item in the dataset navigation. This control is disabled when the open item is the last in the dataset.
 
 The controls toolbar above the signals apply general settings on the recording level or to preconfigured channel types. Controls include:
 - **Montage**: A list of preconfigured montages to display the signals in, with `Raw signals` at the bottom of the list for the source channels without a montage. The keys `1` to `4` switch to the first four montages.
@@ -43,7 +43,7 @@ _The red area is the visible page, blue bars on top are annotations._
 
 The time displayed on the left side of the navigator shows the time position of the **cursor line**. It reads as time elapsed from the start of the recording by default; unticking *Display time elapsed from the recording start instead of the time of day* under the `EEG` settings tab switches it to the wall-clock time at that point of the recording instead. The same applies to the time intervals displayed below the navigator bar. Absolute time needs the EEG source file to carry a recording start time, and a de-identified recording deliberately does not — which is why relative time is the default.
 
-Sometimes EEG recordings may have gaps (i.e. missing segments) in the data. These gaps are shown as gray areas in the navigator.
+Sometimes EEG recordings have gaps in the data. These gaps are shown as gray areas in the navigator.
 
 ![eeg-navigator-with-gaps](/img/eeg-navigator-gaps.png)
 _An EEG file with two longer gaps._
@@ -90,7 +90,7 @@ Annotations on a cascade are drawn as compact markers only:
 
 Annotation labels are stripped to keep the rows readable — hover over a marker to see the full label and text in the tooltip. Cascade annotations are read-only; to edit or add annotations, switch to a regular montage first.
 
-Filter and sensitivity changes made while a cascade is active stay with the cascade. The recording's regular montage settings are preserved and reapplied when the user switches away. Filter changes apply on the main thread for now, so the rendered rows update immediately but heavier modality-specific processing is not yet available through the cascade.
+Filter and sensitivity changes made while a cascade is active stay with the cascade. The recording's regular montage settings are preserved and reapplied when the user switches away. Filter changes apply on the main thread, so the rendered rows update immediately but heavier modality-specific processing is not yet available through the cascade.
 
 ## Browsing an EEG
 
@@ -102,3 +102,7 @@ There are six means to browse an EEG:
 4. Double-clicking [`[[icon:mouse]]`] on the navigation bar below the EEG display will move to that location.
 5. If the recording has annotations, clicking on an annotation will jump to that location (annotations can be viewed by pressing `A`).
 6. Double-clicking [`[[icon:mouse]]`] on a cascade signal recenters `viewStart` on that point. The light-blue band on the cascade shifts to mark the new location, and any regular montage you switch to afterwards is parked around that time.
+
+## Findings, reports and export
+
+The annotation editor of the EEG viewer can code an annotation as a HED-SCORE finding, and the `[[icon:file-lines]]` button opens a structured report form; both are described on the [findings and reports](docs/eeg-module/findings-and-reports) page. Saving the recording as a de-identified EDF file, or sending it to a destination the host application offers, is described under [exporting a recording](docs/getting-started/opening-files#exporting-a-recording).

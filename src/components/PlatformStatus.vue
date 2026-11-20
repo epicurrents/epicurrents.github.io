@@ -11,7 +11,7 @@
  *   'stable'          — success  — production-ready (remove banner after a few months)
  *    null             — (no banner)
  */
-const PLATFORM_STATUS: 'closed-testing' | 'public-testing' | 'stable' | null = 'closed-testing'
+const PLATFORM_STATUS: 'closed-testing' | 'public-testing' | 'stable' | null = 'public-testing'
 
 const STATUS_CONFIG = {
     'closed-testing': {

@@ -47,6 +47,10 @@ limitations under the License.`
                 <wa-icon name="puzzle-piece" family="duotone" variant="light" fixed-width></wa-icon>
                 Extend the library with custom modules
             </li>
+            <li>
+                <wa-icon name="server" family="duotone" variant="light" fixed-width></wa-icon>
+                Store, share and curate recordings on a self-hosted platform
+            </li>
         </ul>
         <h2>Using the documentation</h2>
         <p>
@@ -65,6 +69,11 @@ limitations under the License.`
         <p>
             The <router-link to="docs/user-interface">user interface</router-link> section
             has a more complete breakdown of the default application interface and its features.
+        </p>
+        <p>
+            The <router-link to="docs/platform/introduction">platform</router-link> section covers the Epicurrents
+            platform, the server application that stores recordings, shares them as datasets and serves them to the
+            viewer: using it, deploying and configuring it, and developing projects and plugins for it.
         </p>
         <h3>Study modules</h3>
         <p>

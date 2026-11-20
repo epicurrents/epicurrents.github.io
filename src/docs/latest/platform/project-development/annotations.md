@@ -2,13 +2,13 @@
 
 ## Extending annotations from a project plugin
 
-The platform ships a generic annotation system in the `annotations` app.  Four concrete types — `Event`, `Interruption`, `Label`, and `Annotation` — all extend an abstract `AnnotationBase` that provides a generic FK target (any Django model), a 32-character `object_hash` unique per target, a 64-character `content_hash` that covers every type-specific field, and `author` / `created_at` / `modified_at` timestamps.
+The platform ships a generic annotation system in the `annotations` app. Four concrete types — `Event`, `Interruption`, `Label`, and `Annotation` — all extend an abstract `AnnotationBase` that provides a generic FK target (any Django model), a 32-character `object_hash` unique per target, a 64-character `content_hash` that covers every type-specific field, and `author` / `created_at` / `modified_at` timestamps.
 
 A fifth model, `Code`, attaches standardised classification codes (ICD-10, SNOMED, LOINC, or custom standards) to any `Event`, `Interruption`, or `Label` via a generic FK.
 
 ## Why not add fields to `AnnotationBase`?
 
-`AnnotationBase` is abstract.  Adding a field there:
+`AnnotationBase` is abstract. Adding a field there:
 - Requires a migration on **all four** concrete tables at once
 - Invalidates every stored `content_hash` (the hash covers all non-audit fields)
 - Couples a project-specific concept to the shared core schema
@@ -101,7 +101,7 @@ if code:
 
 ### Exposing marks through the project API
 
-Do **not** expose `Code` rows or the `standard` string directly to API consumers.  Instead wrap the interaction in a dedicated endpoint that:
+Do **not** expose `Code` rows or the `standard` string directly to API consumers. Instead wrap the interaction in a dedicated endpoint that:
 
 1. Validates the `value` against an allowed set
 2. Resolves the annotation by its `object_hash` (not by PK)
@@ -147,10 +147,10 @@ Resolve the caller's access as *terms* rather than as a boolean: `can_read_objec
 
 ## Content hash behaviour
 
-Adding a `Code` to an annotation fires the `Code` post-save signal, which calls `recompute_content_hash()` on the parent annotation.  This is intentional: a marked annotation is semantically different from an unmarked one, and `ObjectChangeLog` should record the change.
+Adding a `Code` to an annotation fires the `Code` post-save signal, which calls `recompute_content_hash()` on the parent annotation. This is intentional: a marked annotation is semantically different from an unmarked one, and `ObjectChangeLog` should record the change.
 
-If your project uses `Code` for labels that should **not** affect the content hash (unusual), you must call `Type.objects.filter(pk=...).update(content_hash=...)` directly after creating the Code to restore the previous hash.  This is strongly discouraged.
+If your project uses `Code` for labels that should **not** affect the content hash (unusual), you must call `Type.objects.filter(pk=...).update(content_hash=...)` directly after creating the Code to restore the previous hash. This is strongly discouraged.
 
 ## `Code.meta` — JSONField
 
-`meta` is a `JSONField(null=True, blank=True)`.  Use it for scalar or structured data that accompanies the code value but does not warrant a separate model field.  Keep it flat and avoid deeply nested structures — `meta` is not indexed and should not be used as a filter target in hot-path queries.
+`meta` is a `JSONField(null=True, blank=True)`. Use it for scalar or structured data that accompanies the code value but does not warrant a separate model field. Keep it flat and avoid deeply nested structures — `meta` is not indexed and should not be used as a filter target in hot-path queries.
