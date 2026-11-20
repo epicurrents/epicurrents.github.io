@@ -1,0 +1,51 @@
+/*
+ * Token colours for highlighted code blocks, drawn from the Web Awesome semantic colours so they follow the
+ * site's light and dark modes without a second theme.
+ */
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: var(--wa-color-text-quiet);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type,
+.hljs-selector-tag,
+.hljs-doctag {
+  color: var(--wa-color-brand-on-quiet);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-symbol,
+.hljs-char.escape_ {
+  color: var(--wa-color-success-on-quiet);
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable.constant_ {
+  color: var(--wa-color-warning-on-quiet);
+}
+.hljs-title,
+.hljs-section,
+.hljs-name {
+  color: var(--wa-color-danger-on-quiet);
+}
+.hljs-attr,
+.hljs-attribute {
+  color: var(--wa-color-text-normal);
+  font-weight: 600;
+}
+.hljs-params,
+.hljs-property,
+.hljs-subst,
+.hljs-variable,
+.hljs-template-variable {
+  color: var(--wa-color-text-normal);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
+}

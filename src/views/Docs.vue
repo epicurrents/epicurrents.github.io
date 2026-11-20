@@ -7,10 +7,11 @@ import footnote from 'markdown-it-footnote'
 import toc from 'markdown-it-table-of-contents'
 import { useRoute } from 'vue-router'
 import PlatformStatus from '../components/PlatformStatus.vue'
+import highlight from '../highlight'
 
 const route = useRoute()
 const isPlatformPage = computed(() => route.path.includes('/platform/'))
-const md = markdownit()
+const md = markdownit({ highlight })
 md.use(anchor)
 md.use(footnote, {
     // Enable footnotes in the documentation.
