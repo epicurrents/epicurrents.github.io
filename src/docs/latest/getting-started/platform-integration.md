@@ -106,7 +106,7 @@ This is safe to call at any point after `waitForEventBus()` has resolved. It ret
 
 ## Opening a dataset
 
-The platform's viewer page lists the members of a dataset and loads each one when the user opens it, using the viewer's listing API (see step 9 on the [Implementation](docs/implementation#app-lifecycle) page). A recording that has finished processing is listed with the duration and channel count the platform recorded at ingest, which costs no request per member. This needs a viewer edition built from `@epicurrents/core` 2.3.0 or later.
+The platform's viewer page lists the members of a dataset and loads each one when the user opens it, using the viewer's listing API (see step 9 on the [Implementation](docs/implementation#app-lifecycle) page). A recording that has finished processing is listed with the duration and channel count the platform recorded at ingest, which costs no request per member. It lists through `listStudy`, which no `@epicurrents/core` release carries yet, so it needs a viewer edition built from source.
 
 Three kinds of item are loaded up front instead, up to the viewer's `app.eagerStudyLoadLimit` (default 50), with the rest listed:
 
@@ -114,7 +114,7 @@ Three kinds of item are loaded up front instead, up to the viewer's `app.eagerSt
 - every item of a `?files=` or `?media=` link, which names a selection the user made;
 - an item the platform holds no metadata for: a media file, or a recording still being processed.
 
-A project's `onStudiesReady` receives only the studies loaded up front. A workflow that works across every member of a dataset, such as stepping through a session's recordings in order, flags the dataset or returns `preload` for it; the platform refuses the flag on a dataset with more members than `LIBRARY_DATASET_PRELOAD_LIMIT`. A panel that keeps a reference to a resource should follow `replace-resource`, because a listed study that loads is replaced by a new resource object.
+A project's `onStudiesReady` receives only the studies loaded up front. A workflow that works across every member of a dataset, such as stepping through a session's recordings in order, flags the dataset or returns `preload` for it; the platform refuses the flag on a dataset with more members than `LIBRARY_DATASET_PRELOAD_LIMIT`. A listed study loads on the same resource object, so a panel can keep a reference to it; its `state` goes from `added` through `loading` to `ready`, or to `error` with an `errorReason`.
 
 A `?dataset=` link may carry a dataset browser query: the filters `modality`, `tag`, `subject.<key>`, `subject.<key>.min` and `.max`, and `sort`. The viewer then opens only the recordings the browser lists under that query, in its order. The browser's "Open matching in viewer" button builds this link.
 
