@@ -191,6 +191,7 @@ The filters a recording opens with can be set per deployment, in Hz. Each key re
 }
 ```
 
+- The recording's filters apply to its EEG, EOG and EKG channels, all three to each. Other polygraphic channels, EMG and respiration among them, take none of them and are filtered only by a filter set on the channel itself. The module setting `filterChannelTypes` names, per channel type, which of the recording's filters it takes.
 - `0` turns a filter off, so a deployment can disable a filter that is on by default.
 - A negative or non-numeric value is ignored with a warning, and that filter keeps its built-in default.
 - A frequency that is not among the control's predefined options is still applied, for a research protocol that calls for one. The filter dropdown lists it as **Custom** at its place in frequency order, and it stays selectable after the user has switched to another value.
