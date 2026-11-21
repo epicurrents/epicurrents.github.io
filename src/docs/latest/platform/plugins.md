@@ -16,12 +16,13 @@ DICOM support is the canonical plugin: a deployment running an EEG project may a
 
 ### dicom
 
-DICOM study management and an embedded [OHIF viewer](https://ohif.org). Users upload studies (CT, MRI, PET and other modalities); each file is header-parsed at upload and indexed as study, series and instance rows owned by the uploader. The study list is at `/dicom/studies` in the platform interface, and opening a study launches OHIF at `/plugin/dicom/viewer/`. Studies take part in the platform's access rights: an author shares a study with a user through the plugin's API (there is no share dialog in the interface), and a study attached to a recording is readable by anyone who can read that recording. Trashed studies are purged after `DICOM_TRASH_RETENTION_DAYS` (default 30), and `manage.py index_dicom` imports an existing DICOM tree through the same parsing path as the upload.
+DICOM study management and an embedded [OHIF viewer](https://ohif.org). Users upload studies (CT, MRI, PET and other modalities); each file is header-parsed at upload and indexed as study, series and instance rows owned by the uploader. The study list is at `/dicom/studies` in the platform interface, and opening a study launches OHIF in a new tab at `/plugin/dicom/ohif/`. OHIF's own study list at that address shows the same studies, through a DICOMweb search (QIDO-RS) the plugin answers. Studies take part in the platform's access rights: an author shares a study with a user from the Share button on the study list, under the same rules as dataset sharing (group grants are not available for studies yet), and a study attached to a recording is readable by anyone who can read that recording. Shared studies are served as uploaded: DICOM files and their patient details are not de-identified. Trashed studies are purged after `DICOM_TRASH_RETENTION_DAYS` (default 30), and `manage.py index_dicom` imports an existing DICOM tree through the same parsing path as the upload.
 
 Two operator requirements follow from the viewer:
 
 - **Cross-origin isolation.** OHIF decodes compressed images with WebAssembly codecs that need `SharedArrayBuffer`, which browsers only provide on a cross-origin-isolated page. Set `ENABLE_CROSS_ORIGIN_ISOLATION=True` in `.env`; the plugin does not set it for you, since a deployment may have turned isolation off deliberately. A reverse proxy in front of the stack must pass the three headers through. Without them, uncompressed studies render and compressed ones show a blank canvas.
-- **The OHIF build.** The OHIF source is a separate submodule fetched only when the plugin is enabled (see [plugin-specific submodules](#plugin-specific-submodules)), and `scripts/build_ohif.sh` builds it into `plugins/dicom/ohif-dist/`. Rebuild whenever the submodule is updated.
+- **Content Security Policy.** The codec worker compiles code at run time, which the platform's default policy refuses. The plugin sends the same policy with `'unsafe-eval'` added to `script-src` on the viewer's own responses only, so the rest of the platform keeps the strict one. A reverse proxy that sets its own `Content-Security-Policy` replaces this and breaks compressed studies.
+- **The OHIF build.** The OHIF source is a separate submodule fetched only when the plugin is enabled (see [plugin-specific submodules](#plugin-specific-submodules)), and `scripts/build_ohif.sh` builds it into `plugins/dicom/ohif-dist/`. The build needs Node.js 24 or later and about 8 GB of memory; pnpm is taken from corepack when it is not installed. Rebuild whenever the submodule is updated. A distribution package made with the plugin carries the built viewer, so the deployment host does not build it.
 
 **DICOM files are not de-identified.** Files are stored as uploaded, the WADO endpoint streams the original `.dcm` with every identifying header tag to anyone with read access, and the study endpoints return the parsed patient name, ID, birth date and accession number to every grantee. The demographic fields are masked out of the audit trail, and sharing is an explicit per-user grant. Take this into account before enabling the plugin on a deployment that shares data.
 
@@ -29,9 +30,10 @@ Settings:
 
 | Variable | Default | Description |
 |---|---|---|
-| `DICOM_UPLOAD_PATH` | `<RECORDINGS_UPLOAD_PATH>/../dicom` | Where indexed DICOM files are stored |
-| `DICOM_STAGING_PATH` | `<RECORDINGS_UPLOAD_PATH>/../dicom-staging` | Temporary landing area during upload |
+| `DICOM_UPLOAD_PATH` | `<MEDIA_UPLOAD_PATH>/../dicom` (on the media volume) | Where indexed DICOM files are stored |
+| `DICOM_STAGING_PATH` | `<MEDIA_UPLOAD_PATH>/../dicom-staging` | Temporary landing area during upload |
 | `DICOM_OHIF_DIST_PATH` | `plugins/dicom/ohif-dist` | The built OHIF viewer served by the plugin |
+| `DICOM_OHIF_DEMO_DATA` | `False` | Development only, ignored unless `DEBUG` is on: adds OHIF's public demo server and its study list to the viewer, for trying it without radiology data of your own |
 | `DICOM_MAX_UPLOAD_FILES` | `500` | Most files in one upload request |
 | `DICOM_MAX_UPLOAD_FILE_SIZE` | `2147483648` (2 GiB) | Largest single file accepted, in bytes |
 | `DICOM_TRASH_RETENTION_DAYS` | `30` | Days a trashed study stays recoverable before it is purged |
