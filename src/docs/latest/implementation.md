@@ -238,6 +238,8 @@ A listing is never the active resource: `setActiveResource` refuses one, and the
 
 A dataset built from a data source that only names its files loads up to `app.eagerStudyLoadLimit` studies (default 50) and lists the rest.
 
+> **Planned:** In core 3.0 a listing is the resource itself. `app.listStudy` creates it in its module's own resource class with no worker behind it, and activating it, or calling its `load`, reads the study and finishes the setup on that same object, so nothing takes its place and no `onLoaded` callback is needed. `addDeferredStudy`, `openDeferredResource`, `replaceResource` and the `replace-resource` event are removed in that release.
+
 ## Embedding with a `ViewerPlugin`
 
 The Epicurrents platform embeds the viewer in its own frontend, and a platform project or plugin injects its behaviour through a `ViewerPlugin` object that hooks into the viewer lifecycle without modifying core code. `ViewerPlugin` is a platform type (`frontend/src/projects/types.ts`), not part of the viewer packages. Its viewer hooks are:
