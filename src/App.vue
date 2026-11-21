@@ -814,17 +814,13 @@ li.title {
     padding: 1rem 0 0.75rem 0;
 }
     .table-of-contents ul li {
-        padding: 0;
+        padding: 0 1rem;
         margin: 0;
     }
     .table-of-contents ul > li > a {
         display: block;
         margin: 0.25rem 0;
         padding: 0;
-    }
-    .table-of-contents > ul > li > a {
-        /* Apply padding to the first level links */
-        padding: 0 1rem;
     }
     /* Nested TOC */
     .table-of-contents ul ul {
@@ -833,7 +829,7 @@ li.title {
     }
     .table-of-contents ul ul li {
         display: block;
-        padding-left: 2.75rem;
+        padding: 0 0 0 1.75rem;
     }
     .table-of-contents ul ul li::before {
         content: '⚬';
