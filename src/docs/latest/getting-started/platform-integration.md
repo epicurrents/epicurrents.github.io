@@ -54,7 +54,6 @@ All events are `CustomEvent` instances. The relevant data is in `event.detail`.
 | `property-change:events` | `GenericBiosignalResource` | `newValue: BiosignalEvent[]` | Annotation created, moved, or deleted |
 | `add-dataset` | `RuntimeStateManager` | `payload: dataset object` | New dataset loaded |
 | `set-active-resource` | `RuntimeStateManager` | `payload: DataResource \| null` | Active resource changed |
-| `replace-resource` | `GenericDataset`, `RuntimeStateManager` | `payload: { previous, next }` (resource contexts) | A listed study was loaded and took the listing's place |
 
 ## Event detail shape
 
@@ -106,7 +105,7 @@ This is safe to call at any point after `waitForEventBus()` has resolved. It ret
 
 ## Opening a dataset
 
-The platform's viewer page lists the members of a dataset and loads each one when the user opens it, using the viewer's listing API (see step 9 on the [Implementation](docs/implementation#app-lifecycle) page). A recording that has finished processing is listed with the duration and channel count the platform recorded at ingest, which costs no request per member. It lists through `listStudy`, which no `@epicurrents/core` release carries yet, so it needs a viewer edition built from source.
+The platform's viewer page lists the members of a dataset and loads each one when the user opens it, using the viewer's listing API (see step 9 on the [Implementation](docs/implementation#app-lifecycle) page). A recording that has finished processing is listed with the duration and channel count the platform recorded at ingest, which costs no request per member. It lists through `listStudy`, which `@epicurrents/core` carries from 2.4.0.
 
 Three kinds of item are loaded up front instead, up to the viewer's `app.eagerStudyLoadLimit` (default 50), with the rest listed:
 

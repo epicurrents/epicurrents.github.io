@@ -210,35 +210,33 @@ runtime.setActiveResource(next)   // now costs a redraw rather than a load
 
 ### 9. Listing a study without loading it (optional)
 
-A loaded study holds its reader, and with shared memory a worker, until its dataset is destroyed, so an application that opens a few hundred recordings at once runs out of threads before the user has looked at any of them. A host that already knows what a set contains can list each study instead and let the viewer load it when it is opened:
+A loaded study holds its reader, and with shared memory a worker, so an application that opens a few hundred recordings at once runs out of threads before the user has looked at any of them. A host that already knows what a set contains can list each study instead and let the viewer load it when it is opened (core 2.4.0 and later):
 
 ```ts
-const listing = app.addDeferredStudy({
+const resource = app.listStudy({
     loader: 'edf',
     name: 'Recording 12',
     source: 'https://example.com/recording-12.edf',
     properties: [['duration', 1200], ['signals', 21]],
-    onLoaded: async (resource) => {
-        // Runs once the loaded resource has taken the listing's place and finished preparing.
+    onLoad: async (resource) => {
+        // Runs beside the read of the study; the setup waits for it.
     },
 })
 ```
 
-Nothing is fetched and no worker is started. The returned resource is a listing: it appears in the navigator under `name` with the `properties` given, its state is `added`, and `isReady` stays false. `properties` are only displayed and never read for loading, so the host decides whether its values are reliable enough to show. `addDeferredStudy` returns `null` when no importer or module matches the study, and takes the dataset to list in as `{ dataset }`, by default the active one.
+Nothing is fetched and no worker is started. The returned resource is created in its module's own resource class and appears in the navigator under `name` with the `properties` given; its state is `added` and `isListed` is true. `properties` are only displayed and never read for loading, so the host decides whether its values are reliable enough to show. `listStudy` returns `null` when no importer or module matches the study, or its loader cannot list one, and takes the dataset to list in as `{ dataset }`, by default the active one.
 
-Opening a listing in the interface loads it. A host does the same with `openDeferredResource`:
+Activating the resource, in the interface or with `setActiveResource`, loads it, and so does calling its `load`:
 
 ```ts
-const resource = await app.openDeferredResource(listing)
+const loaded = await resource.load()
 ```
 
-The study is loaded as `loadStudy` would load it, the loaded resource takes the listing's place in the dataset at the same position, and the promise resolves with it once it is prepared and `onLoaded` has run. A failed load resolves with `null` and leaves an error resource in the place. Calls made while a load is running share it, and loads through one importer run one at a time. A resource that is not a listing is returned as it is, and `isDeferredResource` from `@epicurrents/core/util` tells the two apart.
+The study is read as `loadStudy` would read it and the setup finishes on the same object, so a reference to the resource stays valid: its `state` goes from `added` through `loading` to `ready`, or to `error` with an `errorReason`, and `retryLoad` loads a failed one again. Calls made while a load is running share it, and reads through one importer run one at a time. A listing's `onLoad` is called with the resource as the load reads the study and runs beside the read, and the setup waits for it, so what it gives the resource, such as a trusted interruption table, is there when the setup looks for it.
 
-A listing is never the active resource: `setActiveResource` refuses one, and the interface opens it and activates what was loaded. Anything holding a reference to the listing should follow the `replace-resource` event, dispatched on the dataset and the runtime with the `previous` and `next` resource contexts, since the loaded resource is a different object.
+Given `{ parent }` instead of a dataset, `listStudy` lists the study as one of that resource's `childResources`, such as a study attached to a recording, and the child is destroyed with its parent.
 
-A dataset built from a data source that only names its files loads up to `app.eagerStudyLoadLimit` studies (default 50) and lists the rest.
-
-> **Planned:** In core 2.4.0 a listing is the resource itself. `app.listStudy` creates it in its module's own resource class with no worker behind it, and activating it, or calling its `load`, reads the study and finishes the setup on that same object, so nothing takes its place. Given `{ parent }` instead of a dataset, it lists the study as one of that resource's `childResources`, such as a study attached to a recording, and the child is destroyed with its parent. A listing's `onLoad` takes the place of `onLoaded`: it is called with the resource as the load reads the study, runs beside the read, and the setup waits for it, so what it gives the resource, such as a trusted interruption table, is there when the setup looks for it. `addDeferredStudy`, `openDeferredResource`, `replaceResource` and the `replace-resource` event are removed in that release.
+A dataset built from a data source that only names its files lists every study and starts loading up to `app.eagerStudyLoadLimit` of them (default 50); the rest load when they are opened.
 
 ## Embedding with a `ViewerPlugin`
 
